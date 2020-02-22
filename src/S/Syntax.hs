@@ -93,7 +93,3 @@ abstract a = fmap (\ a' -> if a == a' then Nothing else Just a')
 
 instantiate :: Monad t => t a -> t (Maybe a) -> t a
 instantiate a t = t >>= maybe a pure
-
-
--- elab :: Monad m =>
--- elab = _
