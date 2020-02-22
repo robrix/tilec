@@ -74,8 +74,8 @@ instance Monoid (Spine a) where
   mempty = Nil
 
 
-lam :: Eq a => a -> Term a -> Term a
-lam a b = Term (Abs (abstract a b))
+lam :: (Eq a, Has Expr sig t) => a -> t a -> t a
+lam a b = send (Abs (abstract a b))
 
 ($$) :: Term a -> Term a -> Term a
 Term (Abs b)  $$ a = instantiate a b
