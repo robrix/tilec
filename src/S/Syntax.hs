@@ -93,8 +93,8 @@ infixl 9 $$*
 type' :: Has Expr sig t => t a
 type' = send Type
 
-pi' :: Eq a => a ::: Term a -> Term a -> Term a
-pi' (a ::: t) b = Term (Pi t (abstract a b))
+pi' :: (Eq a, Has Expr sig t) => a ::: t a -> t a -> t a
+pi' (a ::: t) b = send (Pi t (abstract a b))
 
 
 data a ::: b = a ::: b
