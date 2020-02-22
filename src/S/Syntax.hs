@@ -90,8 +90,8 @@ infixl 9 $$
 
 infixl 9 $$*
 
-type' :: Term a
-type' = Term Type
+type' :: Has Expr sig t => t a
+type' = send Type
 
 pi' :: Eq a => a ::: Term a -> Term a -> Term a
 pi' (a ::: t) b = Term (Pi t (abstract a b))
