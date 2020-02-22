@@ -20,7 +20,7 @@ import Control.Monad (ap)
 import Data.Foldable (foldl')
 import GHC.Generics (Generic1)
 
-newtype Term a = Term (Expr Term a)
+newtype Term a = Term { unTerm :: Expr Term a }
   deriving (Foldable, Functor, Generic1, Traversable)
 
 instance Applicative Term where
