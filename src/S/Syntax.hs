@@ -7,6 +7,7 @@ module S.Syntax
 data Term a
   = Abs (Term (Maybe a))
   | a :$ Spine (Term a)
+  | Type
   deriving (Foldable, Functor, Traversable)
 
 infixl 9 :$
