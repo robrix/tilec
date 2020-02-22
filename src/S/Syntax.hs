@@ -1,10 +1,12 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Syntax
 ( Coalgebra(..)
+, Project(..)
 , Term(..)
 , Prob(..)
 , Expr(..)
@@ -23,6 +25,9 @@ import GHC.Generics (Generic1)
 
 class (HFunctor sig, Monad m) => Coalgebra sig m | m -> sig where
   coalg :: m a -> sig m a
+
+class Project (sub :: (* -> *) -> (* -> *)) sup where
+  prj :: sup m a -> Maybe (sub m a)
 
 
 newtype Term a = Term { unTerm :: Expr Term a }
