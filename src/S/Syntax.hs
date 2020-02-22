@@ -96,7 +96,7 @@ instance Coalgebra Expr Term where
 
 
 data Prob a
-  = Ex (Prob (Maybe a))
+  = Ex (Prob a) (Prob (Maybe a))
   | Prob (Expr Prob a)
   deriving (Foldable, Functor, Generic1, Traversable)
 
