@@ -9,6 +9,7 @@ module S.Syntax
 , ($$)
 , ($$*)
 , type'
+, pi'
 ) where
 
 import Control.Monad (ap)
@@ -76,6 +77,9 @@ infixl 9 $$*
 
 type' :: Term a
 type' = Term Type
+
+pi' :: Eq a => a ::: Term a -> Term a -> Term a
+pi' (a ::: t) b = Term (Pi t (abstract a b))
 
 
 data a ::: b = a ::: b
