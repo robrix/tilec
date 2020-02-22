@@ -9,6 +9,7 @@
 module S.Syntax
 ( Coalgebra(..)
 , Project(..)
+, receive
 , Term(..)
 , Prob(..)
 , Expr(..)
@@ -56,6 +57,10 @@ instance {-# OVERLAPPABLE #-}
       => Project l (l' :+: r) where
   prj (R r) = prj r
   prj _     = Nothing
+
+
+receive :: (Project eff sig, Coalgebra sig m) => m a -> Maybe (eff m a)
+receive = prj . coalg
 
 
 newtype Term a = Term { unTerm :: Expr Term a }
