@@ -1,14 +1,17 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module S.Syntax
 ( Coalgebra(..)
 , Project(..)
+, Projects
+, Is
 , receive
 , Term(..)
 , Prob(..)
@@ -24,6 +27,7 @@ module S.Syntax
 import Control.Algebra
 import Control.Monad (ap)
 import Data.Foldable (foldl')
+import Data.Kind (Constraint)
 import GHC.Generics (Generic1)
 
 class (HFunctor sig, Monad m) => Coalgebra sig m | m -> sig where
@@ -57,6 +61,13 @@ instance {-# OVERLAPPABLE #-}
       => Project l (l' :+: r) where
   prj (R r) = prj r
   prj _     = Nothing
+
+
+type family Projects sub sup :: Constraint where
+  Projects (l :+: r) u = (Projects l u, Projects r u)
+  Projects t         u = Project t u
+
+type Is eff sig m = (Projects eff sig, Algebra sig m)
 
 
 receive :: (Project eff sig, Coalgebra sig m) => m a -> Maybe (eff m a)
