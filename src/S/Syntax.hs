@@ -33,3 +33,6 @@ infixl 5 :>
 instance Semigroup (Spine a) where
   a <> Nil      = a
   a <> (s :> b) = a <> s :> b
+
+instance Monoid (Spine a) where
+  mempty = Nil
