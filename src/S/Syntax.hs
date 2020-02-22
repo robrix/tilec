@@ -7,6 +7,7 @@ module S.Syntax
 , lam
 , ($$)
 , ($$*)
+, type'
 ) where
 
 import Control.Monad (ap)
@@ -71,6 +72,9 @@ infixl 9 $$
 ($$*) = foldl' ($$)
 
 infixl 9 $$*
+
+type' :: Term a
+type' = Term Type
 
 
 abstract :: (Functor t, Eq a) => a -> t a -> t (Maybe a)
