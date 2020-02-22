@@ -1,10 +1,11 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Syntax
-( Term(..)
+( Coalgebra(..)
+, Term(..)
 , Prob(..)
 , Expr(..)
 , Spine(..)
@@ -19,6 +20,10 @@ import Control.Algebra
 import Control.Monad (ap)
 import Data.Foldable (foldl')
 import GHC.Generics (Generic1)
+
+class (HFunctor sig, Monad m) => Coalgebra sig m | m -> sig where
+  coalg :: m a -> sig m a
+
 
 newtype Term a = Term { unTerm :: Expr Term a }
   deriving (Foldable, Functor, Generic1, Traversable)
