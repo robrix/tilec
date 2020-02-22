@@ -26,6 +26,7 @@ module S.Syntax
 
 import Control.Algebra
 import Control.Monad (ap)
+import Control.Monad.Trans.Class
 import Data.Foldable (foldl')
 import Data.Kind (Constraint)
 import GHC.Generics (Generic1)
@@ -83,10 +84,10 @@ instance Applicative Term where
 
 instance Monad Term where
   Term a >>= f = case a of
-    Abs b  -> Term (Abs (b >>= traverse f))
+    Abs b  -> Term (Abs (b >>= lift . f))
     g :$ s -> f g $$* fmap (>>= f) s
     Type   -> Term Type
-    Pi t b -> Term (Pi (t >>= f) (b >>= traverse f))
+    Pi t b -> Term (Pi (t >>= f) (b >>= lift . f))
 
 instance Algebra Expr Term where
   alg = Term
@@ -96,7 +97,7 @@ instance Coalgebra Expr Term where
 
 
 data Prob a
-  = Ex (Prob a) (Prob (Maybe a))
+  = Ex (Prob a) (Scope Prob a)
   | Prob (Expr Prob a)
   deriving (Foldable, Functor, Generic1, Traversable)
 
@@ -105,12 +106,12 @@ instance Applicative Prob where
   (<*>) = ap
 
 instance Monad Prob where
-  Ex t b >>= f = Ex (t >>= f) (b >>= traverse f)
+  Ex t b >>= f = Ex (t >>= f) (b >>= lift . f)
   Prob a >>= f = case a of
-    Abs b  -> Prob (Abs (b >>= traverse f))
+    Abs b  -> Prob (Abs (b >>= lift . f))
     g :$ s -> f g $$* fmap (>>= f) s
     Type   -> Prob Type
-    Pi t b -> Prob (Pi (t >>= f) (b >>= traverse f))
+    Pi t b -> Prob (Pi (t >>= f) (b >>= lift . f))
 
 instance Algebra Expr Prob where
   alg = Prob
@@ -127,18 +128,18 @@ data None (m :: * -> *) a = None
 instance HFunctor None
 
 data Expr t a
-  = Abs (t (Maybe a))
+  = Abs (Scope t a)
   | a :$ Spine (t a)
   | Type
-  | Pi (t a) (t (Maybe a))
+  | Pi (t a) (Scope t a)
   deriving (Foldable, Functor, Generic1, Traversable)
 
 instance HFunctor Expr where
   hmap f = \case
-    Abs b  -> Abs (f b)
+    Abs b  -> Abs (hmap f b)
     a :$ s -> a :$ fmap f s
     Type   -> Type
-    Pi t b -> Pi (f t) (f b)
+    Pi t b -> Pi (f t) (hmap f b)
 
 infixl 9 :$
 
@@ -186,8 +187,27 @@ data a ::: b = a ::: b
 infix 0 :::
 
 
-abstract :: (Functor t, Eq a) => a -> t a -> t (Maybe a)
-abstract a = fmap (\ a' -> if a == a' then Nothing else Just a')
+newtype Scope t a = Scope { unScope :: t (Maybe a) }
+  deriving (Foldable, Functor, Generic1, Traversable)
 
-instantiate :: Monad t => t a -> t (Maybe a) -> t a
-instantiate a t = t >>= maybe a pure
+instance HFunctor Scope where
+  hmap f (Scope b) = Scope (f b)
+
+instance Monad t => Applicative (Scope t) where
+  pure = lift . pure
+  (<*>) = ap
+
+instance Monad t => Monad (Scope t) where
+  Scope t >>= f = Scope (t >>= maybe (pure Nothing) (unScope . f))
+
+instance MonadTrans Scope where
+  lift = Scope . fmap Just
+
+abstract :: (Functor t, Eq a) => a -> t a -> Scope t a
+abstract a = Scope . fmap (\ a' -> if a == a' then Nothing else Just a')
+
+instantiate :: Monad t => t a -> Scope t a -> t a
+instantiate a t = unScope t >>= maybe a pure
+
+
+-- elab :: Monad m ->
