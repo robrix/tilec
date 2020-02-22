@@ -100,6 +100,12 @@ data Prob a
   | Prob (Expr Prob a)
   deriving (Foldable, Functor, Generic1, Traversable)
 
+
+data None (m :: * -> *) a = None
+  deriving (Foldable, Functor, Generic1, Traversable)
+
+instance HFunctor None
+
 data Expr t a
   = Abs (t (Maybe a))
   | a :$ Spine (t a)
