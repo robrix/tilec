@@ -36,3 +36,7 @@ instance Semigroup (Spine a) where
 
 instance Monoid (Spine a) where
   mempty = Nil
+
+
+instantiate :: Monad t => t a -> t (Maybe a) -> t a
+instantiate a t = t >>= maybe a pure
