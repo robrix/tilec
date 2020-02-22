@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE TypeOperators #-}
 module S.Syntax
 ( Term(..)
 , Prob(..)
@@ -75,6 +76,12 @@ infixl 9 $$*
 
 type' :: Term a
 type' = Term Type
+
+
+data a ::: b = a ::: b
+  deriving (Foldable, Functor, Traversable)
+
+infix 0 :::
 
 
 abstract :: (Functor t, Eq a) => a -> t a -> t (Maybe a)
