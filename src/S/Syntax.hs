@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Syntax
 ( Term(..)
@@ -32,6 +33,9 @@ instance Monad Term where
     g :$ s -> f g $$* fmap (>>= f) s
     Type   -> Term Type
     Pi t b -> Term (Pi (t >>= f) (b >>= traverse f))
+
+instance Algebra Expr Term where
+  alg = Term
 
 
 data Prob a
