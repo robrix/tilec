@@ -4,9 +4,8 @@ module S.Syntax
 ) where
 
 data Term a
-  = Var a
-  | Abs (Term (Maybe a))
-  | Term a :$ Term a
+  = Abs (Term (Maybe a))
+  | a :$ Spine (Term a)
 
 infixl 9 :$
 
