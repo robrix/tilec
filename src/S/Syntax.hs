@@ -134,7 +134,7 @@ instance Monoid (Spine a) where
 lam :: (Eq a, Has Expr sig t) => a -> t a -> t a
 lam a b = send (Abs (abstract a b))
 
-($$) :: (Is Expr sig t, Has Expr sig t) => t a -> t a -> t a
+($$) :: (Is Expr prj t, Has Expr inj t) => t a -> t a -> t a
 t $$ a = case receive t of
   Just (Abs b)  -> instantiate a b
   Just (f :$ s) -> send (f :$ (s :> a))
@@ -142,7 +142,7 @@ t $$ a = case receive t of
 
 infixl 9 $$
 
-($$*) :: (Foldable f, Is Expr sig t, Has Expr sig t) => t a -> f (t a) -> t a
+($$*) :: (Foldable f, Is Expr prj t, Has Expr inj t) => t a -> f (t a) -> t a
 ($$*) = foldl' ($$)
 
 infixl 9 $$*
