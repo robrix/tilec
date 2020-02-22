@@ -16,7 +16,8 @@ category:            Language
 -- extra-source-files:
 
 library
-  -- exposed-modules:
+  exposed-modules:
+    S.Syntax
   -- other-modules:
   -- other-extensions:
   build-depends:       base ^>=4.13.0.0
