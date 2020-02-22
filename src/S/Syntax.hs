@@ -1,5 +1,6 @@
 module S.Syntax
 ( Term(..)
+, Spine(..)
 ) where
 
 data Term a
@@ -8,3 +9,9 @@ data Term a
   | Term a :$ Term a
 
 infixl 9 :$
+
+data Spine a
+  = Nil
+  | Spine a :> a
+
+infixl 5 :>
