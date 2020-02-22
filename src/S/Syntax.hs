@@ -78,10 +78,11 @@ lam :: (Eq a, Has Expr sig t) => a -> t a -> t a
 lam a b = send (Abs (abstract a b))
 
 ($$) :: Term a -> Term a -> Term a
-Term (Abs b)  $$ a = instantiate a b
-Term (f :$ s) $$ a = Term (f :$ (s :> a))
-Term Type     $$ _ = error "($$): illegal application of Type"
-Term (Pi _ _) $$ _ = error "($$): illegal application of Pi"
+t $$ a = case unTerm t of
+  Abs b  -> instantiate a b
+  f :$ s -> send (f :$ (s :> a))
+  Type   -> error "($$): illegal application of Type"
+  Pi _ _ -> error "($$): illegal application of Pi"
 
 infixl 9 $$
 
