@@ -1,14 +1,18 @@
 {-# LANGUAGE DeriveTraversable #-}
 module S.Syntax
 ( Term(..)
+, Expr(..)
 , Spine(..)
 ) where
 
-data Term a
-  = Abs (Term (Maybe a))
-  | a :$ Spine (Term a)
+newtype Term a = Term (Expr Term a)
+  deriving (Foldable, Functor, Traversable)
+
+data Expr t a
+  = Abs (t (Maybe a))
+  | a :$ Spine (t a)
   | Type
-  | Pi (Term a) (Term (Maybe a))
+  | Pi (t a) (t (Maybe a))
   deriving (Foldable, Functor, Traversable)
 
 infixl 9 :$
