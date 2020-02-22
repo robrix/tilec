@@ -1,9 +1,11 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 module S.Syntax
 ( Coalgebra(..)
 , Project(..)
@@ -28,6 +30,32 @@ class (HFunctor sig, Monad m) => Coalgebra sig m | m -> sig where
 
 class Project (sub :: (* -> *) -> (* -> *)) sup where
   prj :: sup m a -> Maybe (sub m a)
+
+-- | Reflexivity: @t@ is a member of itself.
+instance Project t t where
+  prj = Just
+
+-- | Left-recursion: if @t@ is a member of @l1 ':+:' l2 ':+:' r@, then we can inject it into @(l1 ':+:' l2) ':+:' r@ by injection into a right-recursive signature, followed by left-association.
+instance {-# OVERLAPPABLE #-}
+         Project t (l1 :+: l2 :+: r)
+      => Project t ((l1 :+: l2) :+: r) where
+  prj = prj . reassoc where
+    reassoc (L (L l)) = L l
+    reassoc (L (R l)) = R (L l)
+    reassoc (R r)     = R (R r)
+
+-- | Left-occurrence: if @t@ is at the head of a signature, we can inject it in O(1).
+instance {-# OVERLAPPABLE #-}
+         Project l (l :+: r) where
+  prj (L l) = Just l
+  prj _     = Nothing
+
+-- | Right-recursion: if @t@ is a member of @r@, we can inject it into @r@ in O(n), followed by lifting that into @l ':+:' r@ in O(1).
+instance {-# OVERLAPPABLE #-}
+         Project l r
+      => Project l (l' :+: r) where
+  prj (R r) = prj r
+  prj _     = Nothing
 
 
 newtype Term a = Term { unTerm :: Expr Term a }
