@@ -67,7 +67,7 @@ type family Projects sub sup :: Constraint where
   Projects (l :+: r) u = (Projects l u, Projects r u)
   Projects t         u = Project t u
 
-type Is eff sig m = (Projects eff sig, Algebra sig m)
+type Is eff sig m = (Projects eff sig, Coalgebra sig m)
 
 
 receive :: (Project eff sig, Coalgebra sig m) => m a -> Maybe (eff m a)
