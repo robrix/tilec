@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Syntax
 ( Term(..)
@@ -13,6 +14,7 @@ module S.Syntax
 , pi'
 ) where
 
+import Control.Algebra
 import Control.Monad (ap)
 import Data.Foldable (foldl')
 import GHC.Generics (Generic1)
@@ -43,6 +45,13 @@ data Expr t a
   | Type
   | Pi (t a) (t (Maybe a))
   deriving (Foldable, Functor, Generic1, Traversable)
+
+instance HFunctor Expr where
+  hmap f = \case
+    Abs b  -> Abs (f b)
+    a :$ s -> a :$ fmap f s
+    Type   -> Type
+    Pi t b -> Pi (f t) (f b)
 
 infixl 9 :$
 
