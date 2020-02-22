@@ -69,5 +69,8 @@ infixl 9 $$
 infixl 9 $$*
 
 
+abstract :: (Functor t, Eq a) => a -> t a -> t (Maybe a)
+abstract a = fmap (\ a' -> if a == a' then Nothing else Just a')
+
 instantiate :: Monad t => t a -> t (Maybe a) -> t a
 instantiate a t = t >>= maybe a pure
