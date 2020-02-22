@@ -91,6 +91,9 @@ instance Monad Term where
 instance Algebra Expr Term where
   alg = Term
 
+instance Coalgebra Expr Term where
+  coalg = unTerm
+
 
 data Prob a
   = Ex (Prob (Maybe a))
