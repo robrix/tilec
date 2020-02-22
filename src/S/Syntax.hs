@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Syntax
@@ -14,9 +15,10 @@ module S.Syntax
 
 import Control.Monad (ap)
 import Data.Foldable (foldl')
+import GHC.Generics (Generic1)
 
 newtype Term a = Term (Expr Term a)
-  deriving (Foldable, Functor, Traversable)
+  deriving (Foldable, Functor, Generic1, Traversable)
 
 instance Applicative Term where
   pure = Term . (:$ Nil)
@@ -33,21 +35,21 @@ instance Monad Term where
 data Prob a
   = Ex (Prob (Maybe a))
   | Prob (Expr Prob a)
-  deriving (Foldable, Functor, Traversable)
+  deriving (Foldable, Functor, Generic1, Traversable)
 
 data Expr t a
   = Abs (t (Maybe a))
   | a :$ Spine (t a)
   | Type
   | Pi (t a) (t (Maybe a))
-  deriving (Foldable, Functor, Traversable)
+  deriving (Foldable, Functor, Generic1, Traversable)
 
 infixl 9 :$
 
 data Spine a
   = Nil
   | Spine a :> a
-  deriving (Foldable, Functor, Traversable)
+  deriving (Foldable, Functor, Generic1, Traversable)
 
 infixl 5 :>
 
@@ -83,7 +85,7 @@ pi' (a ::: t) b = Term (Pi t (abstract a b))
 
 
 data a ::: b = a ::: b
-  deriving (Foldable, Functor, Traversable)
+  deriving (Foldable, Functor, Generic1, Traversable)
 
 infix 0 :::
 
