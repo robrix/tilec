@@ -4,6 +4,7 @@ module S.Syntax
 , Prob(..)
 , Expr(..)
 , Spine(..)
+, lam
 , ($$)
 , ($$*)
 ) where
@@ -55,6 +56,9 @@ instance Monoid (Spine a) where
   mempty = Nil
 
 
+lam :: Eq a => a -> Term a -> Term a
+lam a b = Term (Abs (abstract a b))
+
 ($$) :: Term a -> Term a -> Term a
 Term (Abs b)  $$ a = instantiate a b
 Term (f :$ s) $$ a = Term (f :$ (s :> a))
@@ -74,3 +78,7 @@ abstract a = fmap (\ a' -> if a == a' then Nothing else Just a')
 
 instantiate :: Monad t => t a -> t (Maybe a) -> t a
 instantiate a t = t >>= maybe a pure
+
+
+-- elab :: Monad m =>
+-- elab = _
