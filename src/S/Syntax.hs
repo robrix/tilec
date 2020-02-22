@@ -4,10 +4,27 @@ module S.Syntax
 , Prob(..)
 , Expr(..)
 , Spine(..)
+, ($$)
+, ($$*)
 ) where
+
+import Control.Monad (ap)
+import Data.Foldable (foldl')
 
 newtype Term a = Term (Expr Term a)
   deriving (Foldable, Functor, Traversable)
+
+instance Applicative Term where
+  pure = Term . (:$ Nil)
+  (<*>) = ap
+
+instance Monad Term where
+  Term a >>= f = case a of
+    Abs b  -> Term (Abs (b >>= traverse f))
+    g :$ s -> f g $$* fmap (>>= f) s
+    Type   -> Term Type
+    Pi t b -> Term (Pi (t >>= f) (b >>= traverse f))
+
 
 data Prob a
   = Ex (Prob (Maybe a))
@@ -36,6 +53,20 @@ instance Semigroup (Spine a) where
 
 instance Monoid (Spine a) where
   mempty = Nil
+
+
+($$) :: Term a -> Term a -> Term a
+Term (Abs b)  $$ a = instantiate a b
+Term (f :$ s) $$ a = Term (f :$ (s :> a))
+Term Type     $$ _ = error "($$): illegal application of Type"
+Term (Pi _ _) $$ _ = error "($$): illegal application of Pi"
+
+infixl 9 $$
+
+($$*) :: Foldable t => Term a -> t (Term a) -> Term a
+($$*) = foldl' ($$)
+
+infixl 9 $$*
 
 
 instantiate :: Monad t => t a -> t (Maybe a) -> t a
