@@ -134,16 +134,15 @@ instance Monoid (Spine a) where
 lam :: (Eq a, Has Expr sig t) => a -> t a -> t a
 lam a b = send (Abs (abstract a b))
 
-($$) :: Term a -> Term a -> Term a
-t $$ a = case unTerm t of
-  Abs b  -> instantiate a b
-  f :$ s -> send (f :$ (s :> a))
-  Type   -> error "($$): illegal application of Type"
-  Pi _ _ -> error "($$): illegal application of Pi"
+($$) :: (Is Expr sig t, Has Expr sig t) => t a -> t a -> t a
+t $$ a = case receive t of
+  Just (Abs b)  -> instantiate a b
+  Just (f :$ s) -> send (f :$ (s :> a))
+  _             -> error "($$): illegal application"
 
 infixl 9 $$
 
-($$*) :: Foldable t => Term a -> t (Term a) -> Term a
+($$*) :: (Foldable f, Is Expr sig t, Has Expr sig t) => t a -> f (t a) -> t a
 ($$*) = foldl' ($$)
 
 infixl 9 $$*
