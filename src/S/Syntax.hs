@@ -100,6 +100,26 @@ data Prob a
   | Prob (Expr Prob a)
   deriving (Foldable, Functor, Generic1, Traversable)
 
+instance Applicative Prob where
+  pure = Prob . (:$ Nil)
+  (<*>) = ap
+
+instance Monad Prob where
+  Ex t b >>= f = Ex (t >>= f) (b >>= traverse f)
+  Prob a >>= f = case a of
+    Abs b  -> Prob (Abs (b >>= traverse f))
+    g :$ s -> f g $$* fmap (>>= f) s
+    Type   -> Prob Type
+    Pi t b -> Prob (Pi (t >>= f) (b >>= traverse f))
+
+instance Algebra Expr Prob where
+  alg = Prob
+
+instance Coalgebra (None :+: Expr) Prob where
+  coalg = \case
+    Ex _ _ -> L None
+    Prob t -> R t
+
 
 data None (m :: * -> *) a = None
   deriving (Foldable, Functor, Generic1, Traversable)
