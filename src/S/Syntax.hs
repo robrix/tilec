@@ -6,3 +6,5 @@ data Term a
   = Var a
   | Abs (Term (Maybe a))
   | Term a :$ Term a
+
+infixl 9 :$
