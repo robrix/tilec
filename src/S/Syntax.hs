@@ -208,16 +208,6 @@ instantiate a t = unScope t >>= maybe a pure
 class (HFunctor f, forall g . Functor g => Functor (f g)) => MonadAlgebra f where
   algM :: (Algebra inj m, Member f inj, Coalgebra prj m, Project f prj) => f m (m a) -> m a
 
-class (HFunctor f, forall g . Functor g => Functor (f g)) => RightModule f where
-  (>>=*) :: Monad m => f m a -> (a -> m b) -> f m b
-
-  infixl 1 >>=*
-
-instance (RightModule f, RightModule g) => RightModule (f :+: g) where
-  s >>=* f = case s of
-    L l -> L (l >>=* f)
-    R r -> R (r >>=* f)
-
 
 class Functor f => Pointed f where
   point :: a -> f a
