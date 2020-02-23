@@ -36,10 +36,10 @@ common common
 library
   import: common
   exposed-modules:
+    S.Core
     S.Problem
     S.Scope
     S.Surface
-    S.Syntax
   -- other-modules:
   -- other-extensions:
   build-depends:

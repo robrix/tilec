@@ -9,7 +9,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
-module S.Syntax
+module S.Core
 ( Coalgebra(..)
 , Project(..)
 , Projects
