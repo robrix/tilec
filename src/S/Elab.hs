@@ -26,15 +26,20 @@ check ctx = \case
     pure (Core.Let t' v' (toScope b'))
 
   tm ::: ty -> do
-    tm' ::: ty' <- infer tm
+    tm' ::: ty' <- infer ctx tm
     if ty' == ty then
       pure tm'
     else
       fail "type mismatch"
 
-infer :: MonadFail m => Problem.Term a -> m (Core.Term a ::: Core.Term a)
-infer = \case
+infer :: (MonadFail m, Eq a) => Ctx a -> Problem.Term a -> m (Core.Term a ::: Core.Term a)
+infer ctx = \case
   Problem.Type -> pure (Core.Type ::: Core.Type)
+
+  Problem.Pi t b -> do
+    t' <- check ctx (t ::: Core.Type)
+    b' <- check (ctx :- (Nothing ::: t')) (fromScope b ::: Core.Type)
+    pure (Core.Pi t' (toScope b') ::: Core.Type)
 
   _ -> fail "no rule to infer"
 
