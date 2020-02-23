@@ -36,6 +36,7 @@ library
   exposed-modules:
     S.Core
     S.Elab
+    S.Eval
     S.Problem
     S.Surface
     S.Syntax
