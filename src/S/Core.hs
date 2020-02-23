@@ -36,21 +36,6 @@ instance Monad Term where
 infixl 9 :$
 
 
-data Spine a
-  = Nil
-  | Spine a :> a
-  deriving (Foldable, Functor, Traversable)
-
-infixl 5 :>
-
-instance Semigroup (Spine a) where
-  a <> Nil      = a
-  a <> (s :> b) = a <> s :> b
-
-instance Monoid (Spine a) where
-  mempty = Nil
-
-
 lam :: Eq a => a -> Term a -> Term a
 lam a b = Abs (abstract1 a b)
 
