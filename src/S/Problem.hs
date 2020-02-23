@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveTraversable #-}
 module S.Problem
 ( Term(..)
 ) where
@@ -10,5 +11,6 @@ data Term a
   | Term a :$ Term a
   | Type
   | Pi (Term a) (Scope Term a)
+  deriving (Foldable, Functor, Traversable)
 
 infixl 9 :$
