@@ -19,6 +19,7 @@ import qualified S.Core as Core
 import           S.Syntax
 
 data N = Z | S N
+  deriving (Eq, Ord, Show)
 
 
 data Fin (n :: N) where
