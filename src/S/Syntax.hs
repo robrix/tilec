@@ -129,6 +129,15 @@ instance MonadAlgebra Type where
     Type   -> send Type
     Pi t b -> send (Pi (join t) (b >>= lift))
 
+data Prob t a
+  = Ex (t a) (Scope t a)
+  deriving (Foldable, Functor, Generic1, Traversable)
+
+instance HFunctor Prob
+
+instance MonadAlgebra Prob where
+  algM (Ex t b) = send (Ex (join t) (b >>= lift))
+
 data Spine a
   = Nil
   | Spine a :> a
