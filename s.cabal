@@ -44,6 +44,7 @@ library
   -- other-extensions:
   build-depends:
     , base ^>=4.13.0.0
+    , bound
     , fused-effects
     , transformers
   hs-source-dirs:      src
