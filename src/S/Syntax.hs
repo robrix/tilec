@@ -31,3 +31,4 @@ instance Monoid (Spine a) where
   mempty = Nil
 
 instance Eq1 Spine where liftEq = liftEqDefault
+instance Ord1 Spine where liftCompare = liftCompareDefault
