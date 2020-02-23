@@ -12,12 +12,12 @@ import Data.Functor.Classes.Generic
 import GHC.Generics (Generic1)
 
 data a ::: b = a ::: b
-  deriving (Foldable, Functor, Traversable)
+  deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
 infixl 0 :::
 
 data a := b = a := b
-  deriving (Foldable, Functor, Traversable)
+  deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
 infixl 0 :=
 
