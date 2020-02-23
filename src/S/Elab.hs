@@ -19,6 +19,12 @@ check ctx = \case
     b' <- check (ctx :- (Nothing ::: ta)) (fromScope b ::: fromScope tb)
     pure (Core.Abs (toScope b'))
 
+  Problem.Let t v b ::: tb -> do
+    t' <- check ctx (t ::: Core.Type)
+    v' <- check ctx (v ::: t')
+    b' <- check (ctx :- (Just v' ::: t')) (fromScope b ::: fmap pure tb)
+    pure (Core.Let t' v' (toScope b'))
+
   _ -> fail "unimplemented"
 
 infer :: MonadFail m => Problem.Term a -> m (Core.Term a ::: Core.Term a)
