@@ -35,6 +35,7 @@ library
   import: common
   exposed-modules:
     S.Core
+    S.Elab
     S.Problem
     S.Surface
     S.Syntax
