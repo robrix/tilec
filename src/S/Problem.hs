@@ -3,12 +3,14 @@
 module S.Problem
 ( Term(..)
 , lam
+, let'
 , pi'
 ) where
 
 import Bound.Class
 import Bound.Scope
 import Control.Monad (ap)
+import Data.List (elemIndex)
 import S.Syntax
 
 data Term a
@@ -38,6 +40,11 @@ infixl 9 :$
 
 lam :: Eq a => a -> Term a -> Term a
 lam a b = Abs (abstract1 a b)
+
+let' :: Eq a => [(a, Term a)] -> Term a -> Term a
+let' [] b = b
+let' vs b = Let (map (go . snd) vs) (go b) where
+  go = abstract (`elemIndex` map fst vs)
 
 pi' :: Eq a => a ::: Term a -> Term a -> Term a
 pi' (a ::: t) b = Pi t (abstract1 a b)
