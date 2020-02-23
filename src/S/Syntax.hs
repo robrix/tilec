@@ -4,6 +4,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -210,4 +211,12 @@ instantiate :: Monad t => t a -> Scope t a -> t a
 instantiate a t = unScope t >>= maybe a pure
 
 
--- elab :: Monad m ->
+class (HFunctor f, forall g . Functor g => Functor (f g)) => RightModule f where
+  (>>=*) :: Monad m => f m a -> (a -> m b) -> f m b
+
+  infixl 1 >>=*
+
+instance (RightModule f, RightModule g) => RightModule (f :+: g) where
+  s >>=* f = case s of
+    L l -> L (l >>=* f)
+    R r -> R (r >>=* f)
