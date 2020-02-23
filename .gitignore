@@ -1,1 +1,4 @@
+.ghc.environment*
+.ghci_history
+
 dist-newstyle/
