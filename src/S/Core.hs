@@ -27,7 +27,7 @@ data Term a
   | Let [Scope Int Term a] (Scope Int Term a)
   | Type
   | Pi (Term a) (Scope () Term a)
-  deriving (Foldable, Functor, Generic1, Traversable)
+  deriving (Eq, Foldable, Functor, Generic1, Ord, Show, Traversable)
 
 instance Eq1 Term where liftEq = liftEqDefault
 instance Ord1 Term where liftCompare = liftCompareDefault
