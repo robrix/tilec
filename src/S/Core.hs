@@ -9,16 +9,16 @@ module S.Core
 , pi'
 ) where
 
+import Bound.Class
+import Bound.Scope
 import Control.Monad (ap)
-import Control.Monad.Trans.Class
 import Data.Foldable (foldl')
-import S.Scope
 
 data Term a
-  = Abs (Scope Term a)
+  = Abs (Scope () Term a)
   | a :$ Spine (Term a)
   | Type
-  | Pi (Term a) (Scope Term a)
+  | Pi (Term a) (Scope () Term a)
   deriving (Foldable, Functor, Traversable)
 
 instance Applicative Term where
@@ -27,10 +27,10 @@ instance Applicative Term where
 
 instance Monad Term where
   t >>= f = case t of
-    Abs b  -> Abs (b >>= lift . f)
+    Abs b  -> Abs (b >>>= f)
     g :$ a -> f g $$* fmap (>>= f) a
     Type   -> Type
-    Pi t b -> Pi (t >>= f) (b >>= lift . f)
+    Pi t b -> Pi (t >>= f) (b >>>= f)
 
 infixl 9 :$
 
@@ -51,11 +51,11 @@ instance Monoid (Spine a) where
 
 
 lam :: Eq a => a -> Term a -> Term a
-lam a b = Abs (abstract a b)
+lam a b = Abs (abstract1 a b)
 
 ($$) :: Term a -> Term a -> Term a
 t $$ a = case t of
-  Abs b  -> instantiate a b
+  Abs b  -> instantiate1 a b
   f :$ s -> f :$ (s :> a)
   _      -> error "($$): illegal application"
 
@@ -67,7 +67,7 @@ infixl 9 $$
 infixl 9 $$*
 
 pi' :: Eq a => a ::: Term a -> Term a -> Term a
-pi' (a ::: t) b = Pi t (abstract a b)
+pi' (a ::: t) b = Pi t (abstract1 a b)
 
 
 data a ::: b = a ::: b
