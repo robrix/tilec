@@ -11,6 +11,8 @@ module S.Surface
 import Bound.Class
 import Bound.Scope
 import Control.Monad (ap)
+import Data.Functor.Classes
+import Data.Functor.Classes.Generic
 import Data.List (elemIndex)
 import GHC.Generics (Generic1)
 import S.Syntax
@@ -23,6 +25,10 @@ data Term a
   | Type
   | Pi (Term a) (Scope () Term a)
   deriving (Foldable, Functor, Generic1, Traversable)
+
+instance Eq1 Term where liftEq = liftEqDefault
+instance Ord1 Term where liftCompare = liftCompareDefault
+instance Show1 Term where liftShowsPrec = liftShowsPrecDefault
 
 instance Applicative Term where
   pure = Var
