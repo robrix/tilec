@@ -32,3 +32,4 @@ instance Monoid (Spine a) where
 
 instance Eq1 Spine where liftEq = liftEqDefault
 instance Ord1 Spine where liftCompare = liftCompareDefault
+instance Show1 Spine where liftShowsPrec = liftShowsPrecDefault
