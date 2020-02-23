@@ -1,11 +1,15 @@
 {-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE TypeOperators #-}
 module S.Surface
 ( Term(..)
+, lam
+, pi'
 ) where
 
 import Bound.Class
 import Bound.Scope
 import Control.Monad (ap)
+import S.Syntax
 
 data Term a
   = Var a
@@ -28,3 +32,10 @@ instance Monad Term where
     Pi t b -> Pi (t >>= f) (b >>>= f)
 
 infixl 9 :$
+
+
+lam :: Eq a => a -> Term a -> Term a
+lam a b = Abs (abstract1 a b)
+
+pi' :: Eq a => a ::: Term a -> Term a -> Term a
+pi' (a ::: t) b = Pi t (abstract1 a b)
