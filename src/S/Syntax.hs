@@ -122,10 +122,7 @@ data Type t a
   | Pi (t a) (Scope t a)
   deriving (Foldable, Functor, Generic1, Traversable)
 
-instance HFunctor Type where
-  hmap f = \case
-    Type   -> Type
-    Pi t b -> Pi (f t) (hmap f b)
+instance HFunctor Type
 
 instance MonadAlgebra Type where
   algM = \case
