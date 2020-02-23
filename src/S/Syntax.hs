@@ -5,6 +5,7 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE QuantifiedConstraints #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -76,24 +77,26 @@ receive :: (Project eff sig, Coalgebra sig m) => m a -> Maybe (eff m a)
 receive = prj . coalg
 
 
-newtype Term a = Term { unTerm :: Expr Term a }
-  deriving (Foldable, Functor, Generic1, Traversable)
+newtype Term sig a = Term { unTerm :: sig (Term sig) a }
+  deriving (Generic1)
 
-instance Applicative Term where
-  pure = Term . (:$ Nil)
+deriving instance ( forall t . Foldable    t => Foldable    (sig t) ) => Foldable    (Term sig)
+deriving instance ( forall t . Functor     t => Functor     (sig t) ) => Functor     (Term sig)
+deriving instance ( forall t . Foldable    t => Foldable    (sig t)
+                  , forall t . Functor     t => Functor     (sig t)
+                  , forall t . Traversable t => Traversable (sig t) ) => Traversable (Term sig)
+
+instance (RightModule sig, forall t . Functor t => Pointed (sig t)) => Applicative (Term sig) where
+  pure = Term . point
   (<*>) = ap
 
-instance Monad Term where
-  Term a >>= f = case a of
-    Abs b  -> Term (Abs (b >>= lift . f))
-    g :$ s -> f g $$* fmap (>>= f) s
-    Type   -> Term Type
-    Pi t b -> Term (Pi (t >>= f) (b >>= lift . f))
+instance (RightModule sig, forall t . Functor t => Pointed (sig t)) => Monad (Term sig) where
+  Term a >>= f = Term (a >>=* f)
 
-instance Algebra Expr Term where
+instance (RightModule sig, forall t . Functor t => Pointed (sig t)) => Algebra sig (Term sig) where
   alg = Term
 
-instance Coalgebra Expr Term where
+instance (RightModule sig, forall t . Functor t => Pointed (sig t)) => Coalgebra sig (Term sig) where
   coalg = unTerm
 
 
