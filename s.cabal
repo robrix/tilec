@@ -36,6 +36,7 @@ common common
 library
   import: common
   exposed-modules:
+    S.Problem
     S.Scope
     S.Surface
     S.Syntax
