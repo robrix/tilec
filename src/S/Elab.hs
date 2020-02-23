@@ -39,6 +39,8 @@ infer :: MonadFail m => Ctx n -> Problem.Term (Fin n) -> m (Core.Term (Fin n) ::
 infer ctx = \case
   Problem.Var n -> let _ ::: ty = ctx ! n in pure (pure n ::: ty)
 
+  Problem.Abs _ -> fail "no rule to infer lambda abstractions"
+
   Problem.Type -> pure (Core.Type ::: Core.Type)
 
   Problem.Pi t b -> do
