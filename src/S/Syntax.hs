@@ -182,6 +182,9 @@ instantiate :: Monad t => t a -> Scope t a -> t a
 instantiate a t = unScope t >>= maybe a pure
 
 
+class (HFunctor f, forall g . Functor g => Functor (f g)) => MonadAlgebra f where
+  algM :: (Has f inj m, Is f prj m) => f m (m a) -> m a
+
 class (HFunctor f, forall g . Functor g => Functor (f g)) => RightModule f where
   (>>=*) :: Monad m => f m a -> (a -> m b) -> f m b
 
