@@ -3,6 +3,7 @@
 {-# LANGUAGE TypeOperators #-}
 module S.Syntax
 ( (:::)(..)
+, (:=)(..)
 , Spine(..)
 ) where
 
@@ -14,6 +15,11 @@ data a ::: b = a ::: b
   deriving (Foldable, Functor, Traversable)
 
 infix 1 :::
+
+data a := b = a := b
+  deriving (Foldable, Functor, Traversable)
+
+infix 0 :=
 
 
 data Spine a
