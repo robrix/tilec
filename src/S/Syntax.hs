@@ -26,6 +26,7 @@ module S.Syntax
 ) where
 
 import Control.Algebra
+import Control.Effect.Sum (Member)
 import Control.Monad (ap, join)
 import Control.Monad.Trans.Class
 import Data.Foldable (foldl')
@@ -190,7 +191,7 @@ instantiate a t = unScope t >>= maybe a pure
 
 
 class (HFunctor f, forall g . Functor g => Functor (f g)) => MonadAlgebra f where
-  algM :: (Has f inj m, Is f prj m) => f m (m a) -> m a
+  algM :: (Algebra inj m, Member f inj, Coalgebra prj m, Project f prj) => f m (m a) -> m a
 
 class (HFunctor f, forall g . Functor g => Functor (f g)) => RightModule f where
   (>>=*) :: Monad m => f m a -> (a -> m b) -> f m b
