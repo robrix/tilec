@@ -103,25 +103,34 @@ instance (MonadAlgebra sig, forall t . Functor t => Pointed (sig t)) => Coalgebr
 data Expr t a
   = Abs (Scope t a)
   | a :$ Spine (t a)
-  | Type
-  | Pi (t a) (Scope t a)
   deriving (Foldable, Functor, Generic1, Traversable)
 
 instance HFunctor Expr where
   hmap f = \case
     Abs b  -> Abs (hmap f b)
     a :$ s -> a :$ fmap f s
-    Type   -> Type
-    Pi t b -> Pi (f t) (hmap f b)
 
 instance MonadAlgebra Expr where
   algM = \case
     Abs b  -> send (Abs (b >>= lift))
     a :$ s -> a $$* fmap join s
-    Type   -> send Type
-    Pi t b -> send (Pi (join t) (b >>= lift))
 
 infixl 9 :$
+
+data Type t a
+  = Type
+  | Pi (t a) (Scope t a)
+  deriving (Foldable, Functor, Generic1, Traversable)
+
+instance HFunctor Type where
+  hmap f = \case
+    Type   -> Type
+    Pi t b -> Pi (f t) (hmap f b)
+
+instance MonadAlgebra Type where
+  algM = \case
+    Type   -> send Type
+    Pi t b -> send (Pi (join t) (b >>= lift))
 
 data Spine a
   = Nil
@@ -154,10 +163,10 @@ infixl 9 $$
 
 infixl 9 $$*
 
-type' :: Has Expr sig t => t a
+type' :: Has Type sig t => t a
 type' = send Type
 
-pi' :: (Eq a, Has Expr sig t) => a ::: t a -> t a -> t a
+pi' :: (Eq a, Has Type sig t) => a ::: t a -> t a -> t a
 pi' (a ::: t) b = send (Pi t (abstract a b))
 
 
