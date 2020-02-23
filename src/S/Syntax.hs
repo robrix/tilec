@@ -13,7 +13,7 @@ import GHC.Generics (Generic1)
 data a ::: b = a ::: b
   deriving (Foldable, Functor, Traversable)
 
-infix 0 :::
+infix 1 :::
 
 
 data Spine a
