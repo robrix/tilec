@@ -13,7 +13,7 @@ import qualified S.Core as Core
 import qualified S.Problem as Problem
 import           S.Syntax
 
-check :: MonadFail m => Ctx a -> Problem.Term a ::: Core.Term a -> m (Core.Term a)
+check :: (MonadFail m, Eq a) => Ctx a -> Problem.Term a ::: Core.Term a -> m (Core.Term a)
 check ctx = \case
   Problem.Abs b ::: Core.Pi ta tb -> do
     b' <- check (ctx :- (Nothing ::: ta)) (fromScope b ::: fromScope tb)
@@ -25,7 +25,12 @@ check ctx = \case
     b' <- check (ctx :- (Just v' ::: t')) (fromScope b ::: fmap pure tb)
     pure (Core.Let t' v' (toScope b'))
 
-  _ -> fail "unimplemented"
+  tm ::: ty -> do
+    tm' ::: ty' <- infer tm
+    if ty' == ty then
+      pure tm'
+    else
+      fail "type mismatch"
 
 infer :: MonadFail m => Problem.Term a -> m (Core.Term a ::: Core.Term a)
 infer _ = fail "unimplemented"
