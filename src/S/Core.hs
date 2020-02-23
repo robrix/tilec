@@ -18,6 +18,7 @@ import S.Syntax
 data Term a
   = Abs (Scope () Term a)
   | a :$ Spine (Term a)
+  | Let [Scope Int Term a] (Scope Int Term a)
   | Type
   | Pi (Term a) (Scope () Term a)
   deriving (Foldable, Functor, Traversable)
@@ -28,10 +29,11 @@ instance Applicative Term where
 
 instance Monad Term where
   t >>= f = case t of
-    Abs b  -> Abs (b >>>= f)
-    g :$ a -> f g $$* fmap (>>= f) a
-    Type   -> Type
-    Pi t b -> Pi (t >>= f) (b >>>= f)
+    Abs b   -> Abs (b >>>= f)
+    g :$ a  -> f g $$* fmap (>>= f) a
+    Let v b -> Let (fmap (>>>= f) v) (b >>>= f)
+    Type    -> Type
+    Pi t b  -> Pi (t >>= f) (b >>>= f)
 
 infixl 9 :$
 

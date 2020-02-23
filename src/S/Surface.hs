@@ -15,6 +15,7 @@ data Term a
   = Var a
   | Abs (Scope () Term a)
   | Term a :$ Term a
+  | Let [Scope Int Term a] (Scope Int Term a)
   | Type
   | Pi (Term a) (Scope () Term a)
   deriving (Foldable, Functor, Traversable)
@@ -25,11 +26,12 @@ instance Applicative Term where
 
 instance Monad Term where
   t >>= f = case t of
-    Var a  -> f a
-    Abs b  -> Abs (b >>>= f)
-    g :$ a -> (g >>= f) :$ (a >>= f)
-    Type   -> Type
-    Pi t b -> Pi (t >>= f) (b >>>= f)
+    Var a   -> f a
+    Abs b   -> Abs (b >>>= f)
+    g :$ a  -> (g >>= f) :$ (a >>= f)
+    Let v b -> Let (fmap (>>>= f) v) (b >>>= f)
+    Type    -> Type
+    Pi t b  -> Pi (t >>= f) (b >>>= f)
 
 infixl 9 :$
 
