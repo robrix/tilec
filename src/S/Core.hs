@@ -18,13 +18,12 @@ import Data.Foldable (foldl')
 import Data.Functor.Classes
 import Data.Functor.Classes.Generic
 import GHC.Generics (Generic1)
-import Data.List (elemIndex)
 import S.Syntax
 
 data Term a
   = Abs (Scope () Term a)
   | a :$ Spine (Term a)
-  | Let [Scope Int Term a] (Scope Int Term a)
+  | Let (Term a) (Term a) (Scope () Term a)
   | Type
   | Pi (Term a) (Scope () Term a)
   deriving (Eq, Foldable, Functor, Generic1, Ord, Show, Traversable)
@@ -39,11 +38,11 @@ instance Applicative Term where
 
 instance Monad Term where
   t >>= f = case t of
-    Abs b   -> Abs (b >>>= f)
-    g :$ a  -> f g $$* fmap (>>= f) a
-    Let v b -> Let (fmap (>>>= f) v) (b >>>= f)
-    Type    -> Type
-    Pi t b  -> Pi (t >>= f) (b >>>= f)
+    Abs b     -> Abs (b >>>= f)
+    g :$ a    -> f g $$* fmap (>>= f) a
+    Let t v b -> Let (t >>= f) (v >>= f) (b >>>= f)
+    Type      -> Type
+    Pi t b    -> Pi (t >>= f) (b >>>= f)
 
 infixl 9 :$
 
@@ -64,10 +63,8 @@ infixl 9 $$
 
 infixl 9 $$*
 
-let' :: Eq a => [(a, Term a)] -> Term a -> Term a
-let' [] b = b
-let' vs b = Let (map (go . snd) vs) (go b) where
-  go = abstract (`elemIndex` map fst vs)
+let' :: Eq a => a ::: Term a := Term a -> Term a -> Term a
+let' (a ::: t := v) b = Let t v (abstract1 a b)
 
 pi' :: Eq a => a ::: Term a -> Term a -> Term a
 pi' (a ::: t) b = Pi t (abstract1 a b)
