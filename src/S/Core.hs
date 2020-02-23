@@ -1,148 +1,44 @@
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE QuantifiedConstraints #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE UndecidableInstances #-}
 module S.Core
-( Coalgebra(..)
-, Project(..)
-, Projects
-, Is
-, receive
-, Term(..)
-, Expr(..)
+( Term(..)
 , Spine(..)
 , lam
 , ($$)
 , ($$*)
-, type'
 , pi'
 ) where
 
-import Control.Algebra
-import Control.Effect.Sum (Member)
-import Control.Monad (ap, join)
+import Control.Monad (ap)
 import Control.Monad.Trans.Class
 import Data.Foldable (foldl')
-import Data.Kind (Constraint)
-import GHC.Generics (Generic1)
 import S.Scope
 
-class (HFunctor sig, Monad m) => Coalgebra sig m | m -> sig where
-  coalg :: m a -> sig m a
+data Term a
+  = Abs (Scope Term a)
+  | a :$ Spine (Term a)
+  | Type
+  | Pi (Term a) (Scope Term a)
+  deriving (Foldable, Functor, Traversable)
 
-class Project (sub :: (* -> *) -> (* -> *)) sup where
-  prj :: sup m a -> Maybe (sub m a)
-
--- | Reflexivity: @t@ is a member of itself.
-instance Project t t where
-  prj = Just
-
--- | Left-recursion: if @t@ is a member of @l1 ':+:' l2 ':+:' r@, then we can inject it into @(l1 ':+:' l2) ':+:' r@ by injection into a right-recursive signature, followed by left-association.
-instance {-# OVERLAPPABLE #-}
-         Project t (l1 :+: l2 :+: r)
-      => Project t ((l1 :+: l2) :+: r) where
-  prj = prj . reassoc where
-    reassoc (L (L l)) = L l
-    reassoc (L (R l)) = R (L l)
-    reassoc (R r)     = R (R r)
-
--- | Left-occurrence: if @t@ is at the head of a signature, we can inject it in O(1).
-instance {-# OVERLAPPABLE #-}
-         Project l (l :+: r) where
-  prj (L l) = Just l
-  prj _     = Nothing
-
--- | Right-recursion: if @t@ is a member of @r@, we can inject it into @r@ in O(n), followed by lifting that into @l ':+:' r@ in O(1).
-instance {-# OVERLAPPABLE #-}
-         Project l r
-      => Project l (l' :+: r) where
-  prj (R r) = prj r
-  prj _     = Nothing
-
-
-type family Projects sub sup :: Constraint where
-  Projects (l :+: r) u = (Projects l u, Projects r u)
-  Projects t         u = Project t u
-
-type Is eff sig m = (Projects eff sig, Coalgebra sig m)
-
-
-receive :: (Project eff sig, Coalgebra sig m) => m a -> Maybe (eff m a)
-receive = prj . coalg
-
-
-newtype Term sig a = Term { unTerm :: sig (Term sig) a }
-  deriving (Generic1)
-
-deriving instance ( forall t . Foldable    t => Foldable    (sig t) ) => Foldable    (Term sig)
-deriving instance ( forall t . Functor     t => Functor     (sig t) ) => Functor     (Term sig)
-deriving instance ( forall t . Foldable    t => Foldable    (sig t)
-                  , forall t . Functor     t => Functor     (sig t)
-                  , forall t . Traversable t => Traversable (sig t) ) => Traversable (Term sig)
-
-instance (MonadAlgebra sig, forall t . Functor t => Pointed (sig t)) => Applicative (Term sig) where
-  pure = Term . point
+instance Applicative Term where
+  pure = (:$ Nil)
   (<*>) = ap
 
-instance (MonadAlgebra sig, forall t . Functor t => Pointed (sig t)) => Monad (Term sig) where
-  Term a >>= f = algM (f <$> a)
-
-instance (MonadAlgebra sig, forall t . Functor t => Pointed (sig t)) => Algebra sig (Term sig) where
-  alg = Term
-
-instance (MonadAlgebra sig, forall t . Functor t => Pointed (sig t)) => Coalgebra sig (Term sig) where
-  coalg = unTerm
-
-
-data Expr t a
-  = Abs (Scope t a)
-  | a :$ Spine (t a)
-  deriving (Foldable, Functor, Generic1, Traversable)
-
-instance HFunctor Expr where
-  hmap f = \case
-    Abs b  -> Abs (hmap f b)
-    a :$ s -> a :$ fmap f s
-
-instance MonadAlgebra Expr where
-  algM = \case
-    Abs b  -> send (Abs (b >>= lift))
-    a :$ s -> a $$* fmap join s
+instance Monad Term where
+  t >>= f = case t of
+    Abs b  -> Abs (b >>= lift . f)
+    g :$ a -> f g $$* fmap (>>= f) a
+    Type   -> Type
+    Pi t b -> Pi (t >>= f) (b >>= lift . f)
 
 infixl 9 :$
 
-data Type t a
-  = Type
-  | Pi (t a) (Scope t a)
-  deriving (Foldable, Functor, Generic1, Traversable)
-
-instance HFunctor Type
-
-instance MonadAlgebra Type where
-  algM = \case
-    Type   -> send Type
-    Pi t b -> send (Pi (join t) (b >>= lift))
-
-data Prob t a
-  = Ex (t a) (Scope t a)
-  deriving (Foldable, Functor, Generic1, Traversable)
-
-instance HFunctor Prob
-
-instance MonadAlgebra Prob where
-  algM (Ex t b) = send (Ex (join t) (b >>= lift))
 
 data Spine a
   = Nil
   | Spine a :> a
-  deriving (Foldable, Functor, Generic1, Traversable)
+  deriving (Foldable, Functor, Traversable)
 
 infixl 5 :>
 
@@ -154,41 +50,27 @@ instance Monoid (Spine a) where
   mempty = Nil
 
 
-lam :: (Eq a, Has Expr sig t) => a -> t a -> t a
-lam a b = send (Abs (abstract a b))
+lam :: Eq a => a -> Term a -> Term a
+lam a b = Abs (abstract a b)
 
-($$) :: (Is Expr prj t, Has Expr inj t) => t a -> t a -> t a
-t $$ a = case receive t of
-  Just (Abs b)  -> instantiate a b
-  Just (f :$ s) -> send (f :$ (s :> a))
-  _             -> error "($$): illegal application"
+($$) :: Term a -> Term a -> Term a
+t $$ a = case t of
+  Abs b  -> instantiate a b
+  f :$ s -> f :$ (s :> a)
+  _      -> error "($$): illegal application"
 
 infixl 9 $$
 
-($$*) :: (Foldable f, Is Expr prj t, Has Expr inj t) => t a -> f (t a) -> t a
+($$*) :: Foldable f => Term a -> f (Term a) -> Term a
 ($$*) = foldl' ($$)
 
 infixl 9 $$*
 
-type' :: Has Type sig t => t a
-type' = send Type
-
-pi' :: (Eq a, Has Type sig t) => a ::: t a -> t a -> t a
-pi' (a ::: t) b = send (Pi t (abstract a b))
+pi' :: Eq a => a ::: Term a -> Term a -> Term a
+pi' (a ::: t) b = Pi t (abstract a b)
 
 
 data a ::: b = a ::: b
-  deriving (Foldable, Functor, Generic1, Traversable)
+  deriving (Foldable, Functor, Traversable)
 
 infix 0 :::
-
-
-class (HFunctor f, forall g . Functor g => Functor (f g)) => MonadAlgebra f where
-  algM :: (Algebra inj m, Member f inj, Coalgebra prj m, Project f prj) => f m (m a) -> m a
-
-
-class Functor f => Pointed f where
-  point :: a -> f a
-
-instance (forall t . Functor t => Functor (r t), Functor t, Pointed (l t)) => Pointed ((l :+: r) t) where
-  point = L . point
