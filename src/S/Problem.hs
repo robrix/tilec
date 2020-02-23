@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Problem
@@ -11,6 +12,7 @@ import Bound.Class
 import Bound.Scope
 import Control.Monad (ap)
 import Data.List (elemIndex)
+import GHC.Generics (Generic1)
 import S.Syntax
 
 data Term a
@@ -20,7 +22,7 @@ data Term a
   | Let [Scope Int Term a] (Scope Int Term a)
   | Type
   | Pi (Term a) (Scope () Term a)
-  deriving (Foldable, Functor, Traversable)
+  deriving (Foldable, Functor, Generic1, Traversable)
 
 instance Applicative Term where
   pure = Var
