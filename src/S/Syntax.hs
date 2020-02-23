@@ -19,7 +19,7 @@ infix 0 :::
 data Spine a
   = Nil
   | Spine a :> a
-  deriving (Foldable, Functor, Generic1, Traversable)
+  deriving (Eq, Foldable, Functor, Generic1, Ord, Show, Traversable)
 
 infixl 5 :>
 
