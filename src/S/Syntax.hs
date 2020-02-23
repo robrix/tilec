@@ -16,6 +16,7 @@ data a ::: b = a ::: b
 
 infixl 0 :::
 
+
 data a := b = a := b
   deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
