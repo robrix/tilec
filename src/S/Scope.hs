@@ -7,7 +7,7 @@ module S.Scope
 ) where
 
 import Control.Algebra
-import Control.Monad (ap)
+import Control.Monad (ap, (<=<))
 import Control.Monad.Trans.Class
 import GHC.Generics (Generic1)
 
@@ -31,4 +31,4 @@ abstract :: (Functor t, Eq a) => a -> t a -> Scope t a
 abstract a = Scope . fmap (\ a' -> if a == a' then Nothing else Just a')
 
 instantiate :: Monad t => t a -> Scope t a -> t a
-instantiate a t = unScope t >>= maybe a pure
+instantiate a = maybe a pure <=< unScope
