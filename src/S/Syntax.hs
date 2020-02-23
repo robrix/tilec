@@ -26,7 +26,7 @@ module S.Syntax
 ) where
 
 import Control.Algebra
-import Control.Monad (ap)
+import Control.Monad (ap, join)
 import Control.Monad.Trans.Class
 import Data.Foldable (foldl')
 import Data.Kind (Constraint)
@@ -112,6 +112,13 @@ instance HFunctor Expr where
     a :$ s -> a :$ fmap f s
     Type   -> Type
     Pi t b -> Pi (f t) (hmap f b)
+
+instance MonadAlgebra Expr where
+  algM = \case
+    Abs b  -> send (Abs (b >>= lift))
+    a :$ s -> a $$* fmap join s
+    Type   -> send Type
+    Pi t b -> send (Pi (join t) (b >>= lift))
 
 infixl 9 :$
 
