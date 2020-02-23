@@ -220,3 +220,7 @@ instance (RightModule f, RightModule g) => RightModule (f :+: g) where
   s >>=* f = case s of
     L l -> L (l >>=* f)
     R r -> R (r >>=* f)
+
+
+class Functor f => Pointed f where
+  point :: a -> f a
