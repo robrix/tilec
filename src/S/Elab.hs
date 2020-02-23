@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE EmptyCase #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
@@ -77,3 +78,11 @@ data Ctx (n :: N) where
   (:-) :: Ctx n -> Maybe (Core.Term (Fin n)) ::: Core.Term (Fin n) -> Ctx ('S n)
 
 infixl 5 :-
+
+(!) :: Ctx n -> Fin n -> Maybe (Core.Term (Fin n)) ::: Core.Term (Fin n)
+(ctx :- t) ! n = case n of
+  FZ   -> let tm ::: ty = t       in fmap (fmap FS) tm ::: fmap FS ty
+  FS n -> let tm ::: ty = ctx ! n in fmap (fmap FS) tm ::: fmap FS ty
+CNil       ! n = case n of {}
+
+infixl 9 !
