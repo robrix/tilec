@@ -86,17 +86,17 @@ deriving instance ( forall t . Foldable    t => Foldable    (sig t)
                   , forall t . Functor     t => Functor     (sig t)
                   , forall t . Traversable t => Traversable (sig t) ) => Traversable (Term sig)
 
-instance (RightModule sig, forall t . Functor t => Pointed (sig t)) => Applicative (Term sig) where
+instance (MonadAlgebra sig, forall t . Functor t => Pointed (sig t)) => Applicative (Term sig) where
   pure = Term . point
   (<*>) = ap
 
-instance (RightModule sig, forall t . Functor t => Pointed (sig t)) => Monad (Term sig) where
-  Term a >>= f = Term (a >>=* f)
+instance (MonadAlgebra sig, forall t . Functor t => Pointed (sig t)) => Monad (Term sig) where
+  Term a >>= f = algM (f <$> a)
 
-instance (RightModule sig, forall t . Functor t => Pointed (sig t)) => Algebra sig (Term sig) where
+instance (MonadAlgebra sig, forall t . Functor t => Pointed (sig t)) => Algebra sig (Term sig) where
   alg = Term
 
-instance (RightModule sig, forall t . Functor t => Pointed (sig t)) => Coalgebra sig (Term sig) where
+instance (MonadAlgebra sig, forall t . Functor t => Pointed (sig t)) => Coalgebra sig (Term sig) where
   coalg = unTerm
 
 
