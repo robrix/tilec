@@ -33,7 +33,10 @@ check ctx = \case
       fail "type mismatch"
 
 infer :: MonadFail m => Problem.Term a -> m (Core.Term a ::: Core.Term a)
-infer _ = fail "unimplemented"
+infer = \case
+  Problem.Type -> pure (Core.Type ::: Core.Type)
+
+  _ -> fail "no rule to infer"
 
 
 data Ctx a where
