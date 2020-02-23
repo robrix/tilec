@@ -6,6 +6,8 @@ module S.Syntax
 , Spine(..)
 ) where
 
+import Data.Functor.Classes
+import Data.Functor.Classes.Generic
 import GHC.Generics (Generic1)
 
 data a ::: b = a ::: b
@@ -27,3 +29,5 @@ instance Semigroup (Spine a) where
 
 instance Monoid (Spine a) where
   mempty = Nil
+
+instance Eq1 Spine where liftEq = liftEqDefault
