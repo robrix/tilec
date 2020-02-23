@@ -195,3 +195,6 @@ instance (RightModule f, RightModule g) => RightModule (f :+: g) where
 
 class Functor f => Pointed f where
   point :: a -> f a
+
+instance (forall t . Functor t => Functor (r t), Functor t, Pointed (l t)) => Pointed ((l :+: r) t) where
+  point = L . point
