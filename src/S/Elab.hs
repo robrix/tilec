@@ -16,7 +16,7 @@ import           S.Syntax
 check :: MonadFail m => Ctx a -> Problem.Term a ::: Core.Term a -> m (Core.Term a ::: Core.Term a)
 check ctx = \case
   Problem.Abs b ::: Core.Pi ta tb -> do
-    b' ::: tb' <- check (ctx :- ta) (fromScope b ::: fromScope tb)
+    b' ::: tb' <- check (ctx :- (Nothing ::: ta)) (fromScope b ::: fromScope tb)
     pure (Core.Abs (toScope b') ::: Core.Pi ta (toScope tb'))
 
   _ -> fail "unimplemented"
@@ -27,6 +27,6 @@ infer _ = fail "unimplemented"
 
 data Ctx a where
   CNil :: Ctx a
-  (:-) :: Ctx a -> Core.Term a -> Ctx (Var () a)
+  (:-) :: Ctx a -> Maybe (Core.Term a) ::: Core.Term a -> Ctx (Var () a)
 
 infixl 5 :-
