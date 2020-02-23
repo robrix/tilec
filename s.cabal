@@ -39,6 +39,7 @@ library
     S.Problem
     S.Surface
     S.Syntax
+    S.Value
   -- other-modules:
   -- other-extensions:
   build-depends:
