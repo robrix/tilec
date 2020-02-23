@@ -13,6 +13,7 @@ import Bound.Class
 import Bound.Scope
 import Control.Monad (ap)
 import Data.Foldable (foldl')
+import S.Syntax
 
 data Term a
   = Abs (Scope () Term a)
@@ -68,9 +69,3 @@ infixl 9 $$*
 
 pi' :: Eq a => a ::: Term a -> Term a -> Term a
 pi' (a ::: t) b = Pi t (abstract1 a b)
-
-
-data a ::: b = a ::: b
-  deriving (Foldable, Functor, Traversable)
-
-infix 0 :::
