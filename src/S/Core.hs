@@ -21,7 +21,7 @@ import GHC.Generics (Generic1)
 import S.Syntax
 
 data Term a
-  = Abs (Scope () Term a)
+  = Lam (Scope () Term a)
   | a :$ Spine (Term a)
   | Let (Term a) (Term a) (Scope () Term a)
   | Type
@@ -38,7 +38,7 @@ instance Applicative Term where
 
 instance Monad Term where
   t >>= f = case t of
-    Abs b     -> Abs (b >>>= f)
+    Lam b     -> Lam (b >>>= f)
     g :$ a    -> f g $$* fmap (>>= f) a
     Let t v b -> Let (t >>= f) (v >>= f) (b >>>= f)
     Type      -> Type
@@ -48,11 +48,11 @@ infixl 9 :$
 
 
 lam :: Eq a => a -> Term a -> Term a
-lam a b = Abs (abstract1 a b)
+lam a b = Lam (abstract1 a b)
 
 ($$) :: Term a -> Term a -> Term a
 t $$ a = case t of
-  Abs b  -> instantiate1 a b
+  Lam b  -> instantiate1 a b
   f :$ s -> f :$ (s :> a)
   _      -> error "($$): illegal application"
 

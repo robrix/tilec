@@ -18,7 +18,7 @@ import S.Syntax
 
 data Term a
   = Var a
-  | Abs (Scope () Term a)
+  | Lam (Scope () Term a)
   | Term a :$ Term a
   | Let (Term a) (Term a) (Scope () Term a)
   | Type
@@ -36,7 +36,7 @@ instance Applicative Term where
 instance Monad Term where
   t >>= f = case t of
     Var a     -> f a
-    Abs b     -> Abs (b >>>= f)
+    Lam b     -> Lam (b >>>= f)
     g :$ a    -> (g >>= f) :$ (a >>= f)
     Let t v b -> Let (t >>= f) (v >>= f) (b >>>= f)
     Type      -> Type
@@ -46,7 +46,7 @@ infixl 9 :$
 
 
 lam :: Eq a => a -> Term a -> Term a
-lam a b = Abs (abstract1 a b)
+lam a b = Lam (abstract1 a b)
 
 let' :: Eq a => a ::: Term a := Term a -> Term a -> Term a
 let' (a ::: t := v) b = Let t v (abstract1 a b)

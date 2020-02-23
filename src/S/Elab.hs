@@ -18,9 +18,9 @@ import           S.Syntax
 
 check :: MonadFail m => Ctx n -> Problem.Term (Fin n) ::: Core.Term (Fin n) -> m (Core.Term (Fin n))
 check ctx = \case
-  Problem.Abs b ::: Core.Pi ta tb -> do
+  Problem.Lam b ::: Core.Pi ta tb -> do
     b' <- check (ctx :- (Nothing ::: ta)) (instantiateFin b ::: instantiateFin tb)
-    pure (Core.Abs (abstractFin b'))
+    pure (Core.Lam (abstractFin b'))
 
   Problem.Let t v b ::: tb -> do
     t' <- check ctx (t ::: Core.Type)
@@ -39,7 +39,7 @@ infer :: MonadFail m => Ctx n -> Problem.Term (Fin n) -> m (Core.Term (Fin n) ::
 infer ctx = \case
   Problem.Var n -> let _ ::: ty = ctx ! n in pure (pure n ::: ty)
 
-  Problem.Abs _ -> fail "no rule to infer lambda abstractions"
+  Problem.Lam _ -> fail "no rule to infer lambda abstractions"
 
   Problem.Type -> pure (Core.Type ::: Core.Type)
 
