@@ -13,11 +13,11 @@ import qualified S.Core as Core
 import qualified S.Problem as Problem
 import           S.Syntax
 
-check :: MonadFail m => Ctx a -> Problem.Term a ::: Core.Term a -> m (Core.Term a ::: Core.Term a)
+check :: MonadFail m => Ctx a -> Problem.Term a ::: Core.Term a -> m (Core.Term a)
 check ctx = \case
   Problem.Abs b ::: Core.Pi ta tb -> do
-    b' ::: tb' <- check (ctx :- (Nothing ::: ta)) (fromScope b ::: fromScope tb)
-    pure (Core.Abs (toScope b') ::: Core.Pi ta (toScope tb'))
+    b' <- check (ctx :- (Nothing ::: ta)) (fromScope b ::: fromScope tb)
+    pure (Core.Abs (toScope b'))
 
   _ -> fail "unimplemented"
 
