@@ -34,6 +34,7 @@ common common
 library
   import: common
   exposed-modules:
+    S.Context
     S.Core
     S.Elab
     S.Eval
