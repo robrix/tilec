@@ -42,6 +42,7 @@ library
     S.Problem
     S.Surface
     S.Syntax
+    S.Syntax.Check
     S.Syntax.Classes
     S.Syntax.Pretty
     S.Value
