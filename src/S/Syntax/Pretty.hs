@@ -43,4 +43,4 @@ parens :: PrettyC a -> PrettyC a
 parens c = kw "(" <> c <> kw ")"
 
 fresh :: Num a => (a -> PrettyC a) -> PrettyC a
-fresh f = PrettyC $ \ v -> let v' = fromIntegral (getLast v) in runPrettyC (f v') ((1 +) <$> v)
+fresh f = PrettyC $ \ v -> runPrettyC (f (fromIntegral (getLast v))) ((1 +) <$> v)
