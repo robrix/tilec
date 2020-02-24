@@ -3,7 +3,6 @@
 {-# LANGUAGE TypeOperators #-}
 module S.Surface
 ( Term(..)
-, pi'
 , Lam(..)
 , Bind(..)
 , Type(..)
@@ -45,9 +44,6 @@ instance Monad Term where
 
 infixl 9 :$
 
-
-pi' :: Eq a => a ::: Term a -> Term a -> Term a
-pi' (a ::: t) b = Pi t (abstract1 a b)
 
 class Bind expr where
   var :: a -> expr a
