@@ -41,6 +41,7 @@ library
     S.Problem
     S.Surface
     S.Syntax
+    S.Syntax.Classes
     S.Value
   -- other-modules:
   -- other-extensions:
