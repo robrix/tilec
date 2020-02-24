@@ -6,7 +6,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 module S.Surface
 ( Term(..)
-, Bind(..)
+, Var(..)
 , Let(..)
 , Lam(..)
 , Lams(..)
@@ -53,13 +53,13 @@ instance Monad Term where
 infixl 9 :$
 
 
-class Bind expr a where
+class Var expr a where
   var :: a -> expr a
 
-class Bind expr a => Let expr a where
+class Var expr a => Let expr a where
   let' :: expr a ::: expr a -> (a -> expr a) -> expr a
 
-class Bind expr a => Lam expr a where
+class Var expr a => Lam expr a where
   lam :: (a -> expr a) -> expr a
   ($$) :: expr a -> expr a -> expr a
 
@@ -74,7 +74,7 @@ instance Lam expr a => Lams expr a (expr a) where
 instance Lams expr a t => Lams expr a (a -> t) where
   lams f = lam (lams . f)
 
-class Bind expr a => Type expr a where
+class Var expr a => Type expr a where
   type' :: expr a
   pi' :: expr a -> (a -> expr a) -> expr a
 
@@ -85,7 +85,7 @@ a --> b = a `pi'` const b
 
 infixr 0 -->
 
-class Bind expr a => Prob expr a where
+class Var expr a => Prob expr a where
   ex :: expr a -> (a -> expr a) -> expr a
   (===) :: expr a -> expr a -> expr a
 
