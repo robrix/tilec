@@ -41,5 +41,5 @@ class Var expr a => Prob expr a where
 
   infixl 4 ===
 
-class Def expr a def | def -> expr where
-  def :: expr a ::: expr a -> def a
+class Def tm ty a def | def -> tm ty where
+  def :: tm a ::: ty a -> def a

@@ -10,5 +10,5 @@ import S.Syntax.Classes
 
 newtype CheckC a = CheckC { runCheckC :: () }
 
-instance Def CheckC (Fin 'Z) CheckC where
+instance Def CheckC CheckC (Fin 'Z) CheckC where
   def _ = CheckC ()
