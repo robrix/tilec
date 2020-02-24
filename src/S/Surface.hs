@@ -3,9 +3,9 @@
 {-# LANGUAGE TypeOperators #-}
 module S.Surface
 ( Term(..)
-, lam
 , let'
 , pi'
+, Lam(..)
 ) where
 
 import Bound.Class
@@ -45,11 +45,14 @@ instance Monad Term where
 infixl 9 :$
 
 
-lam :: Eq a => a -> Term a -> Term a
-lam a b = Lam (abstract1 a b)
-
 let' :: Eq a => a ::: Term a := Term a -> Term a -> Term a
 let' (a ::: t := v) b = Let t v (abstract1 a b)
 
 pi' :: Eq a => a ::: Term a -> Term a -> Term a
 pi' (a ::: t) b = Pi t (abstract1 a b)
+
+class Lam expr where
+  lam :: (a -> expr a) -> expr a
+  ($$) :: expr a -> expr a -> expr a
+
+  infixl 9 $$
