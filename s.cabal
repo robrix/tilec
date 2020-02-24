@@ -38,6 +38,7 @@ library
     S.Core
     S.Elab
     S.Eval
+    S.Library
     S.Problem
     S.Surface
     S.Syntax
