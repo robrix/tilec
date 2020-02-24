@@ -12,7 +12,7 @@ import qualified S.Core as Core
 import qualified S.Problem as Problem
 import           S.Syntax
 
-check :: MonadFail m => Ctx n -> Problem.Term (Fin n) ::: Core.Term (Fin n) -> m (Core.Term (Fin n))
+check :: MonadFail m => Ctx Core.Term Core.Term n -> Problem.Term (Fin n) ::: Core.Term (Fin n) -> m (Core.Term (Fin n))
 check ctx = \case
   Problem.Lam b ::: Core.Pi ta tb -> do
     b' <- check (ctx :- (Nothing ::: ta)) (instantiateFin b ::: instantiateFin tb)
@@ -31,7 +31,7 @@ check ctx = \case
     else
       fail "type mismatch"
 
-infer :: MonadFail m => Ctx n -> Problem.Term (Fin n) -> m (Core.Term (Fin n) ::: Core.Term (Fin n))
+infer :: MonadFail m => Ctx Core.Term Core.Term n -> Problem.Term (Fin n) -> m (Core.Term (Fin n) ::: Core.Term (Fin n))
 infer ctx = \case
   Problem.Var n -> let _ ::: ty = ctx ! n in pure (pure n ::: ty)
 
