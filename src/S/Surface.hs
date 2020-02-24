@@ -8,6 +8,7 @@ module S.Surface
 ( Term(..)
 , Bind(..)
 , Lam(..)
+, Lams(..)
 , Type(..)
 , (-->)
 , Prob(..)
