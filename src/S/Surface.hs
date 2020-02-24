@@ -49,28 +49,28 @@ instance Monad Term where
 infixl 9 :$
 
 
-class Bind expr where
+class Bind expr a where
   var :: a -> expr a
   let' :: expr a ::: expr a -> (a -> expr a) -> expr a
 
-class Bind expr => Lam expr where
+class Bind expr a => Lam expr a where
   lam :: (a -> expr a) -> expr a
   ($$) :: expr a -> expr a -> expr a
 
   infixl 9 $$
 
-class Bind expr => Type expr where
+class Bind expr a => Type expr a where
   type' :: expr a
   pi' :: expr a -> (a -> expr a) -> expr a
 
   infixr 0 `pi'`
 
-(-->) :: Type expr => expr a -> expr a -> expr a
+(-->) :: Type expr a => expr a -> expr a -> expr a
 a --> b = a `pi'` const b
 
 infixr 0 -->
 
-class Bind expr => Prob expr where
+class Bind expr a => Prob expr a where
   ex :: expr a -> (a -> expr a) -> expr a
   (===) :: expr a -> expr a -> expr a
 
