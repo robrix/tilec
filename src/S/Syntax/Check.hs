@@ -1,2 +1,5 @@
 module S.Syntax.Check
-() where
+( CheckC(..)
+) where
+
+newtype CheckC a = CheckC { runCheckC :: () }
