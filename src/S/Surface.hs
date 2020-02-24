@@ -59,7 +59,7 @@ class Bind expr => Lam expr where
 
   infixl 9 $$
 
-class Type expr where
+class Bind expr => Type expr where
   type' :: expr a
   (-->) :: expr a -> (a -> expr a) -> expr a
 
