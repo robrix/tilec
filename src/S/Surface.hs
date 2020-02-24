@@ -61,14 +61,14 @@ class Bind expr a => Lam expr a where
 
   infixl 9 $$
 
-class Lam expr a => Lam' expr a t | t -> expr a where
-  lam' :: t -> expr a
+class Lam expr a => Lams expr a t | t -> expr a where
+  lams :: t -> expr a
 
-instance Lam expr a => Lam' expr a (expr a) where
-  lam' = id
+instance Lam expr a => Lams expr a (expr a) where
+  lams = id
 
-instance Lam' expr a t => Lam' expr a (a -> t) where
-  lam' f = lam (lam' . f)
+instance Lams expr a t => Lams expr a (a -> t) where
+  lams f = lam (lams . f)
 
 class Bind expr a => Type expr a where
   type' :: expr a
