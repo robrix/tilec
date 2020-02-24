@@ -6,6 +6,7 @@ module S.Surface
 , pi'
 , Lam(..)
 , Bind(..)
+, Type(..)
 ) where
 
 import Bound.Class
@@ -57,3 +58,9 @@ class Lam expr where
 class Bind expr where
   var :: a -> expr a
   let' :: expr a ::: expr a -> (a -> expr a) -> expr a
+
+class Type expr where
+  type' :: expr a
+  (-->) :: expr a -> (a -> expr a) -> expr a
+
+  infixr 0 -->
