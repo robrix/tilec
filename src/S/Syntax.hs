@@ -1,10 +1,16 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Syntax
 ( (:::)(..)
 , (:=)(..)
 , Spine(..)
+, N(..)
+, Fin(..)
 ) where
 
 import Data.Functor.Classes
@@ -40,3 +46,16 @@ instance Monoid (Spine a) where
 instance Eq1 Spine where liftEq = liftEqDefault
 instance Ord1 Spine where liftCompare = liftCompareDefault
 instance Show1 Spine where liftShowsPrec = liftShowsPrecDefault
+
+
+data N = Z | S N
+  deriving (Eq, Ord, Show)
+
+
+data Fin (n :: N) where
+  FZ :: Fin ('S n)
+  FS :: Fin n -> Fin ('S n)
+
+deriving instance Eq (Fin n)
+deriving instance Ord (Fin n)
+deriving instance Show (Fin n)

@@ -3,7 +3,6 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Context
 ( N(..)
@@ -17,18 +16,6 @@ module S.Context
 import           Bound.Scope
 import qualified S.Core as Core
 import           S.Syntax
-
-data N = Z | S N
-  deriving (Eq, Ord, Show)
-
-
-data Fin (n :: N) where
-  FZ :: Fin ('S n)
-  FS :: Fin n -> Fin ('S n)
-
-deriving instance Eq (Fin n)
-deriving instance Ord (Fin n)
-deriving instance Show (Fin n)
 
 compose :: Either () (Fin n) -> Fin ('S n)
 compose = either (const FZ) FS
