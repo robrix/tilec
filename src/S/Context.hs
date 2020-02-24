@@ -5,9 +5,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Context
-( N(..)
-, Fin(..)
-, Ctx(..)
+( Ctx(..)
 , abstractFin
 , instantiateFin
 , (!)
