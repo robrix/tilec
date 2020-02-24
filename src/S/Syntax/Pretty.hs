@@ -8,6 +8,7 @@ module S.Syntax.Pretty
 
 import Data.Monoid (Endo(..))
 import Data.Semigroup (Last(..))
+import S.Syntax
 import S.Syntax.Classes
 
 newtype PrettyC a = PrettyC { runPrettyC :: Last Int -> (Last Int, Endo String) }
@@ -18,6 +19,9 @@ instance Show (PrettyC a) where
 
 instance Show a => Var PrettyC a where
   var = word . (showChar '_' .) . shows
+
+instance (Num a, Show a) => Let PrettyC a where
+  let' (tm ::: ty) b = fresh (\ v -> kw "let" <+> var v <+> kw "=" <+> tm <+> kw ":" <+> ty <+> kw "in" <+> b v)
 
 instance (Num a, Show a) => Lam PrettyC a where
   lam f  = fresh $ \ v -> kw "\\" <+> var v <+> kw "." <+> f v
