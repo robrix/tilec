@@ -37,6 +37,14 @@ infer ctx = \case
 
   Problem.Lam _ -> fail "no rule to infer lambda abstractions"
 
+  f Problem.:$ a -> do
+    f' ::: tf <- infer ctx f
+    case tf of
+      Core.Pi t b -> do
+        a' <- check ctx (a ::: t)
+        pure (f' Core.$$ a' ::: instantiateEither (either (const a') pure) b)
+      _ -> fail "expected function type"
+
   Problem.Type -> pure (Core.Type ::: Core.Type)
 
   Problem.Pi t b -> do
