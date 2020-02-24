@@ -1,7 +1,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 module S.Surface
 ( Term(..)
 , Bind(..)
@@ -76,5 +78,5 @@ class Bind expr a => Prob expr a where
 
   infixl 4 ===
 
-class Def expr def | def -> expr where
+class Def expr a def | def -> expr where
   def :: expr a ::: expr a -> def a
