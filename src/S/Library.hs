@@ -7,6 +7,8 @@ module S.Library
 , maybe
 , nothing
 , just
+  -- * Nat
+, nat
 ) where
 
 import Prelude hiding (maybe)
@@ -30,3 +32,7 @@ nothing = lam (lam . const . var)
 
 just :: Lam expr a => expr a
 just = lam (const (lam var))
+
+
+nat :: Type expr a => expr a
+nat = type' `pi'` \ r -> var r --> (var r --> var r) --> var r
