@@ -72,6 +72,9 @@ infixr 0 -->
 
 class Bind expr => Prob expr where
   ex :: expr a -> (a -> expr a) -> expr a
+  (===) :: expr a -> expr a -> expr a
+
+  infixl 4 ===
 
 class Def expr def | def -> expr where
   def :: expr a ::: expr a -> def a
