@@ -3,8 +3,8 @@
 {-# LANGUAGE TypeOperators #-}
 module S.Surface
 ( Term(..)
-, Lam(..)
 , Bind(..)
+, Lam(..)
 , Type(..)
 ) where
 
