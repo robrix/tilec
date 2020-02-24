@@ -43,6 +43,7 @@ library
     S.Surface
     S.Syntax
     S.Syntax.Classes
+    S.Syntax.Pretty
     S.Value
   -- other-modules:
   -- other-extensions:
