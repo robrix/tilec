@@ -7,6 +7,7 @@
 module S.Surface
 ( Term(..)
 , Bind(..)
+, Let(..)
 , Lam(..)
 , Lams(..)
 , Type(..)
@@ -54,6 +55,8 @@ infixl 9 :$
 
 class Bind expr a where
   var :: a -> expr a
+
+class Bind expr a => Let expr a where
   let' :: expr a ::: expr a -> (a -> expr a) -> expr a
 
 class Bind expr a => Lam expr a where
