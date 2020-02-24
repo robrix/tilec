@@ -5,6 +5,8 @@ module S.Library
 , false
   -- * Maybe
 , maybe
+, nothing
+, just
 ) where
 
 import Prelude hiding (maybe)
@@ -22,3 +24,9 @@ false = lam (const (lam var))
 
 maybe :: Type expr a => expr a
 maybe = type' `pi'` \ a -> type' `pi'` \ r -> var r --> (var a --> var r) --> var r
+
+nothing :: Lam expr a => expr a
+nothing = lam (lam . const . var)
+
+just :: Lam expr a => expr a
+just = lam (const (lam var))
