@@ -49,15 +49,15 @@ infixl 9 :$
 pi' :: Eq a => a ::: Term a -> Term a -> Term a
 pi' (a ::: t) b = Pi t (abstract1 a b)
 
+class Bind expr where
+  var :: a -> expr a
+  let' :: expr a ::: expr a -> (a -> expr a) -> expr a
+
 class Lam expr where
   lam :: (a -> expr a) -> expr a
   ($$) :: expr a -> expr a -> expr a
 
   infixl 9 $$
-
-class Bind expr where
-  var :: a -> expr a
-  let' :: expr a ::: expr a -> (a -> expr a) -> expr a
 
 class Type expr where
   type' :: expr a
