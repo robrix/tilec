@@ -9,6 +9,8 @@ module S.Library
 , just
   -- * Nat
 , nat
+, z
+, s
 ) where
 
 import Prelude hiding (maybe)
@@ -36,3 +38,9 @@ just = lam (const (lam var))
 
 nat :: Type expr a => expr a
 nat = type' `pi'` \ r -> var r --> (var r --> var r) --> var r
+
+z :: Lam expr a => expr a
+z = lam (lam . const . var)
+
+s :: Lam expr a => expr a
+s = lam (\ x -> lam (const (lam (\ s -> var s $$ var x))))
