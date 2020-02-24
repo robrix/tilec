@@ -8,6 +8,7 @@ module S.Surface
 , Lam(..)
 , Type(..)
 , (-->)
+, Prob(..)
 , Def(..)
 ) where
 
@@ -68,6 +69,9 @@ class Bind expr => Type expr where
 a --> b = a `pi'` const b
 
 infixr 0 -->
+
+class Bind expr => Prob expr where
+  ex :: expr a -> (a -> expr a) -> expr a
 
 class Def expr def | def -> expr where
   def :: expr a ::: expr a -> def a
