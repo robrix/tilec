@@ -11,6 +11,7 @@ module S.Syntax
 , Spine(..)
 , N(..)
 , Fin(..)
+, Vec(..)
 ) where
 
 import Data.Functor.Classes
@@ -59,3 +60,8 @@ data Fin (n :: N) where
 deriving instance Eq (Fin n)
 deriving instance Ord (Fin n)
 deriving instance Show (Fin n)
+
+
+data Vec (n :: N) a where
+  VZ :: Vec 'Z a
+  VS :: a -> Vec n a -> Vec ('S n) a
