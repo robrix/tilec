@@ -64,4 +64,6 @@ deriving instance Show (Fin n)
 
 data Vec (n :: N) a where
   VZ :: Vec 'Z a
-  VS :: a -> Vec n a -> Vec ('S n) a
+  (:.) :: a -> Vec n a -> Vec ('S n) a
+
+infixr 5 :.
