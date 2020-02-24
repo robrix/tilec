@@ -53,7 +53,7 @@ class Bind expr where
   var :: a -> expr a
   let' :: expr a ::: expr a -> (a -> expr a) -> expr a
 
-class Lam expr where
+class Bind expr => Lam expr where
   lam :: (a -> expr a) -> expr a
   ($$) :: expr a -> expr a -> expr a
 
