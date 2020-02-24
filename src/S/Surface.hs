@@ -9,7 +9,6 @@ module S.Surface
 , Var(..)
 , Let(..)
 , Lam(..)
-, Lams(..)
 , Type(..)
 , (-->)
 , Prob(..)
@@ -64,15 +63,6 @@ class Var expr a => Lam expr a where
   ($$) :: expr a -> expr a -> expr a
 
   infixl 9 $$
-
-class Lam expr a => Lams expr a t | t -> expr a where
-  lams :: t -> expr a
-
-instance Lam expr a => Lams expr a (expr a) where
-  lams = id
-
-instance Lams expr a t => Lams expr a (a -> t) where
-  lams f = lam (lams . f)
 
 class Var expr a => Type expr a where
   type' :: expr a
