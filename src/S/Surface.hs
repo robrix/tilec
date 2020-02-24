@@ -1,5 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Surface
 ( Term(..)
@@ -7,6 +8,7 @@ module S.Surface
 , Lam(..)
 , Type(..)
 , (-->)
+, Def(..)
 ) where
 
 import Bound.Class
@@ -66,3 +68,6 @@ class Bind expr => Type expr where
 a --> b = a `pi'` const b
 
 infixr 0 -->
+
+class Def expr def | def -> expr where
+  def :: expr a ::: expr a -> def a
