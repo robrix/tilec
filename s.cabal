@@ -37,7 +37,6 @@ library
     S.Context
     S.Core
     S.Elab
-    S.Eval
     S.Library
     S.Problem
     S.Semiring
@@ -45,6 +44,7 @@ library
     S.Syntax
     S.Syntax.Classes
     S.Syntax.Elab
+    S.Syntax.Eval
     S.Syntax.Free
     S.Syntax.Pretty
     S.Value
