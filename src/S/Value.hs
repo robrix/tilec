@@ -9,3 +9,5 @@ data Value a
   | a :$ Spine (Value a)
   | Type
   | Pi (Value a) (Value a -> Value a)
+
+infixl 9 :$
