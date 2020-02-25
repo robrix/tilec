@@ -18,3 +18,6 @@ class Semiring r => Unital r where
 
 instance Semiring () where
   _ >< _ = ()
+
+instance Unital () where
+  one = ()
