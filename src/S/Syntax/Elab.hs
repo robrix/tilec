@@ -10,8 +10,8 @@ import S.Syntax
 import S.Syntax.Free
 import S.Syntax.Classes
 
-newtype CheckC t m = CheckC { runCheckC :: Term Int Int -> [t] -> m t }
-newtype InferC t m = InferC { runInferC ::                 [t] -> m (t ::: t) }
+newtype CheckC t = CheckC { runCheckC :: Term Int Int -> [t] -> t }
+newtype InferC t = InferC { runInferC ::                 [t] -> t ::: t }
 
-instance (Var Int t, Applicative m) => Var Int (InferC t m) where
-  var n = InferC $ \ ctx -> pure (var n ::: ctx !! n)
+instance Var Int t => Var Int (InferC t) where
+  var n = InferC $ \ ctx -> var n ::: ctx !! n
