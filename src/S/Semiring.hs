@@ -34,3 +34,6 @@ instance Unital b => Unital (a -> b) where
 
 instance Semiring a => Semiring (Maybe a) where
   (><) = liftA2 (><)
+
+instance Unital a => Unital (Maybe a) where
+  one = Just one
