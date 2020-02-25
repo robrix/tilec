@@ -1,2 +1,8 @@
 module S.Semiring
-() where
+( Semiring(..)
+) where
+
+class Semigroup r => Semiring r where
+  (><) :: r -> r -> r
+
+  infixr 7 ><
