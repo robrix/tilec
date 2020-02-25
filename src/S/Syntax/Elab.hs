@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeOperators #-}
-module S.Syntax.Check
+module S.Syntax.Elab
 ( CheckC(..)
 , InferC(..)
 ) where
