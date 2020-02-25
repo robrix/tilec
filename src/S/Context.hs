@@ -36,9 +36,10 @@ data Ctx tm ty (n :: N) where
 infixl 5 :-
 
 (!) :: (Functor tm, Functor ty) => Ctx tm ty n -> Fin n -> Maybe (tm (Fin n)) ::: ty (Fin n)
-(ctx :- t) ! n = case n of
-  FZ   -> let tm ::: ty = t       in fmap (fmap FS) tm ::: fmap FS ty
-  FS n -> let tm ::: ty = ctx ! n in fmap (fmap FS) tm ::: fmap FS ty
-CNil       ! n = case n of {}
+ctx ! n = case (ctx, n) of
+  (CNil, n) -> case n of {}
+  (ctx :- t, n) -> case n of
+    FZ   -> let tm ::: ty = t       in fmap (fmap FS) tm ::: fmap FS ty
+    FS n -> let tm ::: ty = ctx ! n in fmap (fmap FS) tm ::: fmap FS ty
 
 infixl 9 !
