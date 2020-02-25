@@ -1,6 +1,10 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleInstances #-}
 module S.Syntax.Free
 ( Term(..)
 ) where
+
+import S.Syntax.Classes
 
 data Term a
   = Var a
@@ -9,3 +13,6 @@ data Term a
   | Term a :$ Term a
   | Type
   | Pi (Term a) (a -> Term a)
+
+instance Var Term a where
+  var = Var
