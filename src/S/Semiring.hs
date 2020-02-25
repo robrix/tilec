@@ -30,3 +30,7 @@ instance Semiring b => Semiring (a -> b) where
 
 instance Unital b => Unital (a -> b) where
   one = const one
+
+
+instance Semiring a => Semiring (Maybe a) where
+  (><) = liftA2 (><)
