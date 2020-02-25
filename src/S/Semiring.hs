@@ -14,3 +14,7 @@ zero = mempty
 
 class Semiring r => Unital r where
   one :: r
+
+
+instance Semiring () where
+  _ >< _ = ()
