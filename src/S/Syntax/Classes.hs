@@ -7,6 +7,7 @@ module S.Syntax.Classes
 , Type(..)
 , (-->)
 , Prob(..)
+, Err(..)
 , Def(..)
 ) where
 
@@ -40,6 +41,9 @@ class Var a expr => Prob a expr where
   (===) :: expr -> expr -> expr
 
   infixl 4 ===
+
+class Err expr where
+  err :: String -> expr
 
 class Def tm ty a def | def -> tm ty where
   def :: tm a ::: ty a -> def a
