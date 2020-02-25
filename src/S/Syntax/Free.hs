@@ -4,6 +4,7 @@ module S.Syntax.Free
 ( Term(..)
 ) where
 
+import S.Syntax
 import S.Syntax.Classes
 
 data Term a
@@ -16,3 +17,6 @@ data Term a
 
 instance Var Term a where
   var = Var
+
+instance Let Term a where
+  let' (tm ::: ty) = Let tm ty
