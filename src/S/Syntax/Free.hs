@@ -24,3 +24,5 @@ instance Let Term a where
 instance Lam Term a where
   lam = Lam
   ($$) = (:$)
+
+infixl 9 :$
