@@ -10,7 +10,7 @@ import S.Syntax
 import S.Syntax.Free
 import S.Syntax.Classes
 
-newtype CheckC t m a = CheckC { runCheckC :: Term a a -> [t a] -> m (t a ::: t a) }
+newtype CheckC t m a = CheckC { runCheckC :: Term a a -> [t a] -> m (t a) }
 newtype InferC t m a = InferC { runInferC ::             [t a] -> m (t a ::: t a) }
 
 instance (Var t Int, Applicative m) => Var (InferC t m) Int where
