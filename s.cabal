@@ -44,6 +44,7 @@ library
     S.Syntax
     S.Syntax.Classes
     S.Syntax.Elab
+    S.Syntax.Free
     S.Syntax.Pretty
     S.Value
   -- other-modules:
