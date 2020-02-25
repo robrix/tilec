@@ -33,23 +33,23 @@ instance Monad (Term a) where
     Type        -> Type
     Pi t b      -> Pi (t >>= f) (b >=> f)
 
-instance Var a (Term a) where
+instance Var a (Term a a) where
   var = Var
 
-instance Let a (Term a) where
+instance Let a (Term a a) where
   let' (tm ::: ty) = Let tm ty
 
-instance Lam a (Term a) where
+instance Lam a (Term a a) where
   lam = Lam
   ($$) = (:$)
 
-instance Type a (Term a) where
+instance Type a (Term a a) where
   type' = Type
   pi' = Pi
 
 infixl 9 :$
 
-interpret :: (Let a t, Lam a t, Type a t) => Term a a -> t a
+interpret :: (Let a t, Lam a t, Type a t) => Term a a -> t
 interpret = \case
   Var v       -> var v
   Let tm ty b -> let' (interpret tm ::: interpret ty) (interpret . b)
