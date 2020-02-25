@@ -4,6 +4,8 @@ module S.Semiring
 , Unital(..)
 ) where
 
+import Control.Applicative (liftA2)
+
 class Semigroup r => Semiring r where
   (><) :: r -> r -> r
 
@@ -21,3 +23,7 @@ instance Semiring () where
 
 instance Unital () where
   one = ()
+
+
+instance Semiring b => Semiring (a -> b) where
+  (><) = liftA2 (><)
