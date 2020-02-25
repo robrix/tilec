@@ -16,31 +16,31 @@ module S.Library
 import Prelude hiding (maybe)
 import S.Syntax.Classes
 
-bool :: Type expr a => expr a
+bool :: Type a expr => expr a
 bool = type' `pi'` \ a -> var a --> var a --> var a
 
-true :: Lam expr a => expr a
+true :: Lam a expr => expr a
 true = lam (lam . const . var)
 
-false :: Lam expr a => expr a
+false :: Lam a expr => expr a
 false = lam (const (lam var))
 
 
-maybe :: Type expr a => expr a
+maybe :: Type a expr => expr a
 maybe = type' `pi'` \ a -> type' `pi'` \ r -> var r --> (var a --> var r) --> var r
 
-nothing :: Lam expr a => expr a
+nothing :: Lam a expr => expr a
 nothing = lam (lam . const . var)
 
-just :: Lam expr a => expr a
+just :: Lam a expr => expr a
 just = lam (const (lam var))
 
 
-nat :: Type expr a => expr a
+nat :: Type a expr => expr a
 nat = type' `pi'` \ r -> var r --> (var r --> var r) --> var r
 
-z :: Lam expr a => expr a
+z :: Lam a expr => expr a
 z = lam (lam . const . var)
 
-s :: Lam expr a => expr a
+s :: Lam a expr => expr a
 s = lam (\ x -> lam (const (lam (\ s -> var s $$ var x))))

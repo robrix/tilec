@@ -17,17 +17,17 @@ newtype PrettyC a = PrettyC { runPrettyC :: Last Int -> (Last Int, Endo String) 
 instance Show (PrettyC a) where
   showsPrec _ (PrettyC run) = appEndo (snd (run (Last 0)))
 
-instance Show a => Var PrettyC a where
+instance Show a => Var a PrettyC where
   var = word . (showChar '_' .) . shows
 
-instance (Num a, Show a) => Let PrettyC a where
+instance (Num a, Show a) => Let a PrettyC where
   let' (tm ::: ty) b = fresh (\ v -> kw "let" <+> var v <+> kw "=" <+> tm <+> kw ":" <+> ty <+> kw "in" <+> b v)
 
-instance (Num a, Show a) => Lam PrettyC a where
+instance (Num a, Show a) => Lam a PrettyC where
   lam f  = fresh $ \ v -> kw "\\" <+> var v <+> kw "." <+> f v
   f $$ a = f <+> a
 
-instance (Num a, Show a) => Type PrettyC a where
+instance (Num a, Show a) => Type a PrettyC where
   type' = kw "Type"
   pi' t f = fresh $ \ v -> parens (var v <+> kw ":" <+> t) <+> kw "->" <+> f v
 

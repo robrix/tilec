@@ -12,30 +12,30 @@ module S.Syntax.Classes
 
 import S.Syntax
 
-class Var expr a where
+class Var a expr where
   var :: a -> expr a
 
-class Var expr a => Let expr a where
+class Var a expr => Let a expr where
   let' :: expr a ::: expr a -> (a -> expr a) -> expr a
 
-class Var expr a => Lam expr a where
+class Var a expr => Lam a expr where
   lam :: (a -> expr a) -> expr a
   ($$) :: expr a -> expr a -> expr a
 
   infixl 9 $$
 
-class Var expr a => Type expr a where
+class Var a expr => Type a expr where
   type' :: expr a
   pi' :: expr a -> (a -> expr a) -> expr a
 
   infixr 0 `pi'`
 
-(-->) :: Type expr a => expr a -> expr a -> expr a
+(-->) :: Type a expr => expr a -> expr a -> expr a
 a --> b = a `pi'` const b
 
 infixr 0 -->
 
-class Var expr a => Prob expr a where
+class Var a expr => Prob a expr where
   ex :: expr a -> (a -> expr a) -> expr a
   (===) :: expr a -> expr a -> expr a
 

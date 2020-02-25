@@ -13,5 +13,5 @@ import S.Syntax.Classes
 newtype CheckC t m a = CheckC { runCheckC :: Term a a -> [t a] -> m (t a) }
 newtype InferC t m a = InferC { runInferC ::             [t a] -> m (t a ::: t a) }
 
-instance (Var t Int, Applicative m) => Var (InferC t m) Int where
+instance (Var Int t, Applicative m) => Var Int (InferC t m) where
   var n = InferC $ \ ctx -> pure (var n ::: ctx !! n)
