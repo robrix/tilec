@@ -1,8 +1,10 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 module S.Syntax.Free
 ( Term(..)
+, interpret
 ) where
 
 import S.Syntax
@@ -32,3 +34,12 @@ instance Type (Term a) a where
   pi' = Pi
 
 infixl 9 :$
+
+interpret :: (Let t a, Lam t a, Type t a) => Term a a -> t a
+interpret = \case
+  Var v       -> var v
+  Let tm ty b -> let' (interpret tm ::: interpret ty) (interpret . b)
+  Lam b       -> lam (interpret . b)
+  f :$ a      -> interpret f $$ interpret a
+  Type        -> type'
+  Pi t b      -> interpret t `pi'` interpret . b
