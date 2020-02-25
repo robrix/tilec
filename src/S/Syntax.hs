@@ -9,6 +9,7 @@ module S.Syntax
 ( (:::)(..)
 , (:=)(..)
 , Spine(..)
+, (!?)
 , N(..)
 , Fin(..)
 , Vec(..)
@@ -47,6 +48,13 @@ instance Monoid (Spine a) where
 instance Eq1 Spine where liftEq = liftEqDefault
 instance Ord1 Spine where liftCompare = liftCompareDefault
 instance Show1 Spine where liftShowsPrec = liftShowsPrecDefault
+
+(!?) :: Spine a -> Int -> Maybe a
+Nil        !? _ = Nothing
+(_   :> a) !? 0 = Just a
+(ctx :> _) !? n = ctx !? (n - 1)
+
+infixl 9 !?
 
 
 data N = Z | S N
