@@ -15,9 +15,6 @@ import S.Syntax.Classes
 
 newtype CheckC a = CheckC { runCheckC :: () }
 
-instance Def CheckC CheckC (Fin 'Z) CheckC where
-  def _ = CheckC ()
-
 
 data InferC tm ty m a where
   InferC :: { runInferC :: Ctx tm ty n -> m (tm (Fin n) ::: ty (Fin n)) } -> InferC tm ty m (Fin n)
