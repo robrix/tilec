@@ -1,6 +1,7 @@
 module S.Semiring
 ( Semiring(..)
 , zero
+, Unital(..)
 ) where
 
 class Semigroup r => Semiring r where
@@ -10,3 +11,6 @@ class Semigroup r => Semiring r where
 
 zero :: Monoid m => m
 zero = mempty
+
+class Semiring r => Unital r where
+  one :: r
