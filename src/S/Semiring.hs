@@ -29,11 +29,11 @@ instance Semiring b => Semiring (a -> b) where
   (><) = liftA2 (><)
 
 instance Unital b => Unital (a -> b) where
-  one = const one
+  one = pure one
 
 
 instance Semiring a => Semiring (Maybe a) where
   (><) = liftA2 (><)
 
 instance Unital a => Unital (Maybe a) where
-  one = Just one
+  one = pure one
