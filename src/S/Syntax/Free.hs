@@ -20,3 +20,7 @@ instance Var Term a where
 
 instance Let Term a where
   let' (tm ::: ty) = Let tm ty
+
+instance Lam Term a where
+  lam = Lam
+  ($$) = (:$)
