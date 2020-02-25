@@ -25,4 +25,8 @@ instance Lam Term a where
   lam = Lam
   ($$) = (:$)
 
+instance Type Term a where
+  type' = Type
+  pi' = Pi
+
 infixl 9 :$
