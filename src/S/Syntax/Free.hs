@@ -7,6 +7,7 @@ module S.Syntax.Free
 , interpret
 ) where
 
+import Control.Monad (ap, (>=>))
 import S.Syntax
 import S.Syntax.Classes
 
@@ -18,6 +19,19 @@ data Term a b
   | Type
   | Pi (Term a b) (a -> Term a b)
   deriving (Functor)
+
+instance Applicative (Term a) where
+  pure = Var
+  (<*>) = ap
+
+instance Monad (Term a) where
+  t >>= f = case t of
+    Var a       -> f a
+    Let tm ty b -> Let (tm >>= f) (ty >>= f) (b >=> f)
+    Lam b       -> Lam (b >=> f)
+    g :$ a      -> (g >>= f) :$ (a >>= f)
+    Type        -> Type
+    Pi t b      -> Pi (t >>= f) (b >=> f)
 
 instance Var (Term a) a where
   var = Var
