@@ -13,7 +13,8 @@ import S.Context
 import S.Syntax
 import S.Syntax.Classes
 
-newtype CheckC a = CheckC { runCheckC :: () }
+data CheckC tm ty m a where
+  CheckC :: { runCheckC :: Ctx tm ty n -> m (tm (Fin n)) } -> CheckC tm ty m (Fin n)
 
 
 data InferC tm ty m a where
