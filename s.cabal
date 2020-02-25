@@ -40,6 +40,7 @@ library
     S.Eval
     S.Library
     S.Problem
+    S.Semiring
     S.Surface
     S.Syntax
     S.Syntax.Classes
