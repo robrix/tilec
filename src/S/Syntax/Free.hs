@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 module S.Syntax.Free
@@ -14,6 +15,7 @@ data Term a b
   | Term a b :$ Term a b
   | Type
   | Pi (Term a b) (a -> Term a b)
+  deriving (Functor)
 
 instance Var (Term a) a where
   var = Var
