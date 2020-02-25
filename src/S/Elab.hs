@@ -35,7 +35,9 @@ infer :: MonadFail m => Ctx Core.Term Core.Term n -> Problem.Term (Fin n) -> m (
 infer ctx = \case
   Problem.Var n -> let _ ::: ty = ctx ! n in pure (pure n ::: ty)
 
-  Problem.Lam _ -> fail "no rule to infer lambda abstractions"
+  Problem.Let{} -> fail "no rule to infer let bindings"
+
+  Problem.Lam{} -> fail "no rule to infer lambda abstractions"
 
   f Problem.:$ a -> do
     f' ::: tf <- infer ctx f
@@ -51,5 +53,3 @@ infer ctx = \case
     t' <- check ctx (t ::: Core.Type)
     b' <- check (ctx :- (Nothing ::: t')) (instantiateFin b ::: Core.Type)
     pure (Core.Pi t' (abstractFin b') ::: Core.Type)
-
-  _ -> fail "no rule to infer"
