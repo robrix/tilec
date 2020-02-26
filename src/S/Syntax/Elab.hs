@@ -3,6 +3,11 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
+-- | Elaboration, implemented as a mash-up of:
+--
+-- * [An Algebraic Approach to Typechecking and Elaboration](https://bentnib.org/posts/2015-04-19-algebraic-approach-typechecking-and-elaboration.html), Bob Atkey
+-- * Typed Tagless Final Interpreters, Oleg Kiselyov
+-- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module S.Syntax.Elab
 ( ElabC(..)
 ) where
