@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE UndecidableInstances #-}
 module S.Pretty
 ( putDoc
 , Doc(..)
@@ -8,6 +9,7 @@ module S.Pretty
 , Rainbow(..)
 ) where
 
+import           Control.Applicative (liftA2)
 import           Control.Monad.IO.Class
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
@@ -45,3 +47,12 @@ rainbow = (`runRainbow` 0)
 
 newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
+
+instance Doc ann doc => Doc ann (Rainbow doc) where
+  pretty = Rainbow . const . pretty
+
+  annotate = fmap . annotate
+
+  (<+>) = liftA2 (<+>)
+
+  parens (Rainbow run) = Rainbow (run . (1 +))
