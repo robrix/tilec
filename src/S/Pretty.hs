@@ -5,6 +5,7 @@
 module S.Pretty
 ( putDoc
 , Doc(..)
+, enclose
 , rainbow
 , Rainbow(..)
 ) where
@@ -62,6 +63,9 @@ instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   brackets = brackets *** brackets
 
   braces = braces *** braces
+
+enclose :: Doc ann doc => doc -> doc -> doc -> doc
+enclose l r x = l <> x <> r
 
 
 rainbow :: Rainbow doc -> doc
