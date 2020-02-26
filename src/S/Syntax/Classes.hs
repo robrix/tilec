@@ -65,5 +65,8 @@ instance (Prob a expr1, Prob a expr2) => Prob a (expr1 ::: expr2) where
 class Err expr where
   err :: String -> expr
 
+instance (Err expr1, Err expr2) => Err (expr1 ::: expr2) where
+  err s = err s ::: err s
+
 class Def tm ty a def | def -> tm ty where
   def :: tm a ::: ty a -> def a
