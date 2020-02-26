@@ -3,8 +3,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TupleSections #-}
 module S.Syntax.Pretty
-( PrettyC(..)
-, prettyPrint
+( prettyPrint
+, PrettyC(..)
 , putDoc
 ) where
 
@@ -16,6 +16,9 @@ import           S.Syntax
 import           S.Syntax.Classes
 import           System.Console.Terminal.Size as Size
 import           System.IO (stdout)
+
+prettyPrint :: MonadIO m => PrettyC -> m ()
+prettyPrint (PrettyC run) = putDoc (snd (run (Last 0)))
 
 newtype PrettyC = PrettyC { runPrettyC :: Last Int -> (Last Int, PP.Doc ANSI.AnsiStyle) }
   deriving (Semigroup)
@@ -55,9 +58,6 @@ parens c = kw "(" <> c <> kw ")"
 fresh :: (Int -> PrettyC) -> PrettyC
 fresh f = PrettyC $ \ v -> runPrettyC (f (getLast v)) ((1 +) <$> v)
 
-
-prettyPrint :: (PP.Pretty a, MonadIO m) => a -> m ()
-prettyPrint = putDoc . PP.pretty
 
 putDoc :: MonadIO m => PP.Doc ANSI.AnsiStyle -> m ()
 putDoc doc = do
