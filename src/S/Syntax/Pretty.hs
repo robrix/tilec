@@ -75,5 +75,7 @@ instance Doc Highlight PrettyC where
 
   parens c = kw "(" <> c <> kw ")"
 
+  toDoc (PrettyC run) = snd (run (Last 0))
+
 fresh :: (Int -> PrettyC) -> PrettyC
 fresh f = PrettyC $ \ v -> runPrettyC (f (getLast v)) ((1 +) <$> v)
