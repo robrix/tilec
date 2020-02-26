@@ -17,3 +17,6 @@ putDoc doc = do
 
 class Doc doc where
   pretty :: PP.Pretty a => a -> doc ann
+
+instance Doc PP.Doc where
+  pretty = PP.pretty
