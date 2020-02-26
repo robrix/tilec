@@ -23,7 +23,6 @@ class Monoid doc => Doc ann doc | doc -> ann where
   annotate :: ann -> doc -> doc
 
   (<+>) :: doc -> doc -> doc
-
   infixr 6 <+>
 
   parens :: doc -> doc
