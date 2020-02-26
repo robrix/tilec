@@ -35,6 +35,9 @@ defaultStyle = \case
 newtype PrettyC = PrettyC { runPrettyC :: Last Int -> (Last Int, PP.Doc Highlight) }
   deriving (Semigroup)
 
+instance Monoid PrettyC where
+  mempty = PrettyC (, mempty)
+
 instance Show PrettyC where
   showsPrec p (PrettyC run) = showsPrec p (snd (run (Last 0)))
 
