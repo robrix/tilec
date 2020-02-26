@@ -11,6 +11,7 @@ module S.Syntax.Pretty
 , Highlight(..)
 ) where
 
+import           Control.Applicative ((<**>))
 import           Control.Monad.IO.Class
 import           Data.Semigroup (Last(..))
 import qualified Data.Text.Prettyprint.Doc as PP
@@ -22,17 +23,32 @@ import           S.Syntax.Classes
 prettyPrint :: MonadIO m => PrettyC -> m ()
 prettyPrint = prettyPrintWith defaultStyle
 
-prettyPrintWith :: MonadIO m => (Highlight -> ANSI.AnsiStyle) -> PrettyC -> m ()
+prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> PrettyC -> m ()
 prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc
 
-defaultStyle :: Highlight -> ANSI.AnsiStyle
+defaultStyle :: Highlight Int -> ANSI.AnsiStyle
 defaultStyle = \case
   Var -> mempty
   Op -> ANSI.color ANSI.Cyan
   Type -> ANSI.color ANSI.Yellow
   Keyword -> ANSI.color ANSI.Magenta
+  Nest i -> colours !! (i `mod` len)
+  where
+  colours =
+    [ ANSI.Black
+    , ANSI.Red
+    , ANSI.Green
+    , ANSI.Yellow
+    , ANSI.Blue
+    , ANSI.Magenta
+    , ANSI.Cyan
+    , ANSI.White
+    ]
+    <**>
+    [ANSI.color, ANSI.colorDull]
+  len = length colours
 
-newtype PrettyC = PrettyC { runPrettyC :: Last Int -> (Last Int, PP.Doc Highlight) }
+newtype PrettyC = PrettyC { runPrettyC :: Last Int -> (Last Int, PP.Doc (Highlight Int)) }
   deriving (Semigroup)
 
 instance Monoid PrettyC where
@@ -56,11 +72,12 @@ instance Type Int PrettyC where
   pi' t f = fresh $ \ v -> parens (var v <+> op ":" <+> t) <+> op "->" <+> f v
 
 
-data Highlight
+data Highlight a
   = Var
   | Op
   | Type
   | Keyword
+  | Nest a
   deriving (Eq, Ord, Show)
 
 kw :: String -> PrettyC
@@ -69,12 +86,12 @@ kw = annotate Keyword . pretty
 op :: String -> PrettyC
 op = annotate Op . pretty
 
-instance Doc Highlight PrettyC where
+instance Doc (Highlight Int) PrettyC where
   pretty = PrettyC . flip (,) . pretty
 
   annotate h (PrettyC run) = PrettyC (fmap (annotate h) . run)
 
-toDoc :: PrettyC -> PP.Doc Highlight
+toDoc :: PrettyC -> PP.Doc (Highlight Int)
 toDoc (PrettyC run) = snd (run (Last 0))
 
 fresh :: (Int -> PrettyC) -> PrettyC
