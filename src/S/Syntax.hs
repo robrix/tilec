@@ -26,7 +26,10 @@ import Data.Functor.Classes.Generic
 import GHC.Generics (Generic1)
 
 newtype a ::: b = Ascribe (a, b)
-  deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
+  deriving (Eq, Foldable, Functor, Ord, Traversable)
+
+instance (Show a, Show b) => Show (a ::: b) where
+  showsPrec p (a ::: b) = showParen (p > 0) (shows a . showString " ::: " . showsPrec 1 b)
 
 pattern (:::) :: a -> b -> a ::: b
 pattern a ::: b = Ascribe (a, b)
