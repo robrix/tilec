@@ -81,6 +81,16 @@ data Highlight a
   | Nest a
   deriving (Eq, Functor, Ord, Show)
 
+instance Applicative Highlight where
+  pure = Nest
+  f <*> a = case f of
+    Var     -> Var
+    Op      -> Op
+    Type    -> Type
+    Keyword -> Keyword
+    Nest f  -> f <$> a
+
+
 kw :: String -> PrettyC
 kw = annotate Keyword . pretty
 
