@@ -24,11 +24,11 @@ import Data.Functor.Classes
 import Data.Functor.Classes.Generic
 import GHC.Generics (Generic1)
 
-newtype a ::: b = Pair (a, b)
+newtype a ::: b = Ascribe (a, b)
   deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
 pattern (:::) :: a -> b -> a ::: b
-pattern a ::: b = Pair (a, b)
+pattern a ::: b = Ascribe (a, b)
 
 {-# COMPLETE (:::) #-}
 
