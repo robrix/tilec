@@ -33,10 +33,13 @@ class Monoid doc => Doc ann doc | doc -> ann where
   infixr 6 <+>
 
   parens :: doc -> doc
+  parens = enclose (pretty "(") (pretty ")")
 
   brackets :: doc -> doc
+  brackets = enclose (pretty "[") (pretty "]")
 
   braces :: doc -> doc
+  braces = enclose (pretty "{") (pretty "}")
 
 instance Doc ann (PP.Doc ann) where
   pretty = PP.pretty
@@ -45,24 +48,12 @@ instance Doc ann (PP.Doc ann) where
 
   (<+>) = (PP.<+>)
 
-  parens = PP.parens
-
-  brackets = PP.brackets
-
-  braces = PP.braces
-
 instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   pretty = pretty &&& pretty
 
   annotate a = annotate a *** annotate a
 
   (a1, b1) <+> (a2, b2) = (a1 <+> a2, b1 <+> b2)
-
-  parens = parens *** parens
-
-  brackets = brackets *** brackets
-
-  braces = braces *** braces
 
 enclose :: Doc ann doc => doc -> doc -> doc -> doc
 enclose l r x = l <> x <> r
@@ -82,8 +73,3 @@ instance Doc ann doc => Doc ann (Rainbow doc) where
   (<+>) = liftA2 (<+>)
 
   -- FIXME: what do we need to annotate accordingly? Enum instance maybe?
-  parens (Rainbow run) = Rainbow $ \ l -> pretty '(' <> run (1 + l) <> pretty ')'
-
-  brackets (Rainbow run) = Rainbow $ \ l -> pretty '[' <> run (1 + l) <> pretty ']'
-
-  braces (Rainbow run) = Rainbow $ \ l -> pretty '{' <> run (1 + l) <> pretty '}'
