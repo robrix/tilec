@@ -15,7 +15,7 @@ import           Control.Monad.IO.Class
 import           Data.Semigroup (Last(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
-import           S.Pretty (putDoc)
+import           S.Pretty
 import           S.Syntax
 import           S.Syntax.Classes
 
@@ -69,13 +69,14 @@ kw = highlight Keyword . PP.pretty
 op :: String -> PrettyC
 op = highlight Op . PP.pretty
 
-(<+>) :: PrettyC -> PrettyC -> PrettyC
-l <+> r = l <> PrettyC (, PP.pretty ' ') <> r
+instance Doc Highlight PrettyC where
+  pretty = PrettyC . flip (,) . pretty
 
-infixr 6 <+>
+  annotate h (PrettyC run) = PrettyC (fmap (annotate h) . run)
 
-parens :: PrettyC -> PrettyC
-parens c = kw "(" <> c <> kw ")"
+  l <+> r = l <> PrettyC (, pretty ' ') <> r
+
+  parens c = kw "(" <> c <> kw ")"
 
 fresh :: (Int -> PrettyC) -> PrettyC
 fresh f = PrettyC $ \ v -> runPrettyC (f (getLast v)) ((1 +) <$> v)
