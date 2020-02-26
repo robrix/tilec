@@ -28,6 +28,19 @@ instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (ElabC t) where
         tm' ::: ttm' = elab ctx tm
     in let' ((tm' ::: ttm' === ty') ::: (ty' ::: tty' === type')) (elab (ctx :> ty') . b)
 
+instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (ElabC t) where
+  lam b = ElabC $ \ ctx ->
+    type' `ex` \ _A ->
+    type' `ex` \ _B ->
+    lam (term_ . elab (ctx :> var _A) . b) ::: (var _A `pi'` const (var _B))
+  f $$ a = ElabC $ \ ctx ->
+    type' `ex` \ _A ->
+    type' `ex` \ _B ->
+    let f' ::: tf' = elab ctx f
+        a' ::: ta' = elab ctx a
+        _F = (ta' === var _A) `pi'` const (var _B)
+    in f' $$ a' ::: (tf' === _F) $$ a'
+
 instance (Prob Int t, Type Int t, Err t) => Type Int (ElabC t) where
   type' = ElabC (const type')
   pi' t b = ElabC $ \ ctx ->
