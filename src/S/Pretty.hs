@@ -3,6 +3,7 @@
 module S.Pretty
 ( putDoc
 , Doc(..)
+, Rainbow(..)
 ) where
 
 import           Control.Monad.IO.Class
@@ -35,3 +36,6 @@ instance Doc ann (PP.Doc ann) where
   (<+>) = (PP.<+>)
 
   parens = PP.parens
+
+
+newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
