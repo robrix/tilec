@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module S.Pretty
 ( putDoc
 , Doc(..)
@@ -43,3 +44,4 @@ rainbow :: Rainbow doc -> doc
 rainbow = (`runRainbow` 0)
 
 newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
+  deriving (Monoid, Semigroup)
