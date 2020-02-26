@@ -20,7 +20,13 @@ class Doc doc where
 
   annotate :: ann -> doc ann -> doc ann
 
+  (<+>) :: doc ann -> doc ann -> doc ann
+
+  infixr 6 <+>
+
 instance Doc PP.Doc where
   pretty = PP.pretty
 
   annotate = PP.annotate
+
+  (<+>) = (PP.<+>)
