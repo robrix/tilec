@@ -58,6 +58,10 @@ class Var a expr => Prob a expr where
 
   infixl 4 ===
 
+instance (Prob a expr1, Prob a expr2) => Prob a (expr1 ::: expr2) where
+  ex (t1 ::: t2) b = ex t1 (term_ . b) ::: ex t2 (type_ . b)
+  (tm1 ::: ty1) === (tm2 ::: ty2) = tm1 === tm2 ::: ty1 === ty2
+
 class Err expr where
   err :: String -> expr
 
