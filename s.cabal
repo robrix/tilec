@@ -38,6 +38,7 @@ library
     S.Core
     S.Elab
     S.Library
+    S.Pretty
     S.Problem
     S.Semiring
     S.Surface
