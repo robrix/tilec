@@ -62,11 +62,11 @@ rainbow = (`runRainbow` 0)
 newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
-instance (Doc ann doc, Enum ann) => Doc ann (Rainbow doc) where
+instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) where
   pretty = Rainbow . const . pretty
 
   annotate = fmap . annotate
 
-  parens   (Rainbow run) = Rainbow $ \ l -> annotate (toEnum l) (pretty '(') <> run (1 + l) <> annotate (toEnum l) (pretty ')')
-  brackets (Rainbow run) = Rainbow $ \ l -> annotate (toEnum l) (pretty '[') <> run (1 + l) <> annotate (toEnum l) (pretty ']')
-  braces   (Rainbow run) = Rainbow $ \ l -> annotate (toEnum l) (pretty '{') <> run (1 + l) <> annotate (toEnum l) (pretty '}')
+  parens   (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '(') <> run (1 + l) <> annotate (pure l) (pretty ')')
+  brackets (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '[') <> run (1 + l) <> annotate (pure l) (pretty ']')
+  braces   (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '{') <> run (1 + l) <> annotate (pure l) (pretty '}')
