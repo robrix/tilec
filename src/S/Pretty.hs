@@ -62,9 +62,11 @@ rainbow = (`runRainbow` 0)
 newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
-instance Doc ann doc => Doc ann (Rainbow doc) where
+instance (Doc ann doc, Enum ann) => Doc ann (Rainbow doc) where
   pretty = Rainbow . const . pretty
 
   annotate = fmap . annotate
 
-  -- FIXME: what do we need to annotate accordingly? Enum instance maybe?
+  parens   (Rainbow run) = Rainbow $ \ l -> annotate (toEnum l) (pretty '(') <> run (1 + l) <> annotate (toEnum l) (pretty ')')
+  brackets (Rainbow run) = Rainbow $ \ l -> annotate (toEnum l) (pretty '[') <> run (1 + l) <> annotate (toEnum l) (pretty ']')
+  braces   (Rainbow run) = Rainbow $ \ l -> annotate (toEnum l) (pretty '{') <> run (1 + l) <> annotate (toEnum l) (pretty '}')
