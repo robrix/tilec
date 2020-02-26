@@ -9,17 +9,15 @@ module S.Syntax.Pretty
 , defaultStyle
 , PrettyC(..)
 , Highlight(..)
-, putDoc
 ) where
 
 import           Control.Monad.IO.Class
 import           Data.Semigroup (Last(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
+import           S.Pretty
 import           S.Syntax
 import           S.Syntax.Classes
-import           System.Console.Terminal.Size as Size
-import           System.IO (stdout)
 
 prettyPrint :: MonadIO m => PrettyC -> m ()
 prettyPrint = prettyPrintWith defaultStyle
@@ -81,9 +79,3 @@ parens c = kw "(" <> c <> kw ")"
 
 fresh :: (Int -> PrettyC) -> PrettyC
 fresh f = PrettyC $ \ v -> runPrettyC (f (getLast v)) ((1 +) <$> v)
-
-
-putDoc :: MonadIO m => PP.Doc ANSI.AnsiStyle -> m ()
-putDoc doc = do
-  s <- maybe 80 Size.width <$> liftIO size
-  liftIO (ANSI.renderIO stdout (PP.layoutSmart PP.defaultLayoutOptions { PP.layoutPageWidth = PP.AvailablePerLine s 0.8 } (doc <> PP.line)))
