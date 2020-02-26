@@ -24,6 +24,9 @@ instance (Var a expr1, Var a expr2) => Var a (expr1 ::: expr2) where
 class Var a expr => Let a expr where
   let' :: expr ::: expr -> (a -> expr) -> expr
 
+instance (Let a expr1, Let a expr2) => Let a (expr1 ::: expr2) where
+  let' ((tm1 ::: tm2) ::: (ty1 ::: ty2)) b = let' (tm1 ::: ty1) (term_ . b) ::: let' (tm2 ::: ty2) (type_ . b)
+
 class Var a expr => Lam a expr where
   lam :: (a -> expr) -> expr
   ($$) :: expr -> expr -> expr
