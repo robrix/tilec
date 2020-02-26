@@ -15,7 +15,7 @@ import           Control.Monad.IO.Class
 import           Data.Semigroup (Last(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
-import           S.Pretty
+import           S.Pretty (putDoc)
 import           S.Syntax
 import           S.Syntax.Classes
 
