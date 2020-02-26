@@ -55,4 +55,4 @@ instance Doc ann doc => Doc ann (Rainbow doc) where
 
   (<+>) = liftA2 (<+>)
 
-  parens (Rainbow run) = pretty '(' <> Rainbow (run . (1 +)) <> pretty ')'
+  parens (Rainbow run) = Rainbow $ \ l -> pretty '(' <> run (1 + l) <> pretty ')'
