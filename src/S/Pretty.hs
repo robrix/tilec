@@ -35,6 +35,8 @@ class Monoid doc => Doc ann doc | doc -> ann where
 
   brackets :: doc -> doc
 
+  braces :: doc -> doc
+
 instance Doc ann (PP.Doc ann) where
   pretty = PP.pretty
 
@@ -46,6 +48,8 @@ instance Doc ann (PP.Doc ann) where
 
   brackets = PP.brackets
 
+  braces = PP.braces
+
 instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   pretty = pretty &&& pretty
 
@@ -56,6 +60,8 @@ instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   parens = parens *** parens
 
   brackets = brackets *** brackets
+
+  braces = braces *** braces
 
 
 rainbow :: Rainbow doc -> doc
@@ -74,3 +80,5 @@ instance Doc ann doc => Doc ann (Rainbow doc) where
   parens (Rainbow run) = Rainbow $ \ l -> pretty '(' <> run (1 + l) <> pretty ')'
 
   brackets (Rainbow run) = Rainbow $ \ l -> pretty '[' <> run (1 + l) <> pretty ']'
+
+  braces (Rainbow run) = Rainbow $ \ l -> pretty '{' <> run (1 + l) <> pretty '}'
