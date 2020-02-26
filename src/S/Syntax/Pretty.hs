@@ -78,6 +78,8 @@ instance Doc Highlight PrettyC where
 
   parens c = kw "(" <> c <> kw ")"
 
+  brackets c = kw "[" <> c <> kw "]"
+
 toDoc :: PrettyC -> PP.Doc Highlight
 toDoc (PrettyC run) = snd (run (Last 0))
 
