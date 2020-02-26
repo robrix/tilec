@@ -5,6 +5,7 @@
 module S.Syntax.Pretty
 ( prettyPrint
 , PrettyC(..)
+, Highlight(..)
 , putDoc
 ) where
 
@@ -40,6 +41,13 @@ instance Type Int PrettyC where
   type' = kw "Type"
   pi' t f = fresh $ \ v -> parens (var v <+> op ":" <+> t) <+> op "->" <+> f v
 
+
+data Highlight
+  = Var
+  | Op
+  | Type
+  | Keyword
+  deriving (Eq, Ord, Show)
 
 word :: PP.Doc ANSI.AnsiStyle -> PrettyC
 word s = PrettyC (, s)
