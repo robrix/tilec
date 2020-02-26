@@ -1,5 +1,7 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 module S.Syntax.Classes
 ( Var(..)
 , Let(..)
@@ -15,6 +17,9 @@ import S.Syntax
 
 class Var a expr | expr -> a where
   var :: a -> expr
+
+instance (Var a expr1, Var a expr2) => Var a (expr1 ::: expr2) where
+  var a = var a ::: var a
 
 class Var a expr => Let a expr where
   let' :: expr ::: expr -> (a -> expr) -> expr
