@@ -33,6 +33,10 @@ class Var a expr => Lam a expr where
 
   infixl 9 $$
 
+instance (Lam a expr1, Lam a expr2) => Lam a (expr1 ::: expr2) where
+  lam b = lam (term_ . b) ::: lam (type_ . b)
+  (f1 ::: f2) $$ (a1 ::: a2) = f1 $$ a1 ::: f2 $$ a2
+
 class Var a expr => Type a expr where
   type' :: expr
   pi' :: expr -> (a -> expr) -> expr
