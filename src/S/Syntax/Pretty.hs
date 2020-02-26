@@ -9,7 +9,6 @@ module S.Syntax.Pretty
 ) where
 
 import           Control.Monad.IO.Class
-import           Data.Monoid (Endo(..))
 import           Data.Semigroup (Last(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
@@ -18,14 +17,14 @@ import           S.Syntax.Classes
 import           System.Console.Terminal.Size as Size
 import           System.IO (stdout)
 
-newtype PrettyC = PrettyC { runPrettyC :: Last Int -> (Last Int, Endo String) }
+newtype PrettyC = PrettyC { runPrettyC :: Last Int -> (Last Int, PP.Doc ANSI.AnsiStyle) }
   deriving (Semigroup)
 
 instance Show PrettyC where
-  showsPrec _ (PrettyC run) = appEndo (snd (run (Last 0)))
+  showsPrec p (PrettyC run) = showsPrec p (snd (run (Last 0)))
 
 instance Var Int PrettyC where
-  var = word . (showChar '_' .) . shows
+  var = word . (PP.pretty '_' <>) . PP.pretty
 
 instance Let Int PrettyC where
   let' (tm ::: ty) b = fresh (\ v -> kw "let" <+> var v <+> kw "=" <+> tm <+> kw ":" <+> ty <+> kw "in" <+> b v)
@@ -39,14 +38,14 @@ instance Type Int PrettyC where
   pi' t f = fresh $ \ v -> parens (var v <+> kw ":" <+> t) <+> kw "->" <+> f v
 
 
-word :: ShowS -> PrettyC
-word s = PrettyC (, Endo s)
+word :: PP.Doc ANSI.AnsiStyle -> PrettyC
+word s = PrettyC (, s)
 
 kw :: String -> PrettyC
-kw = word . showString
+kw = word . PP.pretty
 
 (<+>) :: PrettyC -> PrettyC -> PrettyC
-l <+> r = l <> word (showChar ' ') <> r
+l <+> r = l <> word (PP.pretty ' ') <> r
 
 infixr 6 <+>
 
