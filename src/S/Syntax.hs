@@ -13,6 +13,7 @@ module S.Syntax
 , term_
 , type_
 , (:=)(..)
+, pattern (:=)
 , Spine(..)
 , (!?)
 , N(..)
@@ -41,8 +42,13 @@ type_ :: a ::: b -> b
 type_ (_ ::: b) = b
 
 
-data a := b = a := b
+newtype a := b = Define (a, b)
   deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
+
+pattern (:=) :: a -> b -> a := b
+pattern a := b = Define (a, b)
+
+{-# COMPLETE (:=) #-}
 
 infixl 0 :=
 
