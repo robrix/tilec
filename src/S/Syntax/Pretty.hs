@@ -5,6 +5,7 @@
 {-# LANGUAGE TupleSections #-}
 module S.Syntax.Pretty
 ( prettyPrint
+, prettyPrintWith
 , defaultStyle
 , PrettyC(..)
 , Highlight(..)
@@ -21,7 +22,10 @@ import           System.Console.Terminal.Size as Size
 import           System.IO (stdout)
 
 prettyPrint :: MonadIO m => PrettyC -> m ()
-prettyPrint (PrettyC run) = putDoc (PP.reAnnotate defaultStyle (snd (run (Last 0))))
+prettyPrint = prettyPrintWith defaultStyle
+
+prettyPrintWith :: MonadIO m => (Highlight -> ANSI.AnsiStyle) -> PrettyC -> m ()
+prettyPrintWith style (PrettyC run) = putDoc (PP.reAnnotate style (snd (run (Last 0))))
 
 defaultStyle :: Highlight -> ANSI.AnsiStyle
 defaultStyle = \case
