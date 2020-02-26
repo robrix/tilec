@@ -3,6 +3,7 @@
 module S.Pretty
 ( putDoc
 , Doc(..)
+, rainbow
 , Rainbow(..)
 ) where
 
@@ -37,5 +38,8 @@ instance Doc ann (PP.Doc ann) where
 
   parens = PP.parens
 
+
+rainbow :: Rainbow doc -> doc
+rainbow = (`runRainbow` 0)
 
 newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
