@@ -30,15 +30,15 @@ instance Var Int PrettyC where
   var = word . (PP.pretty '_' <>) . PP.pretty
 
 instance Let Int PrettyC where
-  let' (tm ::: ty) b = fresh (\ v -> kw "let" <+> var v <+> kw "=" <+> tm <+> kw ":" <+> ty <+> kw "in" <+> b v)
+  let' (tm ::: ty) b = fresh (\ v -> kw "let" <+> var v <+> op "=" <+> tm <+> op ":" <+> ty <+> kw "in" <+> b v)
 
 instance Lam Int PrettyC where
-  lam f  = fresh $ \ v -> kw "\\" <+> var v <+> kw "." <+> f v
+  lam f  = fresh $ \ v -> op "\\" <+> var v <+> op "." <+> f v
   f $$ a = f <+> a
 
 instance Type Int PrettyC where
   type' = kw "Type"
-  pi' t f = fresh $ \ v -> parens (var v <+> kw ":" <+> t) <+> kw "->" <+> f v
+  pi' t f = fresh $ \ v -> parens (var v <+> op ":" <+> t) <+> op "->" <+> f v
 
 
 word :: PP.Doc ANSI.AnsiStyle -> PrettyC
@@ -46,6 +46,9 @@ word s = PrettyC (, s)
 
 kw :: String -> PrettyC
 kw = word . PP.pretty
+
+op :: String -> PrettyC
+op = word . PP.pretty
 
 (<+>) :: PrettyC -> PrettyC -> PrettyC
 l <+> r = l <> word (PP.pretty ' ') <> r
