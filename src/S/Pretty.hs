@@ -27,8 +27,6 @@ class Monoid doc => Doc ann doc | doc -> ann where
 
   parens :: doc -> doc
 
-  toDoc :: doc -> PP.Doc ann
-
 instance Doc ann (PP.Doc ann) where
   pretty = PP.pretty
 
@@ -37,5 +35,3 @@ instance Doc ann (PP.Doc ann) where
   (<+>) = (PP.<+>)
 
   parens = PP.parens
-
-  toDoc = id
