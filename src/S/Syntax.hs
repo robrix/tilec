@@ -2,11 +2,14 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Syntax
 ( (:::)(..)
+, pattern (:::)
 , term_
 , type_
 , (:=)(..)
@@ -21,8 +24,13 @@ import Data.Functor.Classes
 import Data.Functor.Classes.Generic
 import GHC.Generics (Generic1)
 
-data a ::: b = a ::: b
+newtype a ::: b = Pair (a, b)
   deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
+
+pattern (:::) :: a -> b -> a ::: b
+pattern a ::: b = Pair (a, b)
+
+{-# COMPLETE (:::) #-}
 
 infixl 0 :::
 
