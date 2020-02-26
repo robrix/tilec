@@ -10,6 +10,7 @@ module S.Pretty
 ) where
 
 import           Control.Applicative (liftA2)
+import           Control.Arrow ((&&&), (***))
 import           Control.Monad.IO.Class
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
@@ -40,6 +41,15 @@ instance Doc ann (PP.Doc ann) where
   (<+>) = (PP.<+>)
 
   parens = PP.parens
+
+instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
+  pretty = pretty &&& pretty
+
+  annotate a = annotate a *** annotate a
+
+  (a1, b1) <+> (a2, b2) = (a1 <+> a2, b1 <+> b2)
+
+  parens = parens *** parens
 
 
 rainbow :: Rainbow doc -> doc
