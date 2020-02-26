@@ -17,7 +17,7 @@ putDoc doc = do
   liftIO (ANSI.renderIO stdout (PP.layoutSmart PP.defaultLayoutOptions { PP.layoutPageWidth = PP.AvailablePerLine s 0.8 } (doc <> PP.line)))
 
 
-class Doc ann doc | doc -> ann where
+class Monoid doc => Doc ann doc | doc -> ann where
   pretty :: PP.Pretty a => a -> doc
 
   annotate :: ann -> doc -> doc
