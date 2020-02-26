@@ -24,15 +24,15 @@ instance (Var Int t, Err t) => Var Int (ElabC t) where
 
 instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (ElabC t) where
   let' (tm ::: ty) b = ElabC $ \ ctx ->
-    let ty' = elab ctx ty === type'
-        tm' = elab ctx tm === ty'
-    in let' (tm' ::: ty') (elab (ctx :> term_ ty') . b)
+    let ty' ::: tty' = elab ctx ty
+        tm' ::: ttm' = elab ctx tm
+    in let' ((tm' ::: ttm' === ty') ::: (ty' ::: tty' === type')) (elab (ctx :> ty') . b)
 
 instance (Prob Int t, Type Int t, Err t) => Type Int (ElabC t) where
   type' = ElabC (const type')
   pi' t b = ElabC $ \ ctx ->
-    let t' = elab ctx t === type'
-    in pi' t' (elab (ctx :> term_ t') . b)
+    let t' ::: tt' = elab ctx t
+    in pi' (t' ::: tt' === type') (elab (ctx :> t') . b)
 
 elab :: Spine t -> ElabC t -> t ::: t
 elab = flip runElabC
