@@ -44,4 +44,4 @@ rainbow :: Rainbow doc -> doc
 rainbow = (`runRainbow` 0)
 
 newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
-  deriving (Monoid, Semigroup)
+  deriving (Functor, Monoid, Semigroup)
