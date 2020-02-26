@@ -39,7 +39,7 @@ instance Show PrettyC where
   showsPrec p (PrettyC run) = showsPrec p (snd (run (Last 0)))
 
 instance Var Int PrettyC where
-  var = highlight Var . (PP.pretty '_' <>) . PP.pretty
+  var = annotate Var . (pretty '_' <>) . pretty
 
 instance Let Int PrettyC where
   let' (tm ::: ty) b = fresh (\ v -> kw "let" <+> var v <+> op "=" <+> tm <+> op ":" <+> ty <+> kw "in" <+> b v)
@@ -49,7 +49,7 @@ instance Lam Int PrettyC where
   f $$ a = f <+> a
 
 instance Type Int PrettyC where
-  type' = highlight Type (PP.pretty "Type")
+  type' = annotate Type (pretty "Type")
   pi' t f = fresh $ \ v -> parens (var v <+> op ":" <+> t) <+> op "->" <+> f v
 
 
@@ -60,14 +60,11 @@ data Highlight
   | Keyword
   deriving (Eq, Ord, Show)
 
-highlight :: Highlight -> PP.Doc Highlight -> PrettyC
-highlight h s = PrettyC (, PP.annotate h s)
-
 kw :: String -> PrettyC
-kw = highlight Keyword . PP.pretty
+kw = annotate Keyword . pretty
 
 op :: String -> PrettyC
-op = highlight Op . PP.pretty
+op = annotate Op . pretty
 
 instance Doc Highlight PrettyC where
   pretty = PrettyC . flip (,) . pretty
