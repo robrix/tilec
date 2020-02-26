@@ -10,7 +10,6 @@ module S.Pretty
 , Rainbow(..)
 ) where
 
-import           Control.Applicative (liftA2)
 import           Control.Arrow ((&&&), (***))
 import           Control.Monad.IO.Class
 import qualified Data.Text.Prettyprint.Doc as PP
@@ -30,6 +29,8 @@ class Monoid doc => Doc ann doc | doc -> ann where
   annotate :: ann -> doc -> doc
 
   (<+>) :: doc -> doc -> doc
+  l <+> r = enclose l r (pretty ' ')
+
   infixr 6 <+>
 
   parens :: doc -> doc
@@ -46,14 +47,10 @@ instance Doc ann (PP.Doc ann) where
 
   annotate = PP.annotate
 
-  (<+>) = (PP.<+>)
-
 instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   pretty = pretty &&& pretty
 
   annotate a = annotate a *** annotate a
-
-  (a1, b1) <+> (a2, b2) = (a1 <+> a2, b1 <+> b2)
 
 enclose :: Doc ann doc => doc -> doc -> doc -> doc
 enclose l r x = l <> x <> r
@@ -69,7 +66,5 @@ instance Doc ann doc => Doc ann (Rainbow doc) where
   pretty = Rainbow . const . pretty
 
   annotate = fmap . annotate
-
-  (<+>) = liftA2 (<+>)
 
   -- FIXME: what do we need to annotate accordingly? Enum instance maybe?

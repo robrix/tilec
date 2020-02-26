@@ -74,8 +74,6 @@ instance Doc Highlight PrettyC where
 
   annotate h (PrettyC run) = PrettyC (fmap (annotate h) . run)
 
-  l <+> r = l <> PrettyC (, pretty ' ') <> r
-
 toDoc :: PrettyC -> PP.Doc Highlight
 toDoc (PrettyC run) = snd (run (Last 0))
 
