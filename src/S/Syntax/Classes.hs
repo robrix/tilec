@@ -43,6 +43,10 @@ class Var a expr => Type a expr where
 
   infixr 0 `pi'`
 
+instance (Type a expr1, Type a expr2) => Type a (expr1 ::: expr2) where
+  type' = type' ::: type'
+  pi' (t1 ::: t2) b = pi' t1 (term_ . b) ::: pi' t2 (type_ . b)
+
 (-->) :: Type a expr => expr -> expr -> expr
 a --> b = a `pi'` const b
 
