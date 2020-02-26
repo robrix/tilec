@@ -7,6 +7,8 @@
 {-# LANGUAGE TypeOperators #-}
 module S.Syntax
 ( (:::)(..)
+, term_
+, type_
 , (:=)(..)
 , Spine(..)
 , (!?)
@@ -23,6 +25,12 @@ data a ::: b = a ::: b
   deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
 infixl 0 :::
+
+term_ :: a ::: b -> a
+term_ (a ::: _) = a
+
+type_ :: a ::: b -> b
+type_ (_ ::: b) = b
 
 
 data a := b = a := b
