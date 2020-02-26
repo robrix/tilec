@@ -24,9 +24,13 @@ class Doc doc where
 
   infixr 6 <+>
 
+  parens :: doc ann -> doc ann
+
 instance Doc PP.Doc where
   pretty = PP.pretty
 
   annotate = PP.annotate
 
   (<+>) = (PP.<+>)
+
+  parens = PP.parens
