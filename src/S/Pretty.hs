@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
 module S.Pretty
 ( putDoc
 , Doc(..)
@@ -15,18 +17,18 @@ putDoc doc = do
   liftIO (ANSI.renderIO stdout (PP.layoutSmart PP.defaultLayoutOptions { PP.layoutPageWidth = PP.AvailablePerLine s 0.8 } (doc <> PP.line)))
 
 
-class Doc doc where
-  pretty :: PP.Pretty a => a -> doc ann
+class Doc ann doc | doc -> ann where
+  pretty :: PP.Pretty a => a -> doc
 
-  annotate :: ann -> doc ann -> doc ann
+  annotate :: ann -> doc -> doc
 
-  (<+>) :: doc ann -> doc ann -> doc ann
+  (<+>) :: doc -> doc -> doc
 
   infixr 6 <+>
 
-  parens :: doc ann -> doc ann
+  parens :: doc -> doc
 
-instance Doc PP.Doc where
+instance Doc ann (PP.Doc ann) where
   pretty = PP.pretty
 
   annotate = PP.annotate
