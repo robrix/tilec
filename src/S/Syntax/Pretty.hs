@@ -23,7 +23,7 @@ prettyPrint :: MonadIO m => PrettyC -> m ()
 prettyPrint = prettyPrintWith defaultStyle
 
 prettyPrintWith :: MonadIO m => (Highlight -> ANSI.AnsiStyle) -> PrettyC -> m ()
-prettyPrintWith style (PrettyC run) = putDoc (PP.reAnnotate style (snd (run (Last 0))))
+prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc
 
 defaultStyle :: Highlight -> ANSI.AnsiStyle
 defaultStyle = \case
