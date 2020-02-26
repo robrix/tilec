@@ -39,7 +39,7 @@ instance Monoid PrettyC where
   mempty = PrettyC (, mempty)
 
 instance Show PrettyC where
-  showsPrec p (PrettyC run) = showsPrec p (snd (run (Last 0)))
+  showsPrec p = showsPrec p . toDoc
 
 instance Var Int PrettyC where
   var = annotate Var . (pretty '_' <>) . pretty
