@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
@@ -78,7 +79,7 @@ data Highlight a
   | Type
   | Keyword
   | Nest a
-  deriving (Eq, Ord, Show)
+  deriving (Eq, Functor, Ord, Show)
 
 kw :: String -> PrettyC
 kw = annotate Keyword . pretty
