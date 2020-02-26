@@ -46,7 +46,10 @@ type_ (_ ::: b) = b
 
 
 newtype a := b = Define (a, b)
-  deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
+  deriving (Eq, Foldable, Functor, Ord, Traversable)
+
+instance (Show a, Show b) => Show (a := b) where
+  showsPrec p (a := b) = showParen (p > 0) (shows a . showString " := " . showsPrec 1 b)
 
 pattern (:=) :: a -> b -> a := b
 pattern a := b = Define (a, b)
