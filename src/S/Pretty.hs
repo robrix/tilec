@@ -77,6 +77,7 @@ instance Doc ann doc => Doc ann (Rainbow doc) where
 
   (<+>) = liftA2 (<+>)
 
+  -- FIXME: what do we need to annotate accordingly? Enum instance maybe?
   parens (Rainbow run) = Rainbow $ \ l -> pretty '(' <> run (1 + l) <> pretty ')'
 
   brackets (Rainbow run) = Rainbow $ \ l -> pretty '[' <> run (1 + l) <> pretty ']'
