@@ -5,6 +5,7 @@
 {-# LANGUAGE TupleSections #-}
 module S.Syntax.Pretty
 ( prettyPrint
+, defaultStyle
 , PrettyC(..)
 , Highlight(..)
 , putDoc
@@ -20,12 +21,14 @@ import           System.Console.Terminal.Size as Size
 import           System.IO (stdout)
 
 prettyPrint :: MonadIO m => PrettyC -> m ()
-prettyPrint (PrettyC run) = putDoc (PP.reAnnotate style (snd (run (Last 0)))) where
-  style = \case
-    Var -> mempty
-    Op -> ANSI.color ANSI.Cyan
-    Type -> ANSI.color ANSI.Yellow
-    Keyword -> ANSI.color ANSI.Magenta
+prettyPrint (PrettyC run) = putDoc (PP.reAnnotate defaultStyle (snd (run (Last 0))))
+
+defaultStyle :: Highlight -> ANSI.AnsiStyle
+defaultStyle = \case
+  Var -> mempty
+  Op -> ANSI.color ANSI.Cyan
+  Type -> ANSI.color ANSI.Yellow
+  Keyword -> ANSI.color ANSI.Magenta
 
 newtype PrettyC = PrettyC { runPrettyC :: Last Int -> (Last Int, PP.Doc Highlight) }
   deriving (Semigroup)
