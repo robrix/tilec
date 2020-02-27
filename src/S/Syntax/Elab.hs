@@ -47,5 +47,7 @@ instance (Prob Int t, Type Int t, Err t) => Type Int (ElabC t) where
     let t' ::: tt' = elab ctx t
     in pi' (t' ::: tt' === type') (elab (ctx :> t') . b)
 
+-- FIXME: this should likely have a Prob instance
+
 elab :: Stack t -> ElabC t -> t ::: t
 elab = flip runElabC
