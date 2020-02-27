@@ -8,6 +8,7 @@ module S.Pretty
 , line'
 , enclose
 , surround
+, encloseSep
 , cat
 , vcat
 , concatWith
@@ -84,6 +85,12 @@ enclose l r x = l <> x <> r
 
 surround :: Doc ann doc => doc -> doc -> doc -> doc
 surround x l r = enclose l r x
+
+encloseSep :: Doc ann doc => doc -> doc -> doc -> [doc] -> doc
+encloseSep l r s ds = case ds of
+  []  -> l <> r
+  [d] -> l <> d <> r
+  _   -> cat (zipWith (<>) (l : repeat s) ds) <> r
 
 cat :: Doc ann doc => [doc] -> doc
 cat = group . vcat
