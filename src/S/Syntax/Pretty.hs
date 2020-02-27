@@ -99,7 +99,7 @@ op = annotate Op . pretty
 instance Doc (Highlight Int) PrettyC where
   pretty = PrettyC . flip (,) . pretty
 
-  annotate h = mapDoc (annotate h)
+  annotate = mapDoc . annotate
 
   parens = mapDoc parens
 
