@@ -53,7 +53,9 @@ defaultStyle = \case
 
 type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 
-newtype PrettyC = PrettyC { runPrettyC :: Ap (FreshC ((,) IntSet.IntSet)) Inner }
+type M = Ap (FreshC ((,) IntSet.IntSet))
+
+newtype PrettyC = PrettyC { runPrettyC :: M Inner }
   deriving (Monoid, Semigroup)
 
 instance Show PrettyC where
@@ -112,7 +114,7 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
-bind :: (Int -> PrettyC) -> (Int -> Inner) -> Inner -> Ap (FreshC ((,) IntSet.IntSet)) (Inner, Inner)
+bind :: (Int -> PrettyC) -> (Int -> Inner) -> Inner -> M (Inner, Inner)
 bind b used unused = do
   v <- fresh
   (fvs, b') <- listen (runPrettyC (b v))
@@ -134,7 +136,7 @@ instance Doc (Highlight Int) PrettyC where
 instance PrecDoc (Highlight Int) PrettyC where
   prec = under . fmap . prec
 
-under :: (Ap (FreshC ((,) IntSet.IntSet)) Inner -> Ap (FreshC ((,) IntSet.IntSet)) Inner) -> PrettyC -> PrettyC
+under :: (M Inner -> M Inner) -> PrettyC -> PrettyC
 under = coerce
 
 toDoc :: PrettyC -> PP.Doc (Highlight Int)
