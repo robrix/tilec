@@ -8,6 +8,7 @@ module S.Pretty
 , line'
 , enclose
 , surround
+, concatWith
 , (<+>)
 , parensIf
 , Level(..)
@@ -81,6 +82,11 @@ enclose l r x = l <> x <> r
 
 surround :: Doc ann doc => doc -> doc -> doc -> doc
 surround x l r = enclose l r x
+
+concatWith :: (Doc ann doc, Foldable t) => (doc -> doc -> doc) -> t doc -> doc
+concatWith (<>) ds
+  | null ds   = mempty
+  | otherwise = foldr1 (<>) ds
 
 (<+>) :: Doc ann doc => doc -> doc -> doc
 l <+> r = enclose l r (pretty ' ')
