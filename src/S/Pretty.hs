@@ -6,6 +6,7 @@ module S.Pretty
 ( putDoc
 , Doc(..)
 , enclose
+, (<+>)
 , rainbow
 , Rainbow(..)
 , Prec(..)
@@ -29,11 +30,6 @@ class Monoid doc => Doc ann doc | doc -> ann where
 
   annotate :: ann -> doc -> doc
 
-  (<+>) :: doc -> doc -> doc
-  l <+> r = enclose l r (pretty ' ')
-
-  infixr 6 <+>
-
   parens :: doc -> doc
   parens = enclose (pretty "(") (pretty ")")
 
@@ -55,6 +51,11 @@ instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
 
 enclose :: Doc ann doc => doc -> doc -> doc -> doc
 enclose l r x = l <> x <> r
+
+(<+>) :: Doc ann doc => doc -> doc -> doc
+l <+> r = enclose l r (pretty ' ')
+
+infixr 6 <+>
 
 
 rainbow :: Rainbow doc -> doc
