@@ -5,6 +5,7 @@
 module S.Pretty
 ( putDoc
 , Doc(..)
+, line'
 , enclose
 , surround
 , (<+>)
@@ -71,6 +72,9 @@ instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   group = group *** group
 
   flatAlt d = flatAlt (fst d) *** flatAlt (snd d)
+
+line' :: Doc ann doc => doc
+line' = flatAlt line mempty
 
 enclose :: Doc ann doc => doc -> doc -> doc -> doc
 enclose l r x = l <> x <> r
