@@ -27,10 +27,10 @@ newtype Elab t a b = Elab { runElab :: ReaderC (Stack (t a)) t b }
   deriving (Applicative, Functor, Monad)
 
 instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t Int) where
-  var n = Elab . ReaderC $ \ ctx ->
+  var n = Elab $
     type' `ex` \ _A ->
     var _A `ex` \ v ->
-    (var n ::: fromMaybe (err ("free variable: " <> show n)) (ctx !? n))
+    (var n ::: typeOf n)
     ===
     (var v ::: var _A)
 
