@@ -77,6 +77,9 @@ instance Prob a m => Prob a (ReaderC r m) where
 class Err expr where
   err :: String -> expr a
 
+instance Err m => Err (ReaderC r m) where
+  err = ReaderC . const . err
+
 
 class Def tm ty a def | def -> tm ty where
   def :: tm a -> ty a -> def a
