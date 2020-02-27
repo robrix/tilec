@@ -8,6 +8,7 @@ module S.Pretty
 , enclose
 , rainbow
 , Rainbow(..)
+, Prec(..)
 ) where
 
 import           Control.Arrow ((&&&), (***))
@@ -70,3 +71,6 @@ instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) whe
   parens   (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '(') <> run (1 + l) <> annotate (pure l) (pretty ')')
   brackets (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '[') <> run (1 + l) <> annotate (pure l) (pretty ']')
   braces   (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '{') <> run (1 + l) <> annotate (pure l) (pretty '}')
+
+
+newtype Prec a = Prec { runPrec :: Int -> a }
