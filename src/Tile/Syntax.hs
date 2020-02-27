@@ -34,6 +34,11 @@ class Var a expr => Lam a expr where
   ($$) :: expr a -> expr a -> expr a
   infixl 9 $$
 
+instance Lam a m => Lam a (ReaderC r m) where
+  lam b = ReaderC (\ ctx -> lam (runReader ctx . b))
+
+  f $$ a = ReaderC (\ ctx -> runReader ctx f $$ runReader ctx a)
+
 
 class Var a expr => Type a expr where
   type' :: expr a
