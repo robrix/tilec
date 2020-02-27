@@ -82,6 +82,9 @@ instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) whe
   brackets (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '[') <> run (1 + l) <> annotate (pure l) (pretty ']')
   braces   (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '{') <> run (1 + l) <> annotate (pure l) (pretty '}')
 
+instance (PrecDoc (ann Int) doc, Applicative ann) => PrecDoc (ann Int) (Rainbow doc) where
+  prec = fmap . prec
+
 
 newtype Prec a = Prec { runPrec :: Level -> a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
