@@ -64,7 +64,12 @@ instance Var Int PrettyC where
 instance Let Int PrettyC where
   let' (tm ::: ty) b = PrettyC $ do
     v <- fresh
-    runPrettyC (kw "let" <+> var v <+> op "=" <+> tm <+> op ":" <+> ty <+> kw "in" <+> b v)
+    tm' <- runPrettyC tm
+    ty' <- runPrettyC ty
+    (fvs, b') <- listen (runPrettyC (b v))
+    let lhs | v `IntSet.member` fvs = prettyVar v
+            | otherwise             = pretty '_'
+    pure (kw "let" <+> lhs <+> op "=" <+> tm' <+> op ":" <+> ty' <+> kw "in" <+> b')
 
 instance Lam Int PrettyC where
   lam b  = PrettyC $ do
