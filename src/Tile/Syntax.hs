@@ -68,6 +68,11 @@ class Var a expr => Prob a expr where
   (===) :: expr a ::: expr a -> expr a ::: expr a -> expr a
   infixl 4 ===
 
+instance Prob a m => Prob a (ReaderC r m) where
+  ex t b = ReaderC (\ ctx -> ex (runReader ctx t) (runReader ctx . b))
+
+  (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderC (\ ctx -> (runReader ctx tm1 ::: runReader ctx ty1) === (runReader ctx tm2 ::: runReader ctx ty2))
+
 
 class Err expr where
   err :: String -> expr a
