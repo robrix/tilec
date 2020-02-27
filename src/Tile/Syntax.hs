@@ -42,8 +42,8 @@ infixr 0 -->
 
 class Var a expr => Prob a expr where
   ex :: expr -> (a -> expr) -> expr
-  (===) :: expr -> expr -> expr
 
+  (===) :: expr -> expr -> expr
   infixl 4 ===
 
 
