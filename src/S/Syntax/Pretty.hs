@@ -107,7 +107,9 @@ op :: Doc (Highlight Int) doc => String -> doc
 op = annotate Op . pretty
 
 prettyVar :: Doc (Highlight Int) doc => Int -> doc
-prettyVar = annotate Var . mappend (pretty '_') . pretty
+prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q else mempty) where
+  (q, r) = i `divMod` 26
+  alphabet = ['a'..'z']
 
 bind :: (Int -> PrettyC) -> (Int -> Inner) -> Inner -> Ap (FreshC ((,) IntSet.IntSet)) (Inner, Inner)
 bind b used unused = do
