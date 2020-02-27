@@ -12,7 +12,7 @@ module S.Syntax.Pretty
 ) where
 
 import           Control.Applicative ((<**>))
-import qualified Control.Carrier.Fresh.Strict as F
+import           Control.Carrier.Fresh.Strict
 import           Control.Monad.IO.Class
 import qualified Data.IntSet as IntSet
 import           Data.Monoid (Ap(..))
@@ -51,7 +51,7 @@ defaultStyle = \case
 
 type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 
-newtype PrettyC = PrettyC { runPrettyC :: Ap (F.FreshC ((,) IntSet.IntSet)) Inner }
+newtype PrettyC = PrettyC { runPrettyC :: Ap (FreshC ((,) IntSet.IntSet)) Inner }
   deriving (Monoid, Semigroup)
 
 instance Show PrettyC where
@@ -62,19 +62,19 @@ instance Var Int PrettyC where
 
 instance Let Int PrettyC where
   let' (tm ::: ty) b = PrettyC $ do
-    v <- F.fresh
+    v <- fresh
     runPrettyC (kw "let" <+> var v <+> op "=" <+> tm <+> op ":" <+> ty <+> kw "in" <+> b v)
 
 instance Lam Int PrettyC where
   lam f  = PrettyC $ do
-    v <- F.fresh
+    v <- fresh
     runPrettyC (op "\\" <+> var v <+> op "." <+> f v)
   f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
 
 instance Type Int PrettyC where
   type' = annotate Type (pretty "Type")
   pi' t f = PrettyC $ do
-    v <- F.fresh
+    v <- fresh
     runPrettyC (prec (Level 0) (parens (var v <+> op ":" <+> t) <+> op "->" <+> f v))
 
 
@@ -120,4 +120,4 @@ mapDoc :: (Inner -> Inner) -> PrettyC -> PrettyC
 mapDoc f (PrettyC run) = PrettyC (f <$> run)
 
 toDoc :: PrettyC -> PP.Doc (Highlight Int)
-toDoc (PrettyC m) = rainbow (runPrec (snd (F.evalFresh 0 (getAp m))) (Level 0))
+toDoc (PrettyC m) = rainbow (runPrec (snd (evalFresh 0 (getAp m))) (Level 0))
