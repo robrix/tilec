@@ -59,7 +59,7 @@ instance Show PrettyC where
   showsPrec p = showsPrec p . toDoc
 
 instance Var Int PrettyC where
-  var a = PrettyC (annotate Var (pretty '_' <> pretty a) <$ tell (IntSet.singleton a))
+  var a = PrettyC (prettyVar a <$ tell (IntSet.singleton a))
 
 instance Let Int PrettyC where
   let' (tm ::: ty) b = PrettyC $ do
@@ -102,6 +102,9 @@ kw = annotate Keyword . pretty
 
 op :: Doc (Highlight Int) doc => String -> doc
 op = annotate Op . pretty
+
+prettyVar :: Doc (Highlight Int) doc => Int -> doc
+prettyVar = annotate Var . mappend (pretty '_') . pretty
 
 instance Doc (Highlight Int) PrettyC where
   pretty = PrettyC . pure . pretty
