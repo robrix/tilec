@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
@@ -96,7 +97,7 @@ instance Applicative Highlight where
     Nest f  -> f <$> a
 
 
-kw :: String -> PrettyC
+kw :: Doc (Highlight Int) doc => String -> doc
 kw = annotate Keyword . pretty
 
 op :: String -> PrettyC
