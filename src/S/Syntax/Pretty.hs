@@ -13,6 +13,7 @@ module S.Syntax.Pretty
 
 import           Control.Applicative ((<**>))
 import           Control.Carrier.Fresh.Strict
+import           Control.Effect.Writer
 import           Control.Monad.IO.Class
 import qualified Data.IntSet as IntSet
 import           Data.Monoid (Ap(..))
@@ -57,7 +58,7 @@ instance Show PrettyC where
   showsPrec p = showsPrec p . toDoc
 
 instance Var Int PrettyC where
-  var = annotate Var . (pretty '_' <>) . pretty
+  var a = PrettyC (annotate Var (pretty '_' <> pretty a) <$ tell (IntSet.singleton a))
 
 instance Let Int PrettyC where
   let' (tm ::: ty) b = PrettyC $ do
