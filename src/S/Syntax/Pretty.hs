@@ -74,9 +74,13 @@ instance Lam Int PrettyC where
 
 instance Type Int PrettyC where
   type' = annotate Type (pretty "Type")
-  pi' t f = PrettyC $ do
+  pi' t b = PrettyC $ do
+    t' <- runPrettyC t
     v <- fresh
-    runPrettyC (prec (Level 0) (parens (var v <+> op ":" <+> t) <+> op "->" <+> f v))
+    (fvs, b') <- listen (runPrettyC (b v))
+    let lhs | v `IntSet.member` fvs = parens (prettyVar v <+> op ":" <+> t')
+            | otherwise             = prec (Level 1) t'
+    pure (prec (Level 0) (lhs <+> op "->" <+> b'))
 
 
 data Highlight a
