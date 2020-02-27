@@ -5,7 +5,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeApplications #-}
-module S.Syntax.Pretty
+module S.Print
 ( prettyPrint
 , prettyPrintWith
 , defaultStyle

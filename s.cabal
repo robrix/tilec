@@ -37,10 +37,10 @@ library
     S.Elab
     S.Library
     S.Pretty
+    S.Print
     S.Semiring
     S.Stack
     S.Syntax
-    S.Syntax.Pretty
     S.Term
     S.Type
   -- other-modules:
