@@ -16,6 +16,7 @@ import           Control.Applicative ((<**>))
 import           Control.Carrier.Fresh.Strict
 import           Control.Effect.Writer
 import           Control.Monad.IO.Class
+import           Data.Coerce (coerce)
 import qualified Data.IntSet as IntSet
 import           Data.Monoid (Ap(..))
 import qualified Data.Text.Prettyprint.Doc as PP
@@ -120,21 +121,21 @@ bind b used unused = do
 instance Doc (Highlight Int) PrettyC where
   pretty = PrettyC . pure . pretty
 
-  annotate = mapDoc . annotate
+  annotate = under . fmap . annotate
 
-  group = mapDoc group
+  group = under (fmap group)
 
-  parens = mapDoc parens
+  parens = under (fmap parens)
 
-  brackets = mapDoc brackets
+  brackets = under (fmap brackets)
 
-  braces = mapDoc braces
+  braces = under (fmap braces)
 
 instance PrecDoc (Highlight Int) PrettyC where
-  prec = mapDoc . prec
+  prec = under . fmap . prec
 
-mapDoc :: (Inner -> Inner) -> PrettyC -> PrettyC
-mapDoc f (PrettyC run) = PrettyC (f <$> run)
+under :: (Ap (FreshC ((,) IntSet.IntSet)) Inner -> Ap (FreshC ((,) IntSet.IntSet)) Inner) -> PrettyC -> PrettyC
+under = coerce
 
 toDoc :: PrettyC -> PP.Doc (Highlight Int)
 toDoc (PrettyC m) = rainbow (runPrec (snd (evalFresh 0 (getAp m))) (Level 0))
