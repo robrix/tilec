@@ -13,7 +13,7 @@ module S.Syntax.Pretty
 , Highlight(..)
 ) where
 
-import           Control.Applicative ((<**>))
+import           Control.Applicative (liftA2, (<**>))
 import           Control.Carrier.Fresh.Strict
 import           Control.Effect.Writer
 import           Control.Monad.IO.Class
@@ -127,6 +127,8 @@ instance Doc (Highlight Int) PrettyC where
   annotate = coerce . fmap @M . annotate
 
   group = coerce (fmap @M group)
+
+  flatAlt = coerce (liftA2 @M flatAlt)
 
   parens = coerce (fmap @M parens)
 
