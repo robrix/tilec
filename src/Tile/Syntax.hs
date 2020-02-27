@@ -13,7 +13,7 @@ module Tile.Syntax
 
 import Tile.Type
 
-class Var a expr | expr -> a where
+class Var a expr where
   var :: a -> expr a
 
 
