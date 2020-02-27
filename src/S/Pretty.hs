@@ -32,6 +32,8 @@ putDoc doc = do
 class Monoid doc => Doc ann doc | doc -> ann where
   pretty :: PP.Pretty a => a -> doc
 
+  line :: doc
+
   annotate :: ann -> doc -> doc
 
   group :: doc -> doc
@@ -50,6 +52,8 @@ class Monoid doc => Doc ann doc | doc -> ann where
 instance Doc ann (PP.Doc ann) where
   pretty = PP.pretty
 
+  line = PP.line
+
   annotate = PP.annotate
 
   group = PP.group
@@ -58,6 +62,8 @@ instance Doc ann (PP.Doc ann) where
 
 instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   pretty = pretty &&& pretty
+
+  line = (line, line)
 
   annotate a = annotate a *** annotate a
 
@@ -94,6 +100,8 @@ newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
 instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) where
   pretty = pure . pretty
 
+  line = pure line
+
   annotate = fmap . annotate
 
   group = fmap group
@@ -113,6 +121,8 @@ newtype Prec a = Prec { runPrec :: Level -> a }
 
 instance Doc ann doc => Doc ann (Prec doc) where
   pretty = pure . pretty
+
+  line = pure line
 
   annotate = fmap . annotate
 

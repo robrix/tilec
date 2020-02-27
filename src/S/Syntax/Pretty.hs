@@ -124,6 +124,8 @@ bind b used unused = do
 instance Doc (Highlight Int) PrettyC where
   pretty = coerce . pure @M . pretty
 
+  line = coerce (pure @M line)
+
   annotate = coerce . fmap @M . annotate
 
   group = coerce (fmap @M group)
