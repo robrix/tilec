@@ -8,6 +8,7 @@ module S.Pretty
 , line'
 , enclose
 , surround
+, vcat
 , concatWith
 , (<+>)
 , parensIf
@@ -82,6 +83,9 @@ enclose l r x = l <> x <> r
 
 surround :: Doc ann doc => doc -> doc -> doc -> doc
 surround x l r = enclose l r x
+
+vcat :: Doc ann doc => [doc] -> doc
+vcat = concatWith (surround line')
 
 concatWith :: (Doc ann doc, Foldable t) => (doc -> doc -> doc) -> t doc -> doc
 concatWith (<>) ds
