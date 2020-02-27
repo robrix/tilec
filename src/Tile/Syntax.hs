@@ -11,44 +11,44 @@ module Tile.Syntax
 ) where
 
 class Var a expr | expr -> a where
-  var :: a -> expr
+  var :: a -> expr a
 
 
 class Var a expr => Let a expr where
-  let' :: expr -> (a -> expr) -> expr
+  let' :: expr a -> (a -> expr a) -> expr a
 
 
 class Var a expr => Lam a expr where
-  lam :: (a -> expr) -> expr
+  lam :: (a -> expr a) -> expr a
 
-  ($$) :: expr -> expr -> expr
+  ($$) :: expr a -> expr a -> expr a
   infixl 9 $$
 
 
 class Var a expr => Type a expr where
-  type' :: expr
+  type' :: expr a
 
-  (>->) :: expr -> (a -> expr) -> expr
+  (>->) :: expr a -> (a -> expr a) -> expr a
   infixr 0 >->
 
-  (.:.) :: expr -> expr -> expr
+  (.:.) :: expr a -> expr a -> expr a
   infixl 0 .:.
 
-(-->) :: Type a expr => expr -> expr -> expr
+(-->) :: Type a expr => expr a -> expr a -> expr a
 a --> b = a >-> const b
 
 infixr 0 -->
 
 
 class Var a expr => Prob a expr where
-  ex :: expr -> (a -> expr) -> expr
+  ex :: expr a -> (a -> expr a) -> expr a
 
-  (===) :: expr -> expr -> expr
+  (===) :: expr a -> expr a -> expr a
   infixl 4 ===
 
 
 class Err expr where
-  err :: String -> expr
+  err :: String -> expr a
 
 
 class Def tm ty a def | def -> tm ty where

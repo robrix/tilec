@@ -17,10 +17,10 @@ import Data.Maybe (fromMaybe)
 import Tile.Stack
 import Tile.Syntax
 
-elab :: Stack t -> Elab t -> t
+elab :: Stack (t a) -> Elab t a -> t a
 elab = flip runElab
 
-newtype Elab t = Elab { runElab :: Stack t -> t }
+newtype Elab t a = Elab { runElab :: Stack (t a) -> t a }
 
 instance (Type Int t, Err t) => Var Int (Elab t) where
   var n = Elab $ \ ctx ->

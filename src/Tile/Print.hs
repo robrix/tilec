@@ -25,10 +25,10 @@ import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
 import           Tile.Pretty
 import           Tile.Syntax
 
-prettyPrint :: MonadIO m => Print -> m ()
+prettyPrint :: MonadIO m => Print Int -> m ()
 prettyPrint = prettyPrintWith defaultStyle
 
-prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> Print -> m ()
+prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> Print Int -> m ()
 prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc
 
 defaultStyle :: Highlight Int -> ANSI.AnsiStyle
@@ -51,14 +51,14 @@ defaultStyle = \case
     [ANSI.color, ANSI.colorDull]
   len = length colours
 
-type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
+type Inner a = Prec (Rainbow (PP.Doc (Highlight a)))
 
 type M = Ap (FreshC ((,) IntSet.IntSet))
 
-newtype Print = Print { runPrint :: M Inner }
+newtype Print a = Print { runPrint :: M (Inner a) }
   deriving (Monoid, Semigroup)
 
-instance Show Print where
+instance Show (Print Int) where
   showsPrec p = showsPrec p . toDoc
 
 instance Var Int Print where
@@ -117,13 +117,13 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
-bind :: (Int -> Print) -> (Int -> Inner) -> Inner -> M (Inner, Inner)
+bind :: (Int -> Print Int) -> (Int -> Inner Int) -> Inner Int -> M (Inner Int, Inner Int)
 bind b used unused = do
   v <- fresh
   (fvs, b') <- listen (runPrint (b v))
   pure (if v `IntSet.member` fvs then used v else unused, b')
 
-instance Doc (Highlight Int) Print where
+instance Doc (Highlight Int) (Print Int) where
   pretty = coerce . pure @M . pretty
 
   line = coerce (pure @M line)
@@ -142,8 +142,8 @@ instance Doc (Highlight Int) Print where
 
   braces = coerce (fmap @M braces)
 
-instance PrecDoc (Highlight Int) Print where
+instance PrecDoc (Highlight Int) (Print Int) where
   prec = coerce . fmap @M . prec
 
-toDoc :: Print -> PP.Doc (Highlight Int)
+toDoc :: Print a -> PP.Doc (Highlight a)
 toDoc (Print m) = rainbow (runPrec (snd (evalFresh 0 (getAp m))) (Level 0))

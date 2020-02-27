@@ -36,29 +36,29 @@ instance Monad (Term a) where
     m :. t  -> (m >>= f) :. (t >>= f)
     Err s   -> Err s
 
-instance Var a (Term a a) where
+instance Var a (Term a) where
   var = Var
 
-instance Let a (Term a a) where
+instance Let a (Term a) where
   let' = Let
 
-instance Lam a (Term a a) where
+instance Lam a (Term a) where
   lam = Lam
   ($$) = (:$)
 
-instance Type a (Term a a) where
+instance Type a (Term a) where
   type' = Type
   (>->) = (:->)
   (.:.) = (:.)
 
-instance Err (Term a b) where
+instance Err (Term a) where
   err = Err
 
 infixl 9 :$
 infixr 0 :->
 infixl 0 :.
 
-interpret :: (Let a t, Lam a t, Type a t, Err t) => Term a a -> t
+interpret :: (Let a t, Lam a t, Type a t, Err t) => Term a a -> t a
 interpret = \case
   Var v   -> var v
   Let v b -> let' (interpret v) (interpret . b)
