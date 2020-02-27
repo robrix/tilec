@@ -33,6 +33,8 @@ class Monoid doc => Doc ann doc | doc -> ann where
 
   annotate :: ann -> doc -> doc
 
+  group :: doc -> doc
+
   parens :: doc -> doc
   parens = enclose (pretty "(") (pretty ")")
 
@@ -47,10 +49,14 @@ instance Doc ann (PP.Doc ann) where
 
   annotate = PP.annotate
 
+  group = PP.group
+
 instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   pretty = pretty &&& pretty
 
   annotate a = annotate a *** annotate a
+
+  group = group *** group
 
 enclose :: Doc ann doc => doc -> doc -> doc -> doc
 enclose l r x = l <> x <> r
@@ -83,6 +89,8 @@ instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) whe
 
   annotate = fmap . annotate
 
+  group = fmap group
+
   parens   (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '(') <> run (1 + l) <> annotate (pure l) (pretty ')')
   brackets (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '[') <> run (1 + l) <> annotate (pure l) (pretty ']')
   braces   (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '{') <> run (1 + l) <> annotate (pure l) (pretty '}')
@@ -98,6 +106,8 @@ instance Doc ann doc => Doc ann (Prec doc) where
   pretty = pure . pretty
 
   annotate = fmap . annotate
+
+  group = fmap group
 
   parens = fmap parens
 

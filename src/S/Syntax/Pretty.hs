@@ -122,6 +122,8 @@ instance Doc (Highlight Int) PrettyC where
 
   annotate = mapDoc . annotate
 
+  group = mapDoc group
+
   parens = mapDoc parens
 
   brackets = mapDoc brackets
