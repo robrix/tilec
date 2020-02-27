@@ -110,7 +110,7 @@ concatWith (<>) ds
   | otherwise = foldr1 (<>) ds
 
 (<+>) :: Doc ann doc => doc -> doc -> doc
-l <+> r = enclose l r (pretty ' ')
+(<+>) = surround (pretty ' ')
 
 infixr 6 <+>
 
