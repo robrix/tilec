@@ -74,3 +74,4 @@ instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) whe
 
 
 newtype Prec a = Prec { runPrec :: Int -> a }
+  deriving (Applicative, Functor, Monad, Monoid, Semigroup)
