@@ -35,9 +35,9 @@ instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t Int) where
     (var v ::: var _A)
 
 instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab t Int) where
-  let' tm b = Elab . ReaderC $ \ ctx ->
+  let' tm b = Elab $
     type' `ex` \ _A ->
-    let' (elab ctx tm .:. var _A) (elab (ctx :> var _A) . b)
+    let' (runElab tm .:. var _A) (var _A |- runElab . b)
 
 instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t Int) where
   lam b = Elab . ReaderC $ \ ctx ->
