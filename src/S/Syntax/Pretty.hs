@@ -36,8 +36,7 @@ defaultStyle = \case
   Nest i -> colours !! (i `mod` len)
   where
   colours =
-    [ ANSI.Black
-    , ANSI.Red
+    [ ANSI.Red
     , ANSI.Green
     , ANSI.Yellow
     , ANSI.Blue
