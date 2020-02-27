@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 module Tile.Syntax
 ( Var(..)
@@ -91,3 +92,4 @@ class Def tm ty a def | def -> tm ty where
 
 
 newtype Script t a = Script { runScript :: t a }
+  deriving (Applicative, Functor, Monad, Var v, Let v, Lam v, Type v, Prob v, Err)
