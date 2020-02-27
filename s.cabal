@@ -38,7 +38,7 @@ library
     S.Pretty
     S.Semiring
     S.Stack
-    S.Syntax.Classes
+    S.Syntax
     S.Syntax.Elab
     S.Syntax.Eval
     S.Syntax.Pretty

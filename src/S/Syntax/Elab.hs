@@ -15,7 +15,7 @@ module S.Syntax.Elab
 
 import Data.Maybe (fromMaybe)
 import S.Stack
-import S.Syntax.Classes
+import S.Syntax
 import S.Type
 
 elab :: Stack t -> ElabC t -> t ::: t

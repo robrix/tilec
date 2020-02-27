@@ -8,7 +8,7 @@ module S.Syntax.Term
 ) where
 
 import Control.Monad (ap, (>=>))
-import S.Syntax.Classes
+import S.Syntax
 import S.Type
 
 data Term a b

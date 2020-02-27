@@ -4,7 +4,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
-module S.Syntax.Classes
+module S.Syntax
 ( Var(..)
 , Let(..)
 , Lam(..)

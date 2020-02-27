@@ -14,7 +14,7 @@ module S.Library
 ) where
 
 import Prelude hiding (maybe)
-import S.Syntax.Classes
+import S.Syntax
 
 bool :: Type a expr => expr
 bool = type' `pi'` \ a -> var a --> var a --> var a

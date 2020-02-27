@@ -23,7 +23,7 @@ import           Data.Monoid (Ap(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
 import           S.Pretty
-import           S.Syntax.Classes
+import           S.Syntax
 import           S.Type
 
 prettyPrint :: MonadIO m => PrettyC -> m ()
