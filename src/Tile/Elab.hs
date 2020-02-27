@@ -74,7 +74,7 @@ instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t Int) where
 typeOf :: Err t => Int -> ReaderC (Stack (t a)) t a
 typeOf n = ReaderC $ fromMaybe (err ("free variable: " <> show n)) . (!? n)
 
-(|-) :: t a -> Elab t a b -> Elab t a b
-t |- b = Elab . ReaderC $ \ ctx -> runReader (ctx :> t) (runElab b)
+(|-) :: t a -> ReaderC (Stack (t a)) t b -> ReaderC (Stack (t a)) t b
+t |- b = ReaderC $ \ ctx -> runReader (ctx :> t) b
 
 infixr 1 |-
