@@ -12,6 +12,7 @@ module Tile.Syntax
 , Prob(..)
 , Err(..)
 , Def(..)
+, runScript
 , Script(..)
 ) where
 
@@ -93,7 +94,10 @@ class Def tm ty a def | def -> tm ty where
 -- FIXME: packages
 
 
-newtype Script t a = Script { runScript :: forall r . (a -> t r) -> t r }
+runScript :: (a -> t b) -> Script t a -> t b
+runScript k (Script r) = r k
+
+newtype Script t a = Script (forall r . (a -> t r) -> t r)
   deriving (Functor)
 
 instance Applicative (Script t) where
@@ -101,4 +105,4 @@ instance Applicative (Script t) where
   (<*>) = ap
 
 instance Monad (Script t) where
-  Script r >>= f = Script (\ k -> r (($ k) . runScript . f))
+  Script r >>= f = Script (\ k -> r (runScript k . f))
