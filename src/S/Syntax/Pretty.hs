@@ -51,8 +51,10 @@ defaultStyle = \case
     [ANSI.color, ANSI.colorDull]
   len = length colours
 
-newtype PrettyC = PrettyC { runPrettyC :: Last Int -> (Last Int, Prec (Rainbow (PP.Doc (Highlight Int)))) }
-  deriving (Semigroup) via (Ap (StateC (Last Int) Identity) (Prec (Rainbow (PP.Doc (Highlight Int)))))
+type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
+
+newtype PrettyC = PrettyC { runPrettyC :: Last Int -> (Last Int, Inner) }
+  deriving (Semigroup) via (Ap (StateC (Last Int) Identity) Inner)
 
 instance Monoid PrettyC where
   mempty = PrettyC (, mempty)
@@ -113,7 +115,7 @@ instance Doc (Highlight Int) PrettyC where
 instance PrecDoc (Highlight Int) PrettyC where
   prec = mapDoc . prec
 
-mapDoc :: (Prec (Rainbow (PP.Doc (Highlight Int))) -> Prec (Rainbow (PP.Doc (Highlight Int)))) -> PrettyC -> PrettyC
+mapDoc :: (Inner -> Inner) -> PrettyC -> PrettyC
 mapDoc f (PrettyC run) = PrettyC (fmap f . run)
 
 toDoc :: PrettyC -> PP.Doc (Highlight Int)
