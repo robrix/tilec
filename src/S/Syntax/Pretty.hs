@@ -86,7 +86,7 @@ instance Type Int PrettyC where
   pi' t b = PrettyC $ do
     t' <- runPrettyC t
     (lhs, b') <- bind b (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
-    pure (prec (Level 0) (lhs <+> op "→" <+> b'))
+    pure (prec (Level 0) (lhs <> line <> op "→" <+> b'))
 
 
 data Highlight a
