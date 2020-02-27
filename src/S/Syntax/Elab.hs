@@ -30,6 +30,7 @@ instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (ElabC t) where
   let' (tm ::: ty) b = ElabC $ \ ctx ->
     let ty' ::: tty' = elab ctx ty
         tm' ::: ttm' = elab ctx tm
+    -- FIXME: this is almost certainly wrong
     in let' ((tm' ::: ttm' === ty') ::: (ty' ::: tty' === type')) (elab (ctx :> ty') . b)
 
 instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (ElabC t) where
