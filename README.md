@@ -18,6 +18,20 @@ Likewise, tile does not have (much of) a metalanguage. The intention is for modu
 Various parts of this plan might be poorly-thought-out, intractable, what-have-you; that’s ok! The goal is to see what I learn from the process, not to have all the answers already.
 
 
+# Development
+
+Make sure you have a recent enough `ghc` and `cabal`; I’m currently developing with `ghc` 8.8 & `cabal` 3.0, and I’m not testing against older versions. On macOS, I recommend `ghcup`.
+
+I do just about everything via `ghci`, which can be conveniently initialized and launched as follows:
+
+```
+cabal build # make sure dependencies are known & installed
+script/repl # actually launch the repl
+```
+
+`ghcide` integration is also provided, and I edit in VS Code configured to use it.
+
+
 # Architecture
 
 Broadly, `tilec` is designed to use (untyped) tagless final encodings of DSLs wherever feasible. That means typeclasses for bits of syntax, with instances providing algebras, rather than datatypes & pattern matching.
