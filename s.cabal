@@ -41,7 +41,7 @@ library
     S.Stack
     S.Syntax
     S.Syntax.Pretty
-    S.Syntax.Term
+    S.Term
     S.Type
   -- other-modules:
   -- other-extensions:

@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-module S.Syntax.Term
+module S.Term
 ( Term(..)
 , interpret
 ) where
