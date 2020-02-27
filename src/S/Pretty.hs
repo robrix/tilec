@@ -8,6 +8,7 @@ module S.Pretty
 , line'
 , enclose
 , surround
+, cat
 , vcat
 , concatWith
 , (<+>)
@@ -83,6 +84,9 @@ enclose l r x = l <> x <> r
 
 surround :: Doc ann doc => doc -> doc -> doc -> doc
 surround x l r = enclose l r x
+
+cat :: Doc ann doc => [doc] -> doc
+cat = group . vcat
 
 vcat :: Doc ann doc => [doc] -> doc
 vcat = concatWith (surround line')
