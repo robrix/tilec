@@ -7,6 +7,7 @@ module S.Pretty
 , Doc(..)
 , enclose
 , (<+>)
+, Level(..)
 , rainbow
 , Rainbow(..)
 , Prec(..)
@@ -58,6 +59,10 @@ l <+> r = enclose l r (pretty ' ')
 infixr 6 <+>
 
 
+newtype Level = Level Int
+  deriving (Eq, Ord, Show)
+
+
 rainbow :: Rainbow doc -> doc
 rainbow = (`runRainbow` 0)
 
@@ -74,7 +79,7 @@ instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) whe
   braces   (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '{') <> run (1 + l) <> annotate (pure l) (pretty '}')
 
 
-newtype Prec a = Prec { runPrec :: Int -> a }
+newtype Prec a = Prec { runPrec :: Level -> a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
 instance Doc ann doc => Doc ann (Prec doc) where
