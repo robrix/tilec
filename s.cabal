@@ -38,12 +38,12 @@ library
     S.Pretty
     S.Semiring
     S.Stack
-    S.Syntax
     S.Syntax.Classes
     S.Syntax.Elab
     S.Syntax.Eval
     S.Syntax.Free
     S.Syntax.Pretty
+    S.Type
   -- other-modules:
   -- other-extensions:
   build-depends:

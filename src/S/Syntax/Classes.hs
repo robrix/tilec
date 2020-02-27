@@ -15,7 +15,7 @@ module S.Syntax.Classes
 , Def(..)
 ) where
 
-import S.Syntax
+import S.Type
 
 class Var a expr | expr -> a where
   var :: a -> expr

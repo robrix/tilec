@@ -8,8 +8,8 @@ module S.Syntax.Free
 ) where
 
 import Control.Monad (ap, (>=>))
-import S.Syntax
 import S.Syntax.Classes
+import S.Type
 
 data Term a b
   = Var b

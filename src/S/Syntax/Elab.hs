@@ -15,8 +15,8 @@ module S.Syntax.Elab
 
 import Data.Maybe (fromMaybe)
 import S.Stack
-import S.Syntax
 import S.Syntax.Classes
+import S.Type
 
 elab :: Stack t -> ElabC t -> t ::: t
 elab = flip runElabC

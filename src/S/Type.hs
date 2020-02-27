@@ -2,7 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TypeOperators #-}
-module S.Syntax
+module S.Type
 ( (:::)(..)
 , pattern (:::)
 , term_
