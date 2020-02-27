@@ -58,15 +58,15 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t Int) wher
     (var res ::: var _B)
 
 instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t Int) where
-  type' = Elab (ReaderC (const type'))
+  type' = Elab type'
 
-  t >-> b = Elab . ReaderC $ \ ctx ->
-    let t' = elab ctx t
-    in (t' .:. type') >-> elab (ctx :> t') . b
+  t >-> b = Elab $
+    let t' = runElab t
+    in (t' .:. type') >-> t' |- runElab . b
 
-  tm .:. ty = Elab . ReaderC $ \ ctx ->
-    let ty' = elab ctx ty
-        tm' = elab ctx tm
+  tm .:. ty = Elab $
+    let ty' = runElab ty
+        tm' = runElab tm
     in tm' .:. ty' .:. type'
 
 -- FIXME: this should likely have a Prob instance
