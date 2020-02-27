@@ -16,6 +16,7 @@ module Tile.Elab
 import Data.Maybe (fromMaybe)
 import Tile.Stack
 import Tile.Syntax
+import Tile.Type
 
 elab :: Stack (t a) -> Elab t a -> t a
 elab = flip runElab
@@ -40,10 +41,14 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t) where
   f $$ a = Elab $ \ ctx ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
+    var _B `ex` \ res ->
     let f' = elab ctx f
         a' = elab ctx a
         _F = var _A --> var _B
-    in (f' .:. _F) $$ (a' .:. var _A) .:. (_F $$ a' === var _B)
+    in
+    ((f' .:. _F) $$ (a' .:. var _A) ::: _F $$ a')
+    ===
+    (var res ::: var _B)
 
 instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t) where
   type' = Elab (const type')

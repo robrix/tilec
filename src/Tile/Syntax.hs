@@ -1,4 +1,5 @@
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE TypeOperators #-}
 module Tile.Syntax
 ( Var(..)
 , Let(..)
@@ -9,6 +10,8 @@ module Tile.Syntax
 , Err(..)
 , Def(..)
 ) where
+
+import Tile.Type
 
 class Var a expr | expr -> a where
   var :: a -> expr a
@@ -43,7 +46,7 @@ infixr 0 -->
 class Var a expr => Prob a expr where
   ex :: expr a -> (a -> expr a) -> expr a
 
-  (===) :: expr a -> expr a -> expr a
+  (===) :: expr a ::: expr a -> expr a ::: expr a -> expr a
   infixl 4 ===
 
 
