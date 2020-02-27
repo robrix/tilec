@@ -37,8 +37,8 @@ deriving instance (Let a expr1, Let a expr2) => Let a (expr1 ::: expr2)
 
 class Var a expr => Lam a expr where
   lam :: (a -> expr) -> expr
-  ($$) :: expr -> expr -> expr
 
+  ($$) :: expr -> expr -> expr
   infixl 9 $$
 
 instance (Lam a expr1, Lam a expr2) => Lam a (expr1, expr2) where
@@ -50,8 +50,8 @@ deriving instance (Lam a expr1, Lam a expr2) => Lam a (expr1 ::: expr2)
 
 class Var a expr => Type a expr where
   type' :: expr
-  pi' :: expr -> (a -> expr) -> expr
 
+  pi' :: expr -> (a -> expr) -> expr
   infixr 0 `pi'`
 
 instance (Type a expr1, Type a expr2) => Type a (expr1, expr2) where
