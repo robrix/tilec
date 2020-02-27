@@ -101,4 +101,4 @@ instance Applicative (Script t) where
   (<*>) = ap
 
 instance Monad (Script t) where
-  Script r >>= f = Script (\ k -> r (($ k) .runScript . f))
+  Script r >>= f = Script (\ k -> r (($ k) . runScript . f))
