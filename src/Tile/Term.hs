@@ -18,6 +18,7 @@ data Term a b
   | Term a b :$ Term a b
   | Type
   | Pi (Term a b) (a -> Term a b)
+  | Term a b :. Term a b
   | Err String
   deriving (Functor)
 
@@ -33,6 +34,7 @@ instance Monad (Term a) where
     g :$ a      -> (g >>= f) :$ (a >>= f)
     Type        -> Type
     Pi t b      -> Pi (t >>= f) (b >=> f)
+    m :. t      -> (m >>= f) :. (t >>= f)
     Err s       -> Err s
 
 instance Var a (Term a a) where
@@ -53,6 +55,7 @@ instance Err (Term a b) where
   err = Err
 
 infixl 9 :$
+infixl 0 :.
 
 interpret :: (Let a t, Lam a t, Type a t, Err t) => Term a a -> t
 interpret = \case
@@ -62,4 +65,5 @@ interpret = \case
   f :$ a      -> interpret f $$ interpret a
   Type        -> type'
   Pi t b      -> interpret t `pi'` interpret . b
+  m :. _      -> interpret m
   Err s       -> err s
