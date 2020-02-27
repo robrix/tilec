@@ -50,7 +50,7 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t) where
         a' = elab ctx a
         _F = var _A --> var _B
     in
-    ((f' .:. _F) $$ (a' .:. var _A) ::: _F $$ a')
+    (f' $$ a' ::: _F $$ a')
     ===
     (var res ::: var _B)
 
