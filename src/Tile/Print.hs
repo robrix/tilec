@@ -5,7 +5,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeApplications #-}
-module S.Print
+module Tile.Print
 ( prettyPrint
 , prettyPrintWith
 , defaultStyle
@@ -22,9 +22,9 @@ import qualified Data.IntSet as IntSet
 import           Data.Monoid (Ap(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
-import           S.Pretty
-import           S.Syntax
-import           S.Type
+import           Tile.Pretty
+import           Tile.Syntax
+import           Tile.Type
 
 prettyPrint :: MonadIO m => PrettyC -> m ()
 prettyPrint = prettyPrintWith defaultStyle

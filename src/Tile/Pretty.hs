@@ -2,7 +2,7 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE UndecidableInstances #-}
-module S.Pretty
+module Tile.Pretty
 ( putDoc
 , Doc(..)
 , line'

@@ -1,4 +1,4 @@
-module S.Library
+module Tile.Library
 ( -- * Booleans
   bool
 , true
@@ -14,7 +14,7 @@ module S.Library
 ) where
 
 import Prelude hiding (maybe)
-import S.Syntax
+import Tile.Syntax
 
 bool :: Type a expr => expr
 bool = type' `pi'` \ a -> var a --> var a --> var a

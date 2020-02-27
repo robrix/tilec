@@ -2,14 +2,14 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-module S.Term
+module Tile.Term
 ( Term(..)
 , interpret
 ) where
 
 import Control.Monad (ap, (>=>))
-import S.Syntax
-import S.Type
+import Tile.Syntax
+import Tile.Type
 
 data Term a b
   = Var b

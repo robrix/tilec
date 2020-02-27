@@ -8,15 +8,15 @@
 -- * [An Algebraic Approach to Typechecking and Elaboration](https://bentnib.org/posts/2015-04-19-algebraic-approach-typechecking-and-elaboration.html), Bob Atkey
 -- * Typed Tagless Final Interpreters, Oleg Kiselyov
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
-module S.Elab
+module Tile.Elab
 ( elab
 , ElabC(..)
 ) where
 
 import Data.Maybe (fromMaybe)
-import S.Stack
-import S.Syntax
-import S.Type
+import Tile.Stack
+import Tile.Syntax
+import Tile.Type
 
 elab :: Stack t -> ElabC t -> t ::: t
 elab = flip runElabC

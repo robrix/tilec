@@ -34,14 +34,14 @@ common common
 library
   import: common
   exposed-modules:
-    S.Elab
-    S.Library
-    S.Pretty
-    S.Print
-    S.Stack
-    S.Syntax
-    S.Term
-    S.Type
+    Tile.Elab
+    Tile.Library
+    Tile.Pretty
+    Tile.Print
+    Tile.Stack
+    Tile.Syntax
+    Tile.Term
+    Tile.Type
   -- other-modules:
   -- other-extensions:
   build-depends:

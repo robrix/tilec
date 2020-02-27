@@ -4,7 +4,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
-module S.Syntax
+module Tile.Syntax
 ( Var(..)
 , Let(..)
 , Lam(..)
@@ -15,7 +15,7 @@ module S.Syntax
 , Def(..)
 ) where
 
-import S.Type
+import Tile.Type
 
 class Var a expr | expr -> a where
   var :: a -> expr

@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveTraversable #-}
-module S.Stack
+module Tile.Stack
 ( Stack(..)
 , (!?)
 ) where

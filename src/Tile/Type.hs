@@ -2,7 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE TypeOperators #-}
-module S.Type
+module Tile.Type
 ( (:::)(..)
 , pattern (:::)
 , term_
