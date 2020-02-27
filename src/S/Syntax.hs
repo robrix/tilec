@@ -7,8 +7,6 @@ module S.Syntax
 , pattern (:::)
 , term_
 , type_
-, Stack(..)
-, (!?)
 ) where
 
 newtype a ::: b = Ascribe (a, b)
@@ -29,25 +27,3 @@ term_ (a ::: _) = a
 
 type_ :: a ::: b -> b
 type_ (_ ::: b) = b
-
-
-data Stack a
-  = Nil
-  | Stack a :> a
-  deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
-
-infixl 5 :>
-
-instance Semigroup (Stack a) where
-  a <> Nil      = a
-  a <> (s :> b) = a <> s :> b
-
-instance Monoid (Stack a) where
-  mempty = Nil
-
-(!?) :: Stack a -> Int -> Maybe a
-Nil        !? _ = Nothing
-(_   :> a) !? 0 = Just a
-(ctx :> _) !? n = ctx !? (n - 1)
-
-infixl 9 !?

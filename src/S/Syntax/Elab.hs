@@ -14,6 +14,7 @@ module S.Syntax.Elab
 ) where
 
 import Data.Maybe (fromMaybe)
+import S.Stack
 import S.Syntax
 import S.Syntax.Classes
 

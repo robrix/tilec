@@ -37,6 +37,7 @@ library
     S.Library
     S.Pretty
     S.Semiring
+    S.Stack
     S.Syntax
     S.Syntax.Classes
     S.Syntax.Elab
