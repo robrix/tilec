@@ -106,4 +106,4 @@ instance Doc ann doc => Doc ann (Prec doc) where
   braces = fmap braces
 
 instance Doc ann doc => PrecDoc ann (Prec doc) where
-  prec l (Prec d) = Prec $ \ l' -> (if l' > l then parens else id) (d l')
+  prec l (Prec d) = Prec $ \ l' -> parensIf (l' > l) (d l')
