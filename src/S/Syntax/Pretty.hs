@@ -70,7 +70,7 @@ instance Let Int PrettyC where
     tm' <- runPrettyC tm
     ty' <- runPrettyC ty
     (lhs, b') <- bind b prettyVar (pretty '_')
-    pure (kw "let" <+> lhs <+> op "=" <+> tm' <+> op ":" <+> ty' <+> kw "in" <+> b')
+    pure (group (align (kw "let" <+> lhs <+> align (op "=" <+> tm' <> line <> op ":" <+> ty') <> line <> kw "in" <+> b')))
 
 instance Lam Int PrettyC where
   lam b  = PrettyC $ do
