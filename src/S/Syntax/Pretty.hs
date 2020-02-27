@@ -61,15 +61,21 @@ instance Var Int PrettyC where
   var = annotate Var . (pretty '_' <>) . pretty
 
 instance Let Int PrettyC where
-  let' (tm ::: ty) b = fresh (\ v -> kw "let" <+> var v <+> op "=" <+> tm <+> op ":" <+> ty <+> kw "in" <+> b v)
+  let' (tm ::: ty) b = PrettyC $ do
+    v <- F.fresh
+    runPrettyC (kw "let" <+> var v <+> op "=" <+> tm <+> op ":" <+> ty <+> kw "in" <+> b v)
 
 instance Lam Int PrettyC where
-  lam f  = fresh $ \ v -> op "\\" <+> var v <+> op "." <+> f v
+  lam f  = PrettyC $ do
+    v <- F.fresh
+    runPrettyC (op "\\" <+> var v <+> op "." <+> f v)
   f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
 
 instance Type Int PrettyC where
   type' = annotate Type (pretty "Type")
-  pi' t f = fresh $ \ v -> prec (Level 0) (parens (var v <+> op ":" <+> t) <+> op "->" <+> f v)
+  pi' t f = PrettyC $ do
+    v <- F.fresh
+    runPrettyC (prec (Level 0) (parens (var v <+> op ":" <+> t) <+> op "->" <+> f v))
 
 
 data Highlight a
@@ -115,8 +121,3 @@ mapDoc f (PrettyC run) = PrettyC (f <$> run)
 
 toDoc :: PrettyC -> PP.Doc (Highlight Int)
 toDoc (PrettyC m) = rainbow (runPrec (snd (F.evalFresh 0 (getAp m))) (Level 0))
-
-fresh :: (Int -> PrettyC) -> PrettyC
-fresh f = PrettyC $ do
-  v <- F.fresh
-  runPrettyC (f v)
