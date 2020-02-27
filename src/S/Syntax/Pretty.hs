@@ -65,7 +65,7 @@ instance Let Int PrettyC where
 
 instance Lam Int PrettyC where
   lam f  = fresh $ \ v -> op "\\" <+> var v <+> op "." <+> f v
-  f $$ a = f <+> a
+  f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
 
 instance Type Int PrettyC where
   type' = annotate Type (pretty "Type")
