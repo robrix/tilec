@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
@@ -13,7 +14,10 @@ module S.Syntax.Pretty
 ) where
 
 import           Control.Applicative ((<**>))
+import           Control.Carrier.State.Strict
 import           Control.Monad.IO.Class
+import           Data.Functor.Identity
+import           Data.Monoid (Ap(..))
 import           Data.Semigroup (Last(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
@@ -49,7 +53,7 @@ defaultStyle = \case
   len = length colours
 
 newtype PrettyC = PrettyC { runPrettyC :: Last Int -> (Last Int, Prec (Rainbow (PP.Doc (Highlight Int)))) }
-  deriving (Semigroup)
+  deriving (Semigroup) via (Ap (StateC (Last Int) Identity) (Prec (Rainbow (PP.Doc (Highlight Int)))))
 
 instance Monoid PrettyC where
   mempty = PrettyC (, mempty)
