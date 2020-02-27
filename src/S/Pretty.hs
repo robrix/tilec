@@ -7,6 +7,7 @@ module S.Pretty
 , Doc(..)
 , enclose
 , (<+>)
+, parensIf
 , Level(..)
 , PrecDoc(..)
 , rainbow
@@ -58,6 +59,10 @@ enclose l r x = l <> x <> r
 l <+> r = enclose l r (pretty ' ')
 
 infixr 6 <+>
+
+parensIf :: Doc ann doc => Bool -> doc -> doc
+parensIf True = parens
+parensIf _    = id
 
 
 newtype Level = Level Int
