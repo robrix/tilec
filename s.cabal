@@ -38,7 +38,6 @@ library
     S.Library
     S.Pretty
     S.Print
-    S.Semiring
     S.Stack
     S.Syntax
     S.Term
