@@ -9,12 +9,16 @@
 -- * Typed Tagless Final Interpreters, Oleg Kiselyov
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module S.Syntax.Elab
-( ElabC(..)
+( elab
+, ElabC(..)
 ) where
 
 import Data.Maybe (fromMaybe)
 import S.Syntax
 import S.Syntax.Classes
+
+elab :: Stack t -> ElabC t -> t ::: t
+elab = flip runElabC
 
 newtype ElabC t = ElabC { runElabC :: Stack t -> t ::: t }
 
@@ -48,6 +52,3 @@ instance (Prob Int t, Type Int t, Err t) => Type Int (ElabC t) where
     in pi' (t' ::: tt' === type') (elab (ctx :> t') . b)
 
 -- FIXME: this should likely have a Prob instance
-
-elab :: Stack t -> ElabC t -> t ::: t
-elab = flip runElabC
