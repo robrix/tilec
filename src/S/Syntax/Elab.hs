@@ -16,7 +16,7 @@ import Data.Maybe (fromMaybe)
 import S.Syntax
 import S.Syntax.Classes
 
-newtype ElabC t = ElabC { runElabC :: Spine t -> t ::: t }
+newtype ElabC t = ElabC { runElabC :: Stack t -> t ::: t }
 
 instance (Var Int t, Err t) => Var Int (ElabC t) where
   var n = ElabC $ \ ctx ->
@@ -47,5 +47,5 @@ instance (Prob Int t, Type Int t, Err t) => Type Int (ElabC t) where
     let t' ::: tt' = elab ctx t
     in pi' (t' ::: tt' === type') (elab (ctx :> t') . b)
 
-elab :: Spine t -> ElabC t -> t ::: t
+elab :: Stack t -> ElabC t -> t ::: t
 elab = flip runElabC

@@ -14,7 +14,7 @@ module S.Syntax
 , type_
 , (:=)(..)
 , pattern (:=)
-, Spine(..)
+, Stack(..)
 , (!?)
 , N(..)
 , Fin(..)
@@ -59,25 +59,25 @@ pattern a := b = Define (a, b)
 infixl 0 :=
 
 
-data Spine a
+data Stack a
   = Nil
-  | Spine a :> a
+  | Stack a :> a
   deriving (Eq, Foldable, Functor, Generic1, Ord, Show, Traversable)
 
 infixl 5 :>
 
-instance Semigroup (Spine a) where
+instance Semigroup (Stack a) where
   a <> Nil      = a
   a <> (s :> b) = a <> s :> b
 
-instance Monoid (Spine a) where
+instance Monoid (Stack a) where
   mempty = Nil
 
-instance Eq1 Spine where liftEq = liftEqDefault
-instance Ord1 Spine where liftCompare = liftCompareDefault
-instance Show1 Spine where liftShowsPrec = liftShowsPrecDefault
+instance Eq1 Stack where liftEq = liftEqDefault
+instance Ord1 Stack where liftCompare = liftCompareDefault
+instance Show1 Stack where liftShowsPrec = liftShowsPrecDefault
 
-(!?) :: Spine a -> Int -> Maybe a
+(!?) :: Stack a -> Int -> Maybe a
 Nil        !? _ = Nothing
 (_   :> a) !? 0 = Just a
 (ctx :> _) !? n = ctx !? (n - 1)

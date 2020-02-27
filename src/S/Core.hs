@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeOperators #-}
 module S.Core
 ( Term(..)
-, Spine(..)
+, Stack(..)
 , lam
 , ($$)
 , ($$*)
@@ -22,7 +22,7 @@ import S.Syntax
 
 data Term a
   = Lam (Scope () Term a)
-  | a :$ Spine (Term a)
+  | a :$ Stack (Term a)
   | Let (Term a) (Term a) (Scope () Term a)
   | Type
   | Pi (Term a) (Scope () Term a)
