@@ -6,6 +6,7 @@ module S.Pretty
 ( putDoc
 , Doc(..)
 , enclose
+, surround
 , (<+>)
 , parensIf
 , Level(..)
@@ -73,6 +74,9 @@ instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
 
 enclose :: Doc ann doc => doc -> doc -> doc -> doc
 enclose l r x = l <> x <> r
+
+surround :: Doc ann doc => doc -> doc -> doc -> doc
+surround x l r = enclose l r x
 
 (<+>) :: Doc ann doc => doc -> doc -> doc
 l <+> r = enclose l r (pretty ' ')
