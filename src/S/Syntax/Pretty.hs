@@ -4,6 +4,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeApplications #-}
 module S.Syntax.Pretty
 ( prettyPrint
 , prettyPrintWith
@@ -123,21 +124,18 @@ bind b used unused = do
 instance Doc (Highlight Int) PrettyC where
   pretty = PrettyC . pure . pretty
 
-  annotate = under . fmap . annotate
+  annotate = coerce . fmap @M . annotate
 
-  group = under (fmap group)
+  group = coerce (fmap @M group)
 
-  parens = under (fmap parens)
+  parens = coerce (fmap @M parens)
 
-  brackets = under (fmap brackets)
+  brackets = coerce (fmap @M brackets)
 
-  braces = under (fmap braces)
+  braces = coerce (fmap @M braces)
 
 instance PrecDoc (Highlight Int) PrettyC where
-  prec = under . fmap . prec
-
-under :: (M Inner -> M Inner) -> PrettyC -> PrettyC
-under = coerce
+  prec = coerce . fmap @M . prec
 
 toDoc :: PrettyC -> PP.Doc (Highlight Int)
 toDoc (PrettyC m) = rainbow (runPrec (snd (evalFresh 0 (getAp m))) (Level 0))
