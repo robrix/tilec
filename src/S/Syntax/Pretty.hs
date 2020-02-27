@@ -63,20 +63,14 @@ instance Var Int PrettyC where
 
 instance Let Int PrettyC where
   let' (tm ::: ty) b = PrettyC $ do
-    v <- fresh
     tm' <- runPrettyC tm
     ty' <- runPrettyC ty
-    (fvs, b') <- listen (runPrettyC (b v))
-    let lhs | v `IntSet.member` fvs = prettyVar v
-            | otherwise             = pretty '_'
+    (lhs, b') <- bind b prettyVar (pretty '_')
     pure (kw "let" <+> lhs <+> op "=" <+> tm' <+> op ":" <+> ty' <+> kw "in" <+> b')
 
 instance Lam Int PrettyC where
   lam b  = PrettyC $ do
-    v <- fresh
-    (fvs, b') <- listen (runPrettyC (b v))
-    let lhs | v `IntSet.member` fvs = prettyVar v
-            | otherwise             = pretty '_'
+    (lhs, b') <- bind b prettyVar (pretty '_')
     pure (op "\\" <+> lhs <+> op "." <+> b')
   f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
 
@@ -84,10 +78,7 @@ instance Type Int PrettyC where
   type' = annotate Type (pretty "Type")
   pi' t b = PrettyC $ do
     t' <- runPrettyC t
-    v <- fresh
-    (fvs, b') <- listen (runPrettyC (b v))
-    let lhs | v `IntSet.member` fvs = parens (prettyVar v <+> op ":" <+> t')
-            | otherwise             = prec (Level 1) t'
+    (lhs, b') <- bind b (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
     pure (prec (Level 0) (lhs <+> op "->" <+> b'))
 
 
@@ -117,6 +108,12 @@ op = annotate Op . pretty
 
 prettyVar :: Doc (Highlight Int) doc => Int -> doc
 prettyVar = annotate Var . mappend (pretty '_') . pretty
+
+bind :: (Int -> PrettyC) -> (Int -> Inner) -> Inner -> Ap (FreshC ((,) IntSet.IntSet)) (Inner, Inner)
+bind b used unused = do
+  v <- fresh
+  (fvs, b') <- listen (runPrettyC (b v))
+  pure (if v `IntSet.member` fvs then used v else unused, b')
 
 instance Doc (Highlight Int) PrettyC where
   pretty = PrettyC . pure . pretty
