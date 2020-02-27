@@ -64,7 +64,7 @@ newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
 instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) where
-  pretty = Rainbow . const . pretty
+  pretty = pure . pretty
 
   annotate = fmap . annotate
 
