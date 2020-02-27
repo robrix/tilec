@@ -48,7 +48,7 @@ instance Lam a (Term a a) where
 
 instance Type a (Term a a) where
   type' = Type
-  pi' = Pi
+  (>->) = Pi
   (.:.) = (:.)
 
 instance Err (Term a b) where
@@ -64,6 +64,6 @@ interpret = \case
   Lam b   -> lam (interpret . b)
   f :$ a  -> interpret f $$ interpret a
   Type    -> type'
-  Pi t b  -> interpret t `pi'` interpret . b
+  Pi t b  -> interpret t >-> interpret . b
   m :. t  -> interpret m .:. interpret t
   Err s   -> err s

@@ -46,9 +46,9 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t) where
 
 instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t) where
   type' = Elab (const type')
-  pi' t b = Elab $ \ ctx ->
+  t >-> b = Elab $ \ ctx ->
     let t' = elab ctx t
-    in pi' (t' .:. type') (elab (ctx :> t') . b)
+    in (t' .:. type') >-> elab (ctx :> t') . b
   tm .:. ty = Elab $ \ ctx ->
     let ty' = elab ctx ty
         tm' = elab ctx tm

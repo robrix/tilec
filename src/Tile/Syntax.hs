@@ -28,14 +28,14 @@ class Var a expr => Lam a expr where
 class Var a expr => Type a expr where
   type' :: expr
 
-  pi' :: expr -> (a -> expr) -> expr
-  infixr 0 `pi'`
+  (>->) :: expr -> (a -> expr) -> expr
+  infixr 0 >->
 
   (.:.) :: expr -> expr -> expr
   infixl 0 .:.
 
 (-->) :: Type a expr => expr -> expr -> expr
-a --> b = a `pi'` const b
+a --> b = a >-> const b
 
 infixr 0 -->
 

@@ -81,7 +81,7 @@ instance Lam Int Print where
 
 instance Type Int Print where
   type' = annotate Type (pretty "Type")
-  pi' t b = Print $ do
+  t >-> b = Print $ do
     t' <- runPrint t
     (lhs, b') <- bind b (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
     pure (prec (Level 0) (lhs <> line <> op "→" <+> b'))
