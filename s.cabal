@@ -34,12 +34,12 @@ common common
 library
   import: common
   exposed-modules:
+    S.Elab
     S.Library
     S.Pretty
     S.Semiring
     S.Stack
     S.Syntax
-    S.Syntax.Elab
     S.Syntax.Pretty
     S.Syntax.Term
     S.Type
