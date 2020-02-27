@@ -24,6 +24,9 @@ instance Var a m => Var a (ReaderC r m) where
 class Var a expr => Let a expr where
   let' :: expr a -> (a -> expr a) -> expr a
 
+instance Let a m => Let a (ReaderC r m) where
+  let' v b = ReaderC (\ ctx -> let' (runReader ctx v) (runReader ctx . b))
+
 
 class Var a expr => Lam a expr where
   lam :: (a -> expr a) -> expr a
