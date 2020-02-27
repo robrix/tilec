@@ -67,9 +67,12 @@ instance Let Int PrettyC where
     runPrettyC (kw "let" <+> var v <+> op "=" <+> tm <+> op ":" <+> ty <+> kw "in" <+> b v)
 
 instance Lam Int PrettyC where
-  lam f  = PrettyC $ do
+  lam b  = PrettyC $ do
     v <- fresh
-    runPrettyC (op "\\" <+> var v <+> op "." <+> f v)
+    (fvs, b') <- listen (runPrettyC (b v))
+    let lhs | v `IntSet.member` fvs = prettyVar v
+            | otherwise             = pretty '_'
+    pure (op "\\" <+> lhs <+> op "." <+> b')
   f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
 
 instance Type Int PrettyC where
