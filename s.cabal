@@ -40,7 +40,6 @@ library
     S.Stack
     S.Syntax
     S.Syntax.Elab
-    S.Syntax.Eval
     S.Syntax.Pretty
     S.Syntax.Term
     S.Type
