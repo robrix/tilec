@@ -23,9 +23,13 @@ elab = flip runElab
 
 newtype Elab t a = Elab { runElab :: Stack (t a) -> t a }
 
-instance (Type Int t, Err t) => Var Int (Elab t) where
+instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t) where
   var n = Elab $ \ ctx ->
-    var n .:. fromMaybe (err ("free variable: " <> show n)) (ctx !? n)
+    type' `ex` \ _A ->
+    var _A `ex` \ v ->
+    (var n ::: fromMaybe (err ("free variable: " <> show n)) (ctx !? n))
+    ===
+    (var v ::: var _A)
 
 instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab t) where
   let' tm b = Elab $ \ ctx ->
