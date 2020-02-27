@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE TypeOperators #-}
 module Tile.Syntax
@@ -11,11 +12,14 @@ module Tile.Syntax
 , Def(..)
 ) where
 
+import Control.Carrier.Reader
 import Tile.Type
 
 class Var a expr where
   var :: a -> expr a
 
+instance Var a m => Var a (ReaderC r m) where
+  var = ReaderC . const . var
 
 class Var a expr => Let a expr where
   let' :: expr a -> (a -> expr a) -> expr a
