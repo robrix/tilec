@@ -77,7 +77,7 @@ instance Lam Int PrettyC where
   lam b  = PrettyC $ do
     (lhs, b') <- bind b prettyVar (pretty '_')
     -- FIXME: combine successive lambdas into a single \ … . …
-    pure (prec (Level 0) (group (align (op "\\" <+> lhs <+> op "." <> line <> b'))))
+    pure (prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> b')))
   -- FIXME: combine successive applications for purposes of wrapping
   f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
 
