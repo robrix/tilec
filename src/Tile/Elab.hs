@@ -71,8 +71,8 @@ instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t Int) where
 
 -- FIXME: this should likely have a Prob instance
 
-typeOf :: Err t => Int -> Elab t a a
-typeOf n = Elab . ReaderC $ fromMaybe (err ("free variable: " <> show n)) . (!? n)
+typeOf :: Err t => Int -> ReaderC (Stack (t a)) t a
+typeOf n = ReaderC $ fromMaybe (err ("free variable: " <> show n)) . (!? n)
 
 (|-) :: t a -> Elab t a b -> Elab t a b
 t |- b = Elab . ReaderC $ \ ctx -> runReader (ctx :> t) (runElab b)
