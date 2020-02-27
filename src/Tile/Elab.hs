@@ -36,6 +36,7 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t) where
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     lam (elab (ctx :> var _A) . b) .:. (var _A --> var _B)
+
   f $$ a = Elab $ \ ctx ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
@@ -46,9 +47,11 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t) where
 
 instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t) where
   type' = Elab (const type')
+
   t >-> b = Elab $ \ ctx ->
     let t' = elab ctx t
     in (t' .:. type') >-> elab (ctx :> t') . b
+
   tm .:. ty = Elab $ \ ctx ->
     let ty' = elab ctx ty
         tm' = elab ctx tm
