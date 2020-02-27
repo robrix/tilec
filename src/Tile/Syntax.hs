@@ -10,6 +10,7 @@ module Tile.Syntax
 , Prob(..)
 , Err(..)
 , Def(..)
+, Script(..)
 ) where
 
 import Control.Carrier.Reader
@@ -87,3 +88,6 @@ class Def tm ty a def | def -> tm ty where
 
 -- FIXME: modules
 -- FIXME: packages
+
+
+newtype Script t a = Script { runScript :: t a }
