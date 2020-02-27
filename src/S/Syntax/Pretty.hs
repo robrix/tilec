@@ -122,7 +122,7 @@ bind b used unused = do
   pure (if v `IntSet.member` fvs then used v else unused, b')
 
 instance Doc (Highlight Int) PrettyC where
-  pretty = PrettyC . pure . pretty
+  pretty = coerce . pure @M . pretty
 
   annotate = coerce . fmap @M . annotate
 
