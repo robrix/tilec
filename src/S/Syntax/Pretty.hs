@@ -100,7 +100,7 @@ instance Applicative Highlight where
 kw :: Doc (Highlight Int) doc => String -> doc
 kw = annotate Keyword . pretty
 
-op :: String -> PrettyC
+op :: Doc (Highlight Int) doc => String -> doc
 op = annotate Op . pretty
 
 instance Doc (Highlight Int) PrettyC where
