@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TupleSections #-}
@@ -13,11 +13,10 @@ module S.Syntax.Pretty
 ) where
 
 import           Control.Applicative ((<**>))
-import           Control.Carrier.State.Strict
+import qualified Control.Carrier.Fresh.Strict as F
 import           Control.Monad.IO.Class
 import           Data.Functor.Identity
 import           Data.Monoid (Ap(..))
-import           Data.Semigroup (Last(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
 import           S.Pretty
@@ -53,11 +52,8 @@ defaultStyle = \case
 
 type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 
-newtype PrettyC = PrettyC { runPrettyC :: Last Int -> (Last Int, Inner) }
-  deriving (Semigroup) via (Ap (StateC (Last Int) Identity) Inner)
-
-instance Monoid PrettyC where
-  mempty = PrettyC (, mempty)
+newtype PrettyC = PrettyC { runPrettyC :: Ap (F.FreshC Identity) Inner }
+  deriving (Monoid, Semigroup)
 
 instance Show PrettyC where
   showsPrec p = showsPrec p . toDoc
@@ -102,7 +98,7 @@ op :: String -> PrettyC
 op = annotate Op . pretty
 
 instance Doc (Highlight Int) PrettyC where
-  pretty = PrettyC . flip (,) . pretty
+  pretty = PrettyC . pure . pretty
 
   annotate = mapDoc . annotate
 
@@ -116,10 +112,12 @@ instance PrecDoc (Highlight Int) PrettyC where
   prec = mapDoc . prec
 
 mapDoc :: (Inner -> Inner) -> PrettyC -> PrettyC
-mapDoc f (PrettyC run) = PrettyC (fmap f . run)
+mapDoc f (PrettyC run) = PrettyC (f <$> run)
 
 toDoc :: PrettyC -> PP.Doc (Highlight Int)
-toDoc (PrettyC run) = rainbow (runPrec (snd (run (Last 0))) (Level 0))
+toDoc (PrettyC m) = rainbow (runPrec (runIdentity (F.evalFresh 0 (getAp m))) (Level 0))
 
 fresh :: (Int -> PrettyC) -> PrettyC
-fresh f = PrettyC $ \ v -> runPrettyC (f (getLast v)) ((1 +) <$> v)
+fresh f = PrettyC $ do
+  v <- F.fresh
+  runPrettyC (f v)
