@@ -70,3 +70,6 @@ instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t Int) where
     in tm' .:. ty' .:. type'
 
 -- FIXME: this should likely have a Prob instance
+
+typeOf :: Err t => Int -> Elab t a a
+typeOf n = Elab . ReaderC $ fromMaybe (err ("free variable: " <> show n)) . (!? n)
