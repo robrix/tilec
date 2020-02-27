@@ -14,6 +14,8 @@
 
 - parsing
   - de/serialization instead?
+  - literate-by-default?
+  - first-class doc comments?
 
 - error reporting
 
