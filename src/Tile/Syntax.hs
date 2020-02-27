@@ -1,6 +1,7 @@
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 module Tile.Syntax
 ( Var(..)
@@ -15,6 +16,7 @@ module Tile.Syntax
 ) where
 
 import Control.Carrier.Reader
+import Control.Monad (ap)
 import Tile.Type
 
 class Var a expr where
@@ -91,5 +93,12 @@ class Def tm ty a def | def -> tm ty where
 -- FIXME: packages
 
 
-newtype Script t a = Script { runScript :: t a }
-  deriving (Applicative, Functor, Monad, Var v, Let v, Lam v, Type v, Prob v, Err)
+newtype Script t a = Script { runScript :: forall r . (a -> t r) -> t r }
+  deriving (Functor)
+
+instance Applicative (Script t) where
+  pure a = Script (\ k -> k a)
+  (<*>) = ap
+
+instance Monad (Script t) where
+  Script r >>= f = Script (\ k -> r (($ k) .runScript . f))
