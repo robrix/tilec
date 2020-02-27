@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -13,18 +14,20 @@ module Tile.Elab
 , Elab(..)
 ) where
 
+import Control.Carrier.Reader
 import Data.Maybe (fromMaybe)
 import Tile.Stack
 import Tile.Syntax
 import Tile.Type
 
 elab :: Stack (t a) -> Elab t a b -> t b
-elab = flip runElab
+elab ctx = runReader ctx . runElab
 
-newtype Elab t a b = Elab { runElab :: Stack (t a) -> t b }
+newtype Elab t a b = Elab { runElab :: ReaderC (Stack (t a)) t b }
+  deriving (Functor)
 
 instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t Int) where
-  var n = Elab $ \ ctx ->
+  var n = Elab . ReaderC $ \ ctx ->
     type' `ex` \ _A ->
     var _A `ex` \ v ->
     (var n ::: fromMaybe (err ("free variable: " <> show n)) (ctx !? n))
@@ -32,17 +35,17 @@ instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t Int) where
     (var v ::: var _A)
 
 instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab t Int) where
-  let' tm b = Elab $ \ ctx ->
+  let' tm b = Elab . ReaderC $ \ ctx ->
     type' `ex` \ _A ->
     let' (elab ctx tm .:. var _A) (elab (ctx :> var _A) . b)
 
 instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t Int) where
-  lam b = Elab $ \ ctx ->
+  lam b = Elab . ReaderC $ \ ctx ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     lam (elab (ctx :> var _A) . b) .:. (var _A --> var _B)
 
-  f $$ a = Elab $ \ ctx ->
+  f $$ a = Elab . ReaderC $ \ ctx ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     var _B `ex` \ res ->
@@ -55,13 +58,13 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t Int) wher
     (var res ::: var _B)
 
 instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t Int) where
-  type' = Elab (const type')
+  type' = Elab (ReaderC (const type'))
 
-  t >-> b = Elab $ \ ctx ->
+  t >-> b = Elab . ReaderC $ \ ctx ->
     let t' = elab ctx t
     in (t' .:. type') >-> elab (ctx :> t') . b
 
-  tm .:. ty = Elab $ \ ctx ->
+  tm .:. ty = Elab . ReaderC $ \ ctx ->
     let ty' = elab ctx ty
         tm' = elab ctx tm
     in tm' .:. ty' .:. type'
