@@ -25,7 +25,7 @@ class Var a expr => Let a expr where
   let' :: expr a -> (a -> expr a) -> expr a
 
 instance Let a m => Let a (ReaderC r m) where
-  let' v b = ReaderC (\ ctx -> let' (runReader ctx v) (runReader ctx . b))
+  let' v b = ReaderC (\ r -> let' (runReader r v) (runReader r . b))
 
 
 class Var a expr => Lam a expr where
@@ -35,9 +35,9 @@ class Var a expr => Lam a expr where
   infixl 9 $$
 
 instance Lam a m => Lam a (ReaderC r m) where
-  lam b = ReaderC (\ ctx -> lam (runReader ctx . b))
+  lam b = ReaderC (\ r -> lam (runReader r . b))
 
-  f $$ a = ReaderC (\ ctx -> runReader ctx f $$ runReader ctx a)
+  f $$ a = ReaderC (\ r -> runReader r f $$ runReader r a)
 
 
 class Var a expr => Type a expr where
@@ -52,9 +52,9 @@ class Var a expr => Type a expr where
 instance Type a m => Type a (ReaderC r m) where
   type' = ReaderC (const type')
 
-  t >-> b = ReaderC (\ ctx -> runReader ctx t >-> runReader ctx . b)
+  t >-> b = ReaderC (\ r -> runReader r t >-> runReader r . b)
 
-  m .:. t = ReaderC (\ ctx -> runReader ctx m .:. runReader ctx t)
+  m .:. t = ReaderC (\ r -> runReader r m .:. runReader r t)
 
 (-->) :: Type a expr => expr a -> expr a -> expr a
 a --> b = a >-> const b
@@ -69,9 +69,9 @@ class Var a expr => Prob a expr where
   infixl 4 ===
 
 instance Prob a m => Prob a (ReaderC r m) where
-  ex t b = ReaderC (\ ctx -> ex (runReader ctx t) (runReader ctx . b))
+  ex t b = ReaderC (\ r -> ex (runReader r t) (runReader r . b))
 
-  (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderC (\ ctx -> (runReader ctx tm1 ::: runReader ctx ty1) === (runReader ctx tm2 ::: runReader ctx ty2))
+  (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderC (\ r -> (runReader r tm1 ::: runReader r ty1) === (runReader r tm2 ::: runReader r ty2))
 
 
 class Err expr where
