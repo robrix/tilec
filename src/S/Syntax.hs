@@ -1,10 +1,6 @@
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveTraversable #-}
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE PatternSynonyms #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 module S.Syntax
 ( (:::)(..)
@@ -15,9 +11,6 @@ module S.Syntax
 , pattern (:=)
 , Stack(..)
 , (!?)
-, N(..)
-, Fin(..)
-, Vec(..)
 ) where
 
 newtype a ::: b = Ascribe (a, b)
@@ -74,23 +67,3 @@ Nil        !? _ = Nothing
 (ctx :> _) !? n = ctx !? (n - 1)
 
 infixl 9 !?
-
-
-data N = Z | S N
-  deriving (Eq, Ord, Show)
-
-
-data Fin (n :: N) where
-  FZ :: Fin ('S n)
-  FS :: Fin n -> Fin ('S n)
-
-deriving instance Eq (Fin n)
-deriving instance Ord (Fin n)
-deriving instance Show (Fin n)
-
-
-data Vec (n :: N) a where
-  VZ :: Vec 'Z a
-  (:.) :: a -> Vec n a -> Vec ('S n) a
-
-infixr 5 :.
