@@ -49,6 +49,13 @@ class Var a expr => Type a expr where
   (.:.) :: expr a -> expr a -> expr a
   infixl 0 .:.
 
+instance Type a m => Type a (ReaderC r m) where
+  type' = ReaderC (const type')
+
+  t >-> b = ReaderC (\ ctx -> runReader ctx t >-> runReader ctx . b)
+
+  m .:. t = ReaderC (\ ctx -> runReader ctx m .:. runReader ctx t)
+
 (-->) :: Type a expr => expr a -> expr a -> expr a
 a --> b = a >-> const b
 
