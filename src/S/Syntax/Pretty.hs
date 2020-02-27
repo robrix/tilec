@@ -71,7 +71,7 @@ instance Let Int PrettyC where
     ty' <- runPrettyC ty
     (lhs, b') <- bind b prettyVar (pretty '_')
     -- FIXME: bind variables on the lhs when tm is a lambda
-    pure (group (align (kw "let" <+> lhs <+> align (align (op "=" <+> tm') <> line <> align (op ":" <+> ty')) <> line <> kw "in" <+> b')))
+    pure (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm')) <> line <> group (align (op ":" <+> ty'))) <> line <> kw "in" <+> b')))
 
 instance Lam Int PrettyC where
   lam b  = PrettyC $ do
