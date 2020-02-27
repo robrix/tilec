@@ -43,7 +43,6 @@ defaultStyle = \case
     , ANSI.Blue
     , ANSI.Magenta
     , ANSI.Cyan
-    , ANSI.White
     ]
     <**>
     [ANSI.color, ANSI.colorDull]
