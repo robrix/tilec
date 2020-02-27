@@ -18,12 +18,12 @@ import Tile.Stack
 import Tile.Syntax
 import Tile.Type
 
-elab :: Stack (t a) -> Elab t a -> t a
+elab :: Stack (t a) -> Elab t a b -> t b
 elab = flip runElab
 
-newtype Elab t a = Elab { runElab :: Stack (t a) -> t a }
+newtype Elab t a b = Elab { runElab :: Stack (t a) -> t b }
 
-instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t) where
+instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t Int) where
   var n = Elab $ \ ctx ->
     type' `ex` \ _A ->
     var _A `ex` \ v ->
@@ -31,12 +31,12 @@ instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t) where
     ===
     (var v ::: var _A)
 
-instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab t) where
+instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab t Int) where
   let' tm b = Elab $ \ ctx ->
     type' `ex` \ _A ->
     let' (elab ctx tm .:. var _A) (elab (ctx :> var _A) . b)
 
-instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t) where
+instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t Int) where
   lam b = Elab $ \ ctx ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
@@ -54,7 +54,7 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t) where
     ===
     (var res ::: var _B)
 
-instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t) where
+instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t Int) where
   type' = Elab (const type')
 
   t >-> b = Elab $ \ ctx ->
