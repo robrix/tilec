@@ -69,7 +69,7 @@ instance Lam Int PrettyC where
 
 instance Type Int PrettyC where
   type' = annotate Type (pretty "Type")
-  pi' t f = fresh $ \ v -> parens (var v <+> op ":" <+> t) <+> op "->" <+> f v
+  pi' t f = fresh $ \ v -> prec (Level 0) (parens (var v <+> op ":" <+> t) <+> op "->" <+> f v)
 
 
 data Highlight a
