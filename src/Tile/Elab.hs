@@ -40,17 +40,17 @@ instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab t Int) wher
     let' (runElab tm .:. var _A) (var _A |- runElab . b)
 
 instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t Int) where
-  lam b = Elab . ReaderC $ \ ctx ->
+  lam b = Elab $
     type' `ex` \ _A ->
     type' `ex` \ _B ->
-    lam (elab (ctx :> var _A) . b) .:. (var _A --> var _B)
+    lam (var _A |- runElab . b) .:. (var _A --> var _B)
 
-  f $$ a = Elab . ReaderC $ \ ctx ->
+  f $$ a = Elab $
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     var _B `ex` \ res ->
-    let f' = elab ctx f
-        a' = elab ctx a
+    let f' = runElab f
+        a' = runElab a
         _F = var _A --> var _B
     in
     (f' $$ a' ::: _F $$ a')
