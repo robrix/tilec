@@ -107,6 +107,9 @@ instance Doc (Highlight Int) PrettyC where
 
   braces = mapDoc braces
 
+instance PrecDoc (Highlight Int) PrettyC where
+  prec = mapDoc . prec
+
 mapDoc :: (Prec (Rainbow (PP.Doc (Highlight Int))) -> Prec (Rainbow (PP.Doc (Highlight Int)))) -> PrettyC -> PrettyC
 mapDoc f (PrettyC run) = PrettyC (fmap f . run)
 
