@@ -16,45 +16,42 @@ module Tile.Elab
 import Data.Maybe (fromMaybe)
 import Tile.Stack
 import Tile.Syntax
-import Tile.Type
 
-elab :: Stack t -> Elab t -> t ::: t
+elab :: Stack t -> Elab t -> t
 elab = flip runElab
 
-newtype Elab t = Elab { runElab :: Stack t -> t ::: t }
+newtype Elab t = Elab { runElab :: Stack t -> t }
 
-instance (Var Int t, Err t) => Var Int (Elab t) where
+instance (Type Int t, Err t) => Var Int (Elab t) where
   var n = Elab $ \ ctx ->
-    var n ::: fromMaybe (err ("free variable: " <> show n)) (ctx !? n)
+    var n .:. fromMaybe (err ("free variable: " <> show n)) (ctx !? n)
 
 instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab t) where
-  let' (tm ::: ty) b = Elab $ \ ctx ->
-    let ty' ::: tty' = elab ctx ty
-        tm' ::: ttm' = elab ctx tm
-    -- FIXME: this is almost certainly wrong
-    in let' ((tm' ::: ttm' === ty') ::: (ty' ::: tty' === type')) (elab (ctx :> ty') . b)
+  let' tm b = Elab $ \ ctx ->
+    type' `ex` \ _A ->
+    let' (elab ctx tm .:. var _A) (elab (ctx :> var _A) . b)
 
 instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t) where
   lam b = Elab $ \ ctx ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
-    lam (term_ . elab (ctx :> var _A) . b) ::: (var _A `pi'` const (var _B))
+    lam (elab (ctx :> var _A) . b) .:. (var _A `pi'` const (var _B))
   f $$ a = Elab $ \ ctx ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
-    let f' ::: tf' = elab ctx f
-        a' ::: ta' = elab ctx a
-        _F = (ta' === var _A) `pi'` const (var _B)
-    in f' $$ a' ::: (tf' === _F) $$ a'
+    let f' = elab ctx f
+        a' = elab ctx a
+        _F = var _A `pi'` const (var _B)
+    in (f' .:. _F) $$ (a' .:. var _A) .:. (_F $$ a' === var _B)
 
 instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t) where
   type' = Elab (const type')
   pi' t b = Elab $ \ ctx ->
-    let t' ::: tt' = elab ctx t
-    in pi' (t' ::: tt' === type') (elab (ctx :> t') . b)
+    let t' = elab ctx t
+    in pi' (t' .:. type') (elab (ctx :> t') . b)
   tm .:. ty = Elab $ \ ctx ->
-    let ty' ::: tty' = elab ctx ty
-        tm' ::: ttm' = elab ctx tm
-    in (tm' ::: ttm' === ty') .:. (ty' ::: tty' === type')
+    let ty' = elab ctx ty
+        tm' = elab ctx tm
+    in (tm' .:. ty' .:. type')
 
 -- FIXME: this should likely have a Prob instance

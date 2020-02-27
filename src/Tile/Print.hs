@@ -24,7 +24,6 @@ import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
 import           Tile.Pretty
 import           Tile.Syntax
-import           Tile.Type
 
 prettyPrint :: MonadIO m => Print -> m ()
 prettyPrint = prettyPrintWith defaultStyle
@@ -66,12 +65,11 @@ instance Var Int Print where
   var a = Print (prettyVar a <$ tell (IntSet.singleton a))
 
 instance Let Int Print where
-  let' (tm ::: ty) b = Print $ do
+  let' tm b = Print $ do
     tm' <- runPrint tm
-    ty' <- runPrint ty
     (lhs, b') <- bind b prettyVar (pretty '_')
     -- FIXME: bind variables on the lhs when tm is a lambda
-    pure (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm')) <> line <> group (align (op ":" <+> ty'))) <> line <> kw "in" <+> b')))
+    pure (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm'))) <> line <> kw "in" <+> b')))
 
 instance Lam Int Print where
   lam b  = Print $ do
