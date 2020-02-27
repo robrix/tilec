@@ -34,31 +34,23 @@ common common
 library
   import: common
   exposed-modules:
-    S.Context
-    S.Core
-    S.Elab
     S.Library
     S.Pretty
-    S.Problem
     S.Semiring
-    S.Surface
     S.Syntax
     S.Syntax.Classes
     S.Syntax.Elab
     S.Syntax.Eval
     S.Syntax.Free
     S.Syntax.Pretty
-    S.Value
   -- other-modules:
   -- other-extensions:
   build-depends:
     , base ^>=4.13.0.0
-    , bound
     , containers
     , fused-effects
     , prettyprinter
     , prettyprinter-ansi-terminal
     , terminal-size
-    , transformers-compat
   hs-source-dirs:      src
   default-language:    Haskell2010

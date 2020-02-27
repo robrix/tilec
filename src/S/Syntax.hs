@@ -1,5 +1,4 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -20,10 +19,6 @@ module S.Syntax
 , Fin(..)
 , Vec(..)
 ) where
-
-import Data.Functor.Classes
-import Data.Functor.Classes.Generic
-import GHC.Generics (Generic1)
 
 newtype a ::: b = Ascribe (a, b)
   deriving (Eq, Foldable, Functor, Ord, Traversable)
@@ -62,7 +57,7 @@ infixl 0 :=
 data Stack a
   = Nil
   | Stack a :> a
-  deriving (Eq, Foldable, Functor, Generic1, Ord, Show, Traversable)
+  deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
 infixl 5 :>
 
@@ -72,10 +67,6 @@ instance Semigroup (Stack a) where
 
 instance Monoid (Stack a) where
   mempty = Nil
-
-instance Eq1 Stack where liftEq = liftEqDefault
-instance Ord1 Stack where liftCompare = liftCompareDefault
-instance Show1 Stack where liftShowsPrec = liftShowsPrecDefault
 
 (!?) :: Stack a -> Int -> Maybe a
 Nil        !? _ = Nothing
