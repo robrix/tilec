@@ -3,7 +3,6 @@
 {-# LANGUAGE TypeOperators #-}
 module S.Core
 ( Term(..)
-, Stack(..)
 , lam
 , ($$)
 , ($$*)
