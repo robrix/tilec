@@ -24,7 +24,7 @@ elab :: Stack (t a) -> Elab t a b -> t b
 elab ctx = runReader ctx . runElab
 
 newtype Elab t a b = Elab { runElab :: ReaderC (Stack (t a)) t b }
-  deriving (Functor)
+  deriving (Applicative, Functor, Monad)
 
 instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t Int) where
   var n = Elab . ReaderC $ \ ctx ->
