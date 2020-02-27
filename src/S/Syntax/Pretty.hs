@@ -14,7 +14,7 @@ module S.Syntax.Pretty
 import           Control.Applicative ((<**>))
 import qualified Control.Carrier.Fresh.Strict as F
 import           Control.Monad.IO.Class
-import           Data.Functor.Identity
+import qualified Data.IntSet as IntSet
 import           Data.Monoid (Ap(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
@@ -51,7 +51,7 @@ defaultStyle = \case
 
 type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 
-newtype PrettyC = PrettyC { runPrettyC :: Ap (F.FreshC Identity) Inner }
+newtype PrettyC = PrettyC { runPrettyC :: Ap (F.FreshC ((,) IntSet.IntSet)) Inner }
   deriving (Monoid, Semigroup)
 
 instance Show PrettyC where
@@ -114,7 +114,7 @@ mapDoc :: (Inner -> Inner) -> PrettyC -> PrettyC
 mapDoc f (PrettyC run) = PrettyC (f <$> run)
 
 toDoc :: PrettyC -> PP.Doc (Highlight Int)
-toDoc (PrettyC m) = rainbow (runPrec (runIdentity (F.evalFresh 0 (getAp m))) (Level 0))
+toDoc (PrettyC m) = rainbow (runPrec (snd (F.evalFresh 0 (getAp m))) (Level 0))
 
 fresh :: (Int -> PrettyC) -> PrettyC
 fresh f = PrettyC $ do

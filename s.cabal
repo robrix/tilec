@@ -54,6 +54,7 @@ library
   build-depends:
     , base ^>=4.13.0.0
     , bound
+    , containers
     , fused-effects
     , prettyprinter
     , prettyprinter-ansi-terminal
