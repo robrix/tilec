@@ -9,7 +9,7 @@ module Tile.Print
 ( prettyPrint
 , prettyPrintWith
 , defaultStyle
-, PrettyC(..)
+, Print(..)
 , Highlight(..)
 ) where
 
@@ -26,10 +26,10 @@ import           Tile.Pretty
 import           Tile.Syntax
 import           Tile.Type
 
-prettyPrint :: MonadIO m => PrettyC -> m ()
+prettyPrint :: MonadIO m => Print -> m ()
 prettyPrint = prettyPrintWith defaultStyle
 
-prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> PrettyC -> m ()
+prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> Print -> m ()
 prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc
 
 defaultStyle :: Highlight Int -> ANSI.AnsiStyle
@@ -56,35 +56,35 @@ type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 
 type M = Ap (FreshC ((,) IntSet.IntSet))
 
-newtype PrettyC = PrettyC { runPrettyC :: M Inner }
+newtype Print = Print { runPrint :: M Inner }
   deriving (Monoid, Semigroup)
 
-instance Show PrettyC where
+instance Show Print where
   showsPrec p = showsPrec p . toDoc
 
-instance Var Int PrettyC where
-  var a = PrettyC (prettyVar a <$ tell (IntSet.singleton a))
+instance Var Int Print where
+  var a = Print (prettyVar a <$ tell (IntSet.singleton a))
 
-instance Let Int PrettyC where
-  let' (tm ::: ty) b = PrettyC $ do
-    tm' <- runPrettyC tm
-    ty' <- runPrettyC ty
+instance Let Int Print where
+  let' (tm ::: ty) b = Print $ do
+    tm' <- runPrint tm
+    ty' <- runPrint ty
     (lhs, b') <- bind b prettyVar (pretty '_')
     -- FIXME: bind variables on the lhs when tm is a lambda
     pure (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm')) <> line <> group (align (op ":" <+> ty'))) <> line <> kw "in" <+> b')))
 
-instance Lam Int PrettyC where
-  lam b  = PrettyC $ do
+instance Lam Int Print where
+  lam b  = Print $ do
     (lhs, b') <- bind b prettyVar (pretty '_')
     -- FIXME: combine successive lambdas into a single \ … . …
     pure (prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> b')))
   -- FIXME: combine successive applications for purposes of wrapping
   f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
 
-instance Type Int PrettyC where
+instance Type Int Print where
   type' = annotate Type (pretty "Type")
-  pi' t b = PrettyC $ do
-    t' <- runPrettyC t
+  pi' t b = Print $ do
+    t' <- runPrint t
     (lhs, b') <- bind b (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
     pure (prec (Level 0) (lhs <> line <> op "→" <+> b'))
 
@@ -118,13 +118,13 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
-bind :: (Int -> PrettyC) -> (Int -> Inner) -> Inner -> M (Inner, Inner)
+bind :: (Int -> Print) -> (Int -> Inner) -> Inner -> M (Inner, Inner)
 bind b used unused = do
   v <- fresh
-  (fvs, b') <- listen (runPrettyC (b v))
+  (fvs, b') <- listen (runPrint (b v))
   pure (if v `IntSet.member` fvs then used v else unused, b')
 
-instance Doc (Highlight Int) PrettyC where
+instance Doc (Highlight Int) Print where
   pretty = coerce . pure @M . pretty
 
   line = coerce (pure @M line)
@@ -143,8 +143,8 @@ instance Doc (Highlight Int) PrettyC where
 
   braces = coerce (fmap @M braces)
 
-instance PrecDoc (Highlight Int) PrettyC where
+instance PrecDoc (Highlight Int) Print where
   prec = coerce . fmap @M . prec
 
-toDoc :: PrettyC -> PP.Doc (Highlight Int)
-toDoc (PrettyC m) = rainbow (runPrec (snd (evalFresh 0 (getAp m))) (Level 0))
+toDoc :: Print -> PP.Doc (Highlight Int)
+toDoc (Print m) = rainbow (runPrec (snd (evalFresh 0 (getAp m))) (Level 0))
