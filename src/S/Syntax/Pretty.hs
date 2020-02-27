@@ -128,6 +128,8 @@ instance Doc (Highlight Int) PrettyC where
 
   annotate = coerce . fmap @M . annotate
 
+  align = coerce (fmap @M align)
+
   group = coerce (fmap @M group)
 
   flatAlt = coerce (liftA2 @M flatAlt)

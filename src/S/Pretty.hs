@@ -42,6 +42,8 @@ class Monoid doc => Doc ann doc | doc -> ann where
 
   annotate :: ann -> doc -> doc
 
+  align :: doc -> doc
+
   group :: doc -> doc
 
   flatAlt :: doc -> doc -> doc
@@ -62,6 +64,8 @@ instance Doc ann (PP.Doc ann) where
 
   annotate = PP.annotate
 
+  align = PP.align
+
   group = PP.group
 
   flatAlt = PP.flatAlt
@@ -72,6 +76,8 @@ instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   line = (line, line)
 
   annotate a = annotate a *** annotate a
+
+  align = align *** align
 
   group = group *** group
 
@@ -133,6 +139,8 @@ instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) whe
 
   annotate = fmap . annotate
 
+  align = fmap align
+
   group = fmap group
 
   flatAlt = liftA2 flatAlt
@@ -154,6 +162,8 @@ instance Doc ann doc => Doc ann (Prec doc) where
   line = pure line
 
   annotate = fmap . annotate
+
+  align = fmap align
 
   group = fmap group
 
