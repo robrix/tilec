@@ -8,6 +8,7 @@ module S.Pretty
 , enclose
 , (<+>)
 , Level(..)
+, PrecDoc(..)
 , rainbow
 , Rainbow(..)
 , Prec(..)
@@ -61,6 +62,9 @@ infixr 6 <+>
 
 newtype Level = Level Int
   deriving (Eq, Ord, Show)
+
+class Doc ann doc => PrecDoc ann doc where
+  prec :: Level -> doc -> doc
 
 
 rainbow :: Rainbow doc -> doc
