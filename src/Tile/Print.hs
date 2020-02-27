@@ -87,6 +87,7 @@ instance Type Int Print where
     t' <- runPrint t
     (lhs, b') <- bind b (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
     pure (prec (Level 0) (lhs <> line <> op "→" <+> b'))
+  tm .:. ty = prec (Level 0) (tm <+> op ":" <+> prec (Level 1) ty)
 
 
 data Highlight a

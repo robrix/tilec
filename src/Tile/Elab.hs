@@ -52,5 +52,9 @@ instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t) where
   pi' t b = Elab $ \ ctx ->
     let t' ::: tt' = elab ctx t
     in pi' (t' ::: tt' === type') (elab (ctx :> t') . b)
+  tm .:. ty = Elab $ \ ctx ->
+    let ty' ::: tty' = elab ctx ty
+        tm' ::: ttm' = elab ctx tm
+    in (tm' ::: ttm' === ty') .:. (ty' ::: tty' === type')
 
 -- FIXME: this should likely have a Prob instance
