@@ -76,3 +76,14 @@ instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) whe
 
 newtype Prec a = Prec { runPrec :: Int -> a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
+
+instance Doc ann doc => Doc ann (Prec doc) where
+  pretty = pure . pretty
+
+  annotate = fmap . annotate
+
+  parens = fmap parens
+
+  brackets = fmap brackets
+
+  braces = fmap braces
