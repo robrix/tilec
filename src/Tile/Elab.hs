@@ -17,7 +17,6 @@ module Tile.Elab
 import Control.Carrier.Reader
 import Data.Functor.Identity
 import Data.Map
-import Data.Maybe (fromMaybe)
 import Tile.Syntax
 
 newtype Elab v t b = Elab { runElab :: ReaderC t (ReaderC (Map v t) Identity) b }
