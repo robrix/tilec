@@ -19,62 +19,42 @@ import Data.Map
 import Tile.Syntax
 import Tile.Type
 
-elab :: Elab v t b ::: t -> ReaderC (Map v t) Identity b
-elab (m ::: t) = runReader t (runElab m)
+elab :: Elab v t b ::: t -> ReaderC t (ReaderC (Map v t) Identity) b
+elab (m ::: t) = local (const t) (runElab m)
 
 newtype Elab v t b = Elab { runElab :: ReaderC t (ReaderC (Map v t) Identity) b }
   deriving (Applicative, Functor, Monad)
 
 instance (Ord v, Show v, Prob v t, Type v t, Err t) => Var v (Elab v t t) where
-  var n = Elab . ReaderC $ \ t ->
-    pure t `ex` \ v ->
-    (var n ::: typeOf n)
-    ===
-    (var v ::: pure t)
+  var n = check (=== (var n ::: typeOf n))
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
-  let' tm b = Elab . ReaderC $ \ t ->
+  let' tm b = check $ \ exp ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
-    pure t `ex` \ v ->
-    (let' (elab (tm ::: var _A)) (\ x -> x ::: var _A |- elab (b x ::: var _B)) ::: var _B)
-    ===
-    (var v ::: pure t)
+    exp === (let' (elab (tm ::: var _A)) (\ x -> x ::: var _A |- elab (b x ::: var _B)) ::: var _B)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
-  lam b = Elab . ReaderC $ \ t ->
+  lam b = check $ \ exp ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
-    pure t `ex` \ v ->
-    (lam (\ x -> x ::: var _A |- elab (b x ::: var _B)) ::: (var _A --> var _B))
-    ===
-    (var v ::: pure t)
+    exp === (lam (\ x -> x ::: var _A |- elab (b x ::: var _B)) ::: (var _A --> var _B))
 
-  f $$ a = Elab . ReaderC $ \ t ->
+  f $$ a = check $ \ exp ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
-    pure t `ex` \ v ->
     let' (elab (a ::: var _A)) $ \ a' ->
     let' (var _A --> var _B) $ \ f' ->
-    (elab (f ::: var f') $$ var a' ::: var f' $$ var a')
-    ===
-    (var v ::: pure t)
+    exp === (elab (f ::: var f') $$ var a' ::: var f' $$ var a')
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
-  type' = Elab . ReaderC $ \ t ->
-    pure t `ex` \ v ->
-    (type' ::: type')
-    ===
-    (var v ::: pure t)
+  type' = check (=== (type' ::: type'))
 
-  a >-> b = Elab . ReaderC $ \ t ->
+  a >-> b = check $ \ exp ->
     type' `ex` \ _A ->
     (var _A --> type') `ex` \ _B ->
-    pure t `ex` \ v ->
     let' (elab (a ::: type')) $ \ a' ->
-    ((var a' >-> \ x -> x ::: var a' |- elab (b x ::: var _B)) ::: type')
-    ===
-    (var v ::: pure t)
+    exp === ((var a' >-> \ x -> x ::: var a' |- elab (b x ::: var _B)) ::: type')
 
 -- FIXME: this should likely have a Prob instance
 
