@@ -23,6 +23,7 @@ module Tile.Syntax
 
 import Control.Carrier.Reader
 import Control.Monad (ap)
+import Data.Functor.Const
 import Data.Functor.Identity
 import Tile.Type
 
@@ -30,6 +31,7 @@ class Var v expr | expr -> v where
   var :: v -> expr
 
 deriving instance Var v t => Var v (Identity t)
+deriving instance Var v t => Var v (Const t a)
 
 instance Var v t => Var v (r -> t) where
   var = const . var
@@ -41,6 +43,7 @@ class Var v expr => Let v expr where
   let' :: expr -> (v -> expr) -> expr
 
 deriving instance Let v t => Let v (Identity t)
+deriving instance Let v t => Let v (Const t a)
 
 instance Let v t => Let v (r -> t) where
   let' v b r = let' (v r) (($ r) . b)
@@ -55,6 +58,7 @@ class Var v expr => Lam v expr where
   infixl 9 $$
 
 deriving instance Lam v t => Lam v (Identity t)
+deriving instance Lam v t => Lam v (Const t a)
 
 instance Lam v t => Lam v (r -> t) where
   lam b r = lam (($ r) . b)
@@ -74,6 +78,7 @@ class Var v expr => Type v expr where
   infixl 0 .:.
 
 deriving instance Type v t => Type v (Identity t)
+deriving instance Type v t => Type v (Const t a)
 
 instance Type v t => Type v (r -> t) where
   type' = const type'
@@ -97,6 +102,7 @@ class Var v expr => Prob v expr where
   infixl 4 ===
 
 deriving instance Prob v t => Prob v (Identity t)
+deriving instance Prob v t => Prob v (Const t a)
 
 instance Prob v t => Prob v (r -> t) where
   ex t b r = ex (t r) (($ r) . b)
@@ -110,6 +116,7 @@ class Err expr where
   err :: String -> expr
 
 deriving instance Err t => Err (Identity t)
+deriving instance Err t => Err (Const t a)
 
 instance Err t => Err (r -> t) where
   err = const . err
