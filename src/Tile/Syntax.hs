@@ -68,7 +68,7 @@ deriving instance Lam v (m a) => Lam v (ReaderC r m a)
 class Var v expr => Type v expr where
   type' :: expr
 
-  (>->) :: Plicit expr -> (v -> expr) -> expr
+  (>->) :: (Plicit, expr) -> (v -> expr) -> expr
   infixr 0 >->
 
 deriving instance Type v t => Type v (Identity t)
@@ -82,7 +82,7 @@ instance Type v t => Type v (r -> t) where
 deriving instance Type v (m a) => Type v (ReaderC r m a)
 
 (-->) :: Type a expr => expr -> expr -> expr
-a --> b = Ex a >-> const b
+a --> b = (Ex, a) >-> const b
 
 infixr 0 -->
 
