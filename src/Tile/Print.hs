@@ -55,7 +55,7 @@ defaultStyle = \case
 type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 
 newtype Print a = Print { runPrint :: Ap (FreshC (WriterC IntSet.IntSet (StateC Inner Identity))) a }
-  deriving (Monoid, Semigroup)
+  deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
 instance Show (Print a) where
   showsPrec p = showsPrec p . toDoc
