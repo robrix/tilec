@@ -20,9 +20,6 @@ import Data.Map
 import Tile.Syntax
 import Tile.Type
 
-elab :: Elab v t b ::: t -> ReaderC t (ReaderC (Map v t) Identity) b
-elab (m ::: t) = local (const t) (runElab m)
-
 newtype Elab v t b = Elab { runElab :: ReaderC t (ReaderC (Map v t) Identity) b }
   deriving (Applicative, Functor, Monad)
 
@@ -55,6 +52,9 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
 
 deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
 
+
+elab :: Elab v t b ::: t -> ReaderC t (ReaderC (Map v t) Identity) b
+elab (m ::: t) = local (const t) (runElab m)
 
 typeOf :: (Has (Reader (Map v t)) sig m, Ord v, Show v, Err (m t)) => v -> m t
 typeOf n = asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure
