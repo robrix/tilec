@@ -87,3 +87,6 @@ typeOf n = asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure
   local (insert a t') b
 
 infixl 0 |-
+
+check :: Prob v t => ReaderC t (ReaderC (Map v t) Identity) t ::: ReaderC t (ReaderC (Map v t) Identity) t -> Elab v t t
+check m = Elab $ ask `ex` \ v -> m === (var v ::: ask)
