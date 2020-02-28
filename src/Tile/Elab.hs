@@ -36,7 +36,7 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t 
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     pure t `ex` \ v ->
-    (let' (elab (tm ::: var _A)) (var _A |- elab . (::: var _B) . b) ::: var _B)
+    (let' (elab (tm ::: var _A)) (\ x -> x ::: var _A |- elab (b x ::: var _B)) ::: var _B)
     ===
     (var v ::: pure t)
 
@@ -45,7 +45,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     pure t `ex` \ v ->
-    (lam (var _A |- elab . (::: var _B) . b) ::: (var _A --> var _B))
+    (lam (\ x -> x ::: var _A |- elab (b x ::: var _B)) ::: (var _A --> var _B))
     ===
     (var v ::: pure t)
 
@@ -71,7 +71,7 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
     (var _A --> type') `ex` \ _B ->
     pure t `ex` \ v ->
     let' (elab (a ::: type')) $ \ a' ->
-    ((var a' >-> var a' |- elab . (::: var _B) . b) ::: type')
+    ((var a' >-> \ x -> x ::: var a' |- elab (b x ::: var _B)) ::: type')
     ===
     (var v ::: pure t)
 
@@ -80,7 +80,7 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
 typeOf :: (Ord v, Show v) => Err t => v -> Map v t -> t
 typeOf n = fromMaybe (err ("free variable: " <> show n)) . (!? n)
 
-(|-) :: Ord v => (Map v t -> t) -> (v -> Map v t -> t) -> (v -> Map v t -> t)
-(t |- b) a ctx = b a (insert a (t ctx) ctx)
+(|-) :: Ord v => v ::: (Map v t -> t) -> (Map v t -> t) -> (Map v t -> t)
+((a ::: t) |- b) ctx = b (insert a (t ctx) ctx)
 
-infixr 1 |-
+infixl 0 |-
