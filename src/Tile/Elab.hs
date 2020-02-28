@@ -20,20 +20,20 @@ import Tile.Syntax
 import Tile.Type
 
 elab :: Elab v t b ::: t -> ReaderC (Map v t) Identity b
-elab (m ::: t) = runElab m t
+elab (m ::: t) = runReader t (runElab m)
 
-newtype Elab v t b = Elab { runElab :: t -> ReaderC (Map v t) Identity b }
+newtype Elab v t b = Elab { runElab :: ReaderC t (ReaderC (Map v t) Identity) b }
   deriving (Functor)
 
 instance (Ord v, Show v, Prob v t, Type v t, Err t) => Var v (Elab v t t) where
-  var n = Elab $ \ t ->
+  var n = Elab . ReaderC $ \ t ->
     pure t `ex` \ v ->
     (var n ::: typeOf n)
     ===
     (var v ::: pure t)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
-  let' tm b = Elab $ \ t ->
+  let' tm b = Elab . ReaderC $ \ t ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     pure t `ex` \ v ->
@@ -42,7 +42,7 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t 
     (var v ::: pure t)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
-  lam b = Elab $ \ t ->
+  lam b = Elab . ReaderC $ \ t ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     pure t `ex` \ v ->
@@ -50,7 +50,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     ===
     (var v ::: pure t)
 
-  f $$ a = Elab $ \ t ->
+  f $$ a = Elab . ReaderC $ \ t ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     pure t `ex` \ v ->
@@ -61,13 +61,13 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     (var v ::: pure t)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
-  type' = Elab $ \ t ->
+  type' = Elab . ReaderC $ \ t ->
     pure t `ex` \ v ->
     (type' ::: type')
     ===
     (var v ::: pure t)
 
-  a >-> b = Elab $ \ t ->
+  a >-> b = Elab . ReaderC $ \ t ->
     type' `ex` \ _A ->
     (var _A --> type') `ex` \ _B ->
     pure t `ex` \ v ->
