@@ -38,7 +38,6 @@ library
     Tile.Library
     Tile.Pretty
     Tile.Print
-    Tile.Stack
     Tile.Syntax
     Tile.Type
   -- other-modules:
