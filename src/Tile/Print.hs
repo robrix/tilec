@@ -124,7 +124,7 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
-bind :: (Int -> M a) -> (Int -> Inner) -> Inner -> M (Inner, Inner, a)
+bind :: (Has Fresh sig m, Has (State Inner) sig m, Has (Writer IntSet.IntSet) sig m) => (Int -> m a) -> (Int -> Inner) -> Inner -> m (Inner, Inner, a)
 bind b used unused = do
   v <- fresh
   (fvs, (x, b')) <- listen @IntSet.IntSet ((,) <$> b v <*> get)
