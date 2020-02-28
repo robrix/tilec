@@ -8,6 +8,7 @@ module Tile.Term
 ) where
 
 import Control.Monad (ap, (>=>))
+import Data.Bifunctor
 import Tile.Syntax
 
 data Term v a
@@ -24,15 +25,15 @@ data Term v a
 instance Functor (Term v) where
   fmap f = go where
     go = \case
-      Var a                   -> Var (f a)
-      Let v b                 -> Let (go v) (go . b)
-      Lam p b                 -> Lam p (go . b)
-      f :$ a                  -> go f :$ go a
-      Type                    -> Type
-      a :-> b                 -> fmap go a :-> go . b
-      E t b                   -> E (go t) (go . b)
-      (m1, t1) :===: (m2, t2) -> (go m1, go t1) :===: (go m2, go t2)
-      Err s                   -> Err s
+      Var a       -> Var (f a)
+      Let v b     -> Let (go v) (go . b)
+      Lam p b     -> Lam p (go . b)
+      f :$ a      -> go f :$ go a
+      Type        -> Type
+      a :-> b     -> fmap go a :-> go . b
+      E t b       -> E (go t) (go . b)
+      t1 :===: t2 -> bimap go go t1 :===: bimap go go t2
+      Err s       -> Err s
 
 instance Num v => Foldable (Term v) where
   foldMap f = go 0 where
