@@ -13,15 +13,15 @@ module Tile.Elab
 ( Elab(..)
 ) where
 
+import Data.Map
 import Data.Maybe (fromMaybe)
-import Tile.Stack
 import Tile.Syntax
 import Tile.Type
 
-newtype Elab t b = Elab { runElab :: Stack t -> b }
+newtype Elab v t b = Elab { runElab :: Map v t -> b }
   deriving (Applicative, Functor, Monad)
 
-instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t t) where
+instance (Ord v, Show v, Prob v t, Type v t, Err t) => Var v (Elab v t t) where
   var n = Elab $
     type' `ex` \ _A ->
     var _A `ex` \ v ->
@@ -29,12 +29,12 @@ instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t t) where
     ===
     (var v ::: var _A)
 
-instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab t t) where
+instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
   let' tm b = Elab $
     type' `ex` \ _A ->
     let' (runElab tm .:. var _A) (var _A |- runElab . b)
 
-instance (Let Int t, Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t t) where
+instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
   lam b = Elab $
     type' `ex` \ _A ->
     type' `ex` \ _B ->
@@ -49,7 +49,7 @@ instance (Let Int t, Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab 
     ===
     (var res ::: var _B))
 
-instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t t) where
+instance (Ord v, Show v, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
   type' = Elab type'
 
   t >-> b = Elab $
@@ -60,10 +60,10 @@ instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t t) where
 
 -- FIXME: this should likely have a Prob instance
 
-typeOf :: Err t => Int -> Stack t -> t
+typeOf :: (Ord v, Show v) => Err t => v -> Map v t -> t
 typeOf n = fromMaybe (err ("free variable: " <> show n)) . (!? n)
 
-(|-) :: (Stack t -> t) -> (a -> Stack t -> t) -> (a -> Stack t -> t)
-(t |- b) a ctx = b a (ctx :> t ctx)
+(|-) :: Ord v => (Map v t -> t) -> (v -> Map v t -> t) -> (v -> Map v t -> t)
+(t |- b) a ctx = b a (insert a (t ctx) ctx)
 
 infixr 1 |-
