@@ -14,10 +14,10 @@ data a ::: b = a ::: b
   deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
 instance Bifoldable (:::) where
-  bifoldMap f g (l ::: r) = f l <> g r
+  bifoldMap = bifoldMapDefault
 
 instance Bifunctor (:::) where
-  bimap f g (l ::: r) = f l ::: g r
+  bimap = bimapDefault
 
 instance Bitraversable (:::) where
   bitraverse f g (l ::: r) = (:::) <$> f l <*> g r
