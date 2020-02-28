@@ -54,15 +54,15 @@ instance Applicative (Term v) where
 
 instance Monad (Term v) where
   t >>= f = case t of
-    Var a                   -> f a
-    Let v b                 -> Let (v >>= f) (b >=> f)
-    Lam p b                 -> Lam p (b >=> f)
-    g :$ a                  -> (g >>= f) :$ (a >>= f)
-    Type                    -> Type
-    t :-> b                 -> fmap (>>= f) t :-> (b >=> f)
-    E t b                   -> E (t >>= f) (b >=> f)
-    (m1, t1) :===: (m2, t2) -> (m1 >>= f, t1 >>= f) :===: (m2 >>= f, t2 >>= f)
-    Err s                   -> Err s
+    Var a       -> f a
+    Let v b     -> Let (v >>= f) (b >=> f)
+    Lam p b     -> Lam p (b >=> f)
+    g :$ a      -> (g >>= f) :$ (a >>= f)
+    Type        -> Type
+    t :-> b     -> fmap (>>= f) t :-> (b >=> f)
+    E t b       -> E (t >>= f) (b >=> f)
+    t1 :===: t2 -> bimap (>>= f) (>>= f) t1 :===: bimap (>>= f) (>>= f) t2
+    Err s       -> Err s
 
 instance Var v (Term v v) where
   var = Var
