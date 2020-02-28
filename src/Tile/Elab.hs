@@ -1,6 +1,6 @@
-{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -23,7 +23,7 @@ elab :: Elab v t b ::: t -> ReaderC (Map v t) Identity b
 elab (m ::: t) = runReader t (runElab m)
 
 newtype Elab v t b = Elab { runElab :: ReaderC t (ReaderC (Map v t) Identity) b }
-  deriving (Functor)
+  deriving (Applicative, Functor, Monad)
 
 instance (Ord v, Show v, Prob v t, Type v t, Err t) => Var v (Elab v t t) where
   var n = Elab . ReaderC $ \ t ->
