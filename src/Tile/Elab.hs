@@ -13,6 +13,7 @@ module Tile.Elab
 ( Elab(..)
 ) where
 
+import Control.Effect.Reader
 import Data.Map
 import Data.Maybe (fromMaybe)
 import Tile.Syntax
@@ -80,7 +81,9 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
 typeOf :: (Ord v, Show v) => Err t => v -> Map v t -> t
 typeOf n = fromMaybe (err ("free variable: " <> show n)) . (!? n)
 
-(|-) :: Ord v => v ::: (Map v t -> t) -> (Map v t -> t) -> (Map v t -> t)
-((a ::: t) |- b) ctx = b (insert a (t ctx) ctx)
+(|-) :: (Has (Reader (Map v t)) sig m, Ord v) => v ::: m t -> m t -> m t
+(a ::: t) |- b = do
+  t' <- t
+  local (insert a t') b
 
 infixl 0 |-
