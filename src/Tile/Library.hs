@@ -16,31 +16,31 @@ module Tile.Library
 import Prelude hiding (maybe)
 import Tile.Syntax
 
-bool :: Type a expr => expr a
+bool :: Type v expr => expr
 bool = type' >-> \ a -> var a --> var a --> var a
 
-true :: Lam a expr => expr a
+true :: Lam v expr => expr
 true = lam (lam . const . var)
 
-false :: Lam a expr => expr a
+false :: Lam v expr => expr
 false = lam (const (lam var))
 
 
-maybe :: Type a expr => expr a
+maybe :: Type v expr => expr
 maybe = type' >-> \ a -> type' >-> \ r -> var r --> (var a --> var r) --> var r
 
-nothing :: Lam a expr => expr a
+nothing :: Lam v expr => expr
 nothing = lam (lam . const . var)
 
-just :: Lam a expr => expr a
+just :: Lam v expr => expr
 just = lam (const (lam var))
 
 
-nat :: Type a expr => expr a
+nat :: Type v expr => expr
 nat = type' >-> \ r -> var r --> (var r --> var r) --> var r
 
-z :: Lam a expr => expr a
+z :: Lam v expr => expr
 z = lam (lam . const . var)
 
-s :: Lam a expr => expr a
+s :: Lam v expr => expr
 s = lam (\ x -> lam (const (lam (\ s -> var s $$ var x))))

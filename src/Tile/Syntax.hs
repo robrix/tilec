@@ -1,8 +1,11 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Tile.Syntax
 ( Var(..)
 , Let(..)
@@ -20,73 +23,85 @@ module Tile.Syntax
 
 import Control.Carrier.Reader
 import Control.Monad (ap)
-import Control.Monad.Trans.Class
+import Data.Functor.Identity
 import Tile.Type
 
-class Var a expr where
-  var :: a -> expr a
+class Var v expr | expr -> v where
+  var :: v -> expr
 
-instance Var a m => Var a (ReaderC r m) where
+deriving instance Var v t => Var v (Identity t)
+
+instance Var v (m a) => Var v (ReaderC r m a) where
   var = ReaderC . const . var
 
 
-class Var a expr => Let a expr where
-  let' :: expr a -> (a -> expr a) -> expr a
+class Var v expr => Let v expr where
+  let' :: expr -> (v -> expr) -> expr
 
-instance Let a m => Let a (ReaderC r m) where
+deriving instance Let v t => Let v (Identity t)
+
+instance Let v (m a) => Let v (ReaderC r m a) where
   let' v b = ReaderC (\ r -> let' (runReader r v) (runReader r . b))
 
 
-class Var a expr => Lam a expr where
-  lam :: (a -> expr a) -> expr a
+class Var v expr => Lam v expr where
+  lam :: (v -> expr) -> expr
 
-  ($$) :: expr a -> expr a -> expr a
+  ($$) :: expr -> expr -> expr
   infixl 9 $$
 
-instance Lam a m => Lam a (ReaderC r m) where
+deriving instance Lam v t => Lam v (Identity t)
+
+instance Lam v (m a) => Lam v (ReaderC r m a) where
   lam b = ReaderC (\ r -> lam (runReader r . b))
 
   f $$ a = ReaderC (\ r -> runReader r f $$ runReader r a)
 
 
-class Var a expr => Type a expr where
-  type' :: expr a
+class Var v expr => Type v expr where
+  type' :: expr
 
-  (>->) :: expr a -> (a -> expr a) -> expr a
+  (>->) :: expr -> (v -> expr) -> expr
   infixr 0 >->
 
-  (.:.) :: expr a -> expr a -> expr a
+  (.:.) :: expr -> expr -> expr
   infixl 0 .:.
 
-instance Type a m => Type a (ReaderC r m) where
+deriving instance Type v t => Type v (Identity t)
+
+instance Type v (m a) => Type v (ReaderC r m a) where
   type' = ReaderC (const type')
 
   t >-> b = ReaderC (\ r -> runReader r t >-> runReader r . b)
 
   m .:. t = ReaderC (\ r -> runReader r m .:. runReader r t)
 
-(-->) :: Type a expr => expr a -> expr a -> expr a
+(-->) :: Type a expr => expr -> expr -> expr
 a --> b = a >-> const b
 
 infixr 0 -->
 
 
-class Var a expr => Prob a expr where
-  ex :: expr a -> (a -> expr a) -> expr a
+class Var v expr => Prob v expr where
+  ex :: expr -> (v -> expr) -> expr
 
-  (===) :: expr a ::: expr a -> expr a ::: expr a -> expr a
+  (===) :: expr ::: expr -> expr ::: expr -> expr
   infixl 4 ===
 
-instance Prob a m => Prob a (ReaderC r m) where
+deriving instance Prob v t => Prob v (Identity t)
+
+instance Prob v (m a) => Prob v (ReaderC r m a) where
   ex t b = ReaderC (\ r -> ex (runReader r t) (runReader r . b))
 
   (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderC (\ r -> (runReader r tm1 ::: runReader r ty1) === (runReader r tm2 ::: runReader r ty2))
 
 
 class Err expr where
-  err :: String -> expr a
+  err :: String -> expr
 
-instance Err m => Err (ReaderC r m) where
+deriving instance Err t => Err (Identity t)
+
+instance Err (m a) => Err (ReaderC r m a) where
   err = ReaderC . const . err
 
 
@@ -98,24 +113,21 @@ class Def tm ty a def | def -> tm ty where
 -- FIXME: packages
 
 
-runScript :: (a -> t v) -> Script v t a -> t v
+runScript :: (a -> t) -> Script t a -> t
 runScript k (Script r) = r k
 
-newtype Script v t a = Script ((a -> t v) -> t v)
+newtype Script t a = Script ((a -> t) -> t)
   deriving (Functor)
 
-instance Applicative (Script v t) where
+instance Applicative (Script t) where
   pure a = Script (\ k -> k a)
   (<*>) = ap
 
-instance Monad (Script v t) where
+instance Monad (Script t) where
   Script r >>= f = Script (\ k -> r (runScript k . f))
 
-instance MonadTrans (Script v) where
-  lift m = Script (m >>=)
-
-meta :: Prob v t => Script v t v -> Script v t v
+meta :: Prob v t => Script t v -> Script t v
 meta = Script . ex . runScript var
 
-introduce :: Lam v t => Script v t v
+introduce :: Lam v t => Script t v
 introduce = Script lam

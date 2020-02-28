@@ -26,10 +26,10 @@ import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
 import           Tile.Pretty
 import           Tile.Syntax
 
-prettyPrint :: MonadIO m => Print a -> m ()
+prettyPrint :: MonadIO m => Print () -> m ()
 prettyPrint = prettyPrintWith defaultStyle
 
-prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> Print a -> m ()
+prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> Print () -> m ()
 prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc
 
 defaultStyle :: Highlight Int -> ANSI.AnsiStyle
@@ -60,37 +60,37 @@ newtype Print a = Print { runPrint :: Ap (FreshC (WriterC IntSet.IntSet (StateC 
 instance Show (Print a) where
   showsPrec p = showsPrec p . toDoc
 
-instance Var Int Print where
-  var a = Print (a <$ tell (IntSet.singleton a) <* put @Inner (prettyVar a))
+instance Var Int (Print ()) where
+  var a = Print (tell (IntSet.singleton a) *> put @Inner (prettyVar a))
 
-instance Let Int Print where
+instance Let Int (Print ()) where
   let' tm b = Print $ do
     tm' <- runPrint tm *> get
-    (lhs, b', x) <- bind (runPrint . b) prettyVar (pretty '_')
+    (lhs, b') <- bind (runPrint . b) prettyVar (pretty '_')
     -- FIXME: bind variables on the lhs when tm is a lambda
-    x <$ put @Inner (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm'))) <> line <> kw "in" <+> b')))
+    put @Inner (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm'))) <> line <> kw "in" <+> b')))
 
-instance Lam Int Print where
+instance Lam Int (Print ()) where
   lam b  = Print $ do
-    (lhs, b', x) <- bind (runPrint . b) prettyVar (pretty '_')
+    (lhs, b') <- bind (runPrint . b) prettyVar (pretty '_')
     -- FIXME: combine successive lambdas into a single \ … . …
-    x <$ put @Inner (prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> b')))
+    put @Inner (prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> b')))
   -- FIXME: combine successive applications for purposes of wrapping
   f $$ a = Print $ do
     f' <- runPrint f *> get
     a' <- runPrint a *> get
-    -1 <$ put @Inner (prec (Level 10) (f' <+> prec (Level 11) a'))
+    put @Inner (prec (Level 10) (f' <+> prec (Level 11) a'))
 
-instance Type Int Print where
-  type' = Print (-1 <$ put @Inner (annotate Type (pretty "Type")))
+instance Type Int (Print ()) where
+  type' = Print (put @Inner (annotate Type (pretty "Type")))
   t >-> b = Print $ do
     t' <- runPrint t *> get
-    (lhs, b', x) <- bind (runPrint . b) (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
-    x <$ put @Inner (prec (Level 0) (lhs <> line <> op "→" <+> b'))
+    (lhs, b') <- bind (runPrint . b) (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
+    put @Inner (prec (Level 0) (lhs <> line <> op "→" <+> b'))
   tm .:. ty = Print $ do
     tm' <- runPrint tm *> get
     ty' <- runPrint ty *> get
-    -1 <$ put @Inner (prec (Level 0) (tm' <+> op ":" <+> prec (Level 1) ty'))
+    put @Inner (prec (Level 0) (tm' <+> op ":" <+> prec (Level 1) ty'))
 
 
 data Highlight a
@@ -122,11 +122,11 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
-bind :: (Has Fresh sig m, Has (State Inner) sig m, Has (Writer IntSet.IntSet) sig m) => (Int -> m a) -> (Int -> Inner) -> Inner -> m (Inner, Inner, a)
+bind :: (Has Fresh sig m, Has (State Inner) sig m, Has (Writer IntSet.IntSet) sig m) => (Int -> m a) -> (Int -> Inner) -> Inner -> m (Inner, Inner)
 bind b used unused = do
   v <- fresh
-  (fvs, (x, b')) <- listen @IntSet.IntSet ((,) <$> b v <*> get)
-  pure (if v `IntSet.member` fvs then used v else unused, b', x)
+  (fvs, b') <- listen @IntSet.IntSet (b v *> get)
+  pure (if v `IntSet.member` fvs then used v else unused, b')
 
 toDoc :: Print a -> PP.Doc (Highlight Int)
 toDoc (Print m) = rainbow (runPrec (run (execState mempty (runWriter (evalFresh 0 (getAp m))))) (Level 0))

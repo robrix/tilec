@@ -15,18 +15,18 @@ module Tile.Elab
 ) where
 
 import Control.Carrier.Reader
-import Data.Maybe (fromMaybe)
+import Data.Functor.Identity
 import Tile.Stack
 import Tile.Syntax
 import Tile.Type
 
-elab :: Stack (t a) -> Elab a t b -> t b
-elab ctx = runReader ctx . runElab
+elab :: Stack t -> Elab a t t -> t
+elab ctx = run . runReader ctx . runElab
 
-newtype Elab a t b = Elab { runElab :: ReaderC (Stack (t a)) t b }
+newtype Elab a t b = Elab { runElab :: ReaderC (Stack t) Identity b }
   deriving (Applicative, Functor, Monad)
 
-instance (Prob Int t, Type Int t, Err t) => Var Int (Elab Int t) where
+instance (Prob Int t, Type Int t, Err t) => Var Int (Elab Int t t) where
   var n = Elab $
     type' `ex` \ _A ->
     var _A `ex` \ v ->
@@ -34,12 +34,12 @@ instance (Prob Int t, Type Int t, Err t) => Var Int (Elab Int t) where
     ===
     (var v ::: var _A)
 
-instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab Int t) where
+instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab Int t t) where
   let' tm b = Elab $
     type' `ex` \ _A ->
     let' (runElab tm .:. var _A) (var _A |- runElab . b)
 
-instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab Int t) where
+instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab Int t t) where
   lam b = Elab $
     type' `ex` \ _A ->
     type' `ex` \ _B ->
@@ -57,7 +57,7 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab Int t) wher
     ===
     (var res ::: var _B)
 
-instance (Prob Int t, Type Int t, Err t) => Type Int (Elab Int t) where
+instance (Prob Int t, Type Int t, Err t) => Type Int (Elab Int t t) where
   type' = Elab type'
 
   t >-> b = Elab $
@@ -71,10 +71,10 @@ instance (Prob Int t, Type Int t, Err t) => Type Int (Elab Int t) where
 
 -- FIXME: this should likely have a Prob instance
 
-typeOf :: Err t => Int -> ReaderC (Stack (t a)) t a
-typeOf n = ReaderC $ fromMaybe (err ("free variable: " <> show n)) . (!? n)
+typeOf :: Err t => Int -> ReaderC (Stack t) Identity t
+typeOf n = ReaderC $ maybe (err ("free variable: " <> show n)) pure . (!? n)
 
-(|-) :: ReaderC (Stack (t a)) t a -> (a -> ReaderC (Stack (t a)) t b) -> (a -> ReaderC (Stack (t a)) t b)
-(t |- b) a = ReaderC $ \ ctx -> runReader (ctx :> runReader ctx t) (b a)
+(|-) :: ReaderC (Stack t) Identity t -> (a -> ReaderC (Stack t) Identity t) -> (a -> ReaderC (Stack t) Identity t)
+(t |- b) a = ReaderC $ \ ctx -> runReader (ctx :> run (runReader ctx t)) (b a)
 
 infixr 1 |-
