@@ -95,18 +95,18 @@ class Def tm ty a def | def -> tm ty where
 -- FIXME: packages
 
 
-runScript :: (a -> t b) -> Script t a -> t b
+runScript :: (a -> t v) -> Script v t a -> t v
 runScript k (Script r) = r k
 
-newtype Script t a = Script (forall r . (a -> t r) -> t r)
+newtype Script v t a = Script ((a -> t v) -> t v)
   deriving (Functor)
 
-instance Applicative (Script t) where
+instance Applicative (Script v t) where
   pure a = Script (\ k -> k a)
   (<*>) = ap
 
-instance Monad (Script t) where
+instance Monad (Script v t) where
   Script r >>= f = Script (\ k -> r (runScript k . f))
 
-instance MonadTrans Script where
+instance MonadTrans (Script v) where
   lift m = Script (m >>=)
