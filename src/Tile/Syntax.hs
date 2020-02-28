@@ -31,6 +31,9 @@ class Var v expr | expr -> v where
 
 deriving instance Var v t => Var v (Identity t)
 
+instance Var v t => Var v (r -> t) where
+  var = const . var
+
 instance Var v (m a) => Var v (ReaderC r m a) where
   var = ReaderC . const . var
 
