@@ -1,4 +1,3 @@
-{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -21,7 +20,19 @@ data Term v a
   | E (Term v a) (v -> Term v a)
   | (Term v a, Term v a) :===: (Term v a, Term v a)
   | Err String
-  deriving (Functor)
+
+instance Functor (Term v) where
+  fmap f = go where
+    go = \case
+      Var a                   -> Var (f a)
+      Let v b                 -> Let (go v) (go . b)
+      Lam p b                 -> Lam p (go . b)
+      f :$ a                  -> go f :$ go a
+      Type                    -> Type
+      a :-> b                 -> fmap go a :-> go . b
+      E t b                   -> E (go t) (go . b)
+      (m1, t1) :===: (m2, t2) -> (go m1, go t1) :===: (go m2, go t2)
+      Err s                   -> Err s
 
 instance Num v => Foldable (Term v) where
   foldMap f = go 0 where
