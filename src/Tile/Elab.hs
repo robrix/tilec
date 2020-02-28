@@ -52,6 +52,8 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
 
 deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
 
+deriving instance Err t => Err (Elab v t t)
+
 
 elab :: Elab v t b ::: t -> Elab v t b
 elab (m ::: t) = Elab (local (const t) (runElab m))
