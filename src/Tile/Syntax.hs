@@ -18,6 +18,7 @@ module Tile.Syntax
 
 import Control.Carrier.Reader
 import Control.Monad (ap)
+import Control.Monad.Trans.Class
 import Tile.Type
 
 class Var a expr where
@@ -106,3 +107,6 @@ instance Applicative (Script t) where
 
 instance Monad (Script t) where
   Script r >>= f = Script (\ k -> r (runScript k . f))
+
+instance MonadTrans Script where
+  lift m = Script (m >>=)
