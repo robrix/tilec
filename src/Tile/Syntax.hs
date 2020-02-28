@@ -124,6 +124,9 @@ class Err expr where
 
 deriving instance Err t => Err (Identity t)
 
+instance Err t => Err (r -> t) where
+  err = const . err
+
 instance Err (m a) => Err (ReaderC r m a) where
   err = ReaderC . const . err
 
