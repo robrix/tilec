@@ -33,7 +33,7 @@ nothing :: Lam v expr => expr
 nothing = lam Ex (lam Ex . const . var)
 
 just :: Lam v expr => expr
-just = lam Ex (const (lam Ex var))
+just = lam Ex (\ a -> lam Ex (const (lam Ex (\ just -> var just $$ var a))))
 
 
 nat :: Type v expr => expr
