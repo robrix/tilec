@@ -78,7 +78,7 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
 
 -- FIXME: this should likely have a Prob instance
 
-typeOf :: (Ord v, Show v) => Err t => v -> Map v t -> t
+typeOf :: (Ord v, Show v, Err t) => v -> Map v t -> t
 typeOf n = fromMaybe (err ("free variable: " <> show n)) . (!? n)
 
 (|-) :: (Has (Reader (Map v t)) sig m, Ord v) => v ::: m t -> m t -> m t
