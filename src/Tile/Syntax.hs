@@ -108,6 +108,11 @@ class Var v expr => Prob v expr where
 
 deriving instance Prob v t => Prob v (Identity t)
 
+instance Prob v t => Prob v (r -> t) where
+  ex t b r = ex (t r) (($ r) . b)
+
+  ((tm1 ::: ty1) === (tm2 ::: ty2)) r = (tm1 r ::: ty1 r) === (tm2 r ::: ty2 r)
+
 instance Prob v (m a) => Prob v (ReaderC r m a) where
   ex t b = ReaderC (\ r -> ex (runReader r t) (runReader r . b))
 
