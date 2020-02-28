@@ -10,20 +10,20 @@ module Tile.Term
 import Control.Monad (ap, (>=>))
 import Tile.Syntax
 
-data Term a b
+data Term v b
   = Pure b
   | Var b
-  | Let (Term a b) (a -> Term a b)
-  | Lam (a -> Term a b)
-  | Term a b :$ Term a b
+  | Let (Term v b) (v -> Term v b)
+  | Lam (v -> Term v b)
+  | Term v b :$ Term v b
   | Type
-  | Term a b :-> (a -> Term a b)
-  | Term a b :. Term a b
+  | Term v b :-> (v -> Term v b)
+  | Term v b :. Term v b
   | Err String
   deriving (Functor)
 
 instance Applicative (Term a) where
-  pure = Var
+  pure = Pure
   (<*>) = ap
 
 instance Monad (Term a) where
