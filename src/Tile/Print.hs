@@ -26,7 +26,7 @@ import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
 import           Tile.Pretty
 import           Tile.Syntax
 
-prettyPrint :: MonadIO m => Print Int -> m ()
+prettyPrint :: MonadIO m => Print a -> m ()
 prettyPrint = prettyPrintWith defaultStyle
 
 prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> Print a -> m ()
