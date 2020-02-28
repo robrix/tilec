@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DeriveTraversable #-}
 module Tile.Plicit
 ( Plicit(..)
 ) where
@@ -6,4 +6,4 @@ module Tile.Plicit
 data Plicit a
   = Im a
   | Ex a
-  deriving (Eq, Functor, Ord, Show)
+  deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
