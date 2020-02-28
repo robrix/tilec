@@ -13,15 +13,16 @@ module Tile.Elab
 ( Elab(..)
 ) where
 
-import Control.Effect.Reader
+import Control.Carrier.Reader
+import Data.Functor.Identity
 import Data.Map
 import Tile.Syntax
 import Tile.Type
 
-elab :: Elab v t b ::: t -> Map v t -> b
+elab :: Elab v t b ::: t -> ReaderC (Map v t) Identity b
 elab (m ::: t) = runElab m t
 
-newtype Elab v t b = Elab { runElab :: t -> Map v t -> b }
+newtype Elab v t b = Elab { runElab :: t -> ReaderC (Map v t) Identity b }
   deriving (Functor)
 
 instance (Ord v, Show v, Prob v t, Type v t, Err t) => Var v (Elab v t t) where
