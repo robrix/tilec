@@ -11,8 +11,7 @@ import Control.Monad (ap, (>=>))
 import Tile.Syntax
 
 data Term a b
-  = Pure b
-  | Var b
+  = Var b
   | Let (Term a b) (a -> Term a b)
   | Lam (a -> Term a b)
   | Term a b :$ Term a b
@@ -28,7 +27,6 @@ instance Applicative (Term a) where
 
 instance Monad (Term a) where
   t >>= f = case t of
-    Pure a  -> f a
     Var a   -> f a
     Let v b -> Let (v >>= f) (b >=> f)
     Lam b   -> Lam (b >=> f)
@@ -60,9 +58,8 @@ infixl 9 :$
 infixr 0 :->
 infixl 0 :.
 
-interpret :: (Applicative t, Let a t, Lam a t, Type a t, Err t) => Term a a -> t a
+interpret :: (Let a t, Lam a t, Type a t, Err t) => Term a a -> t a
 interpret = \case
-  Pure a  -> pure a
   Var v   -> var v
   Let v b -> let' (interpret v) (interpret . b)
   Lam b   -> lam (interpret . b)
