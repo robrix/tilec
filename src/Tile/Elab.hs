@@ -26,7 +26,7 @@ elab (m ::: t) = local (const t) (runElab m)
 newtype Elab v t b = Elab { runElab :: ReaderC t (ReaderC (Map v t) Identity) b }
   deriving (Applicative, Functor, Monad)
 
-instance (Ord v, Show v, Prob v t, Type v t, Err t) => Var v (Elab v t t) where
+instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
   var n = check (=== (var n ::: typeOf n))
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
@@ -57,7 +57,7 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
     let' (elab (a ::: type')) $ \ a' ->
     exp === ((var a' >-> \ x -> x ::: var a' |- elab (b x ::: var _B)) ::: type')
 
-deriving instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Prob v (Elab v t t)
+deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
 
 
 typeOf :: (Has (Reader (Map v t)) sig m, Ord v, Show v, Err (m t)) => v -> m t
