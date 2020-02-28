@@ -6,8 +6,13 @@ module Tile.Type
 , type_
 ) where
 
+import Data.Bifunctor
+
 data a ::: b = a ::: b
   deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
+
+instance Bifunctor (:::) where
+  bimap f g (l ::: r) = f l ::: g r
 
 infixl 0 :::
 
