@@ -29,6 +29,7 @@ class Var a expr where
 instance Var a m => Var a (ReaderC r m) where
   var = ReaderC . const . var
 
+
 class Var a expr => Let a expr where
   let' :: expr a -> (a -> expr a) -> expr a
 
