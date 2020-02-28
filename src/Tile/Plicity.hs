@@ -1,9 +1,9 @@
 {-# LANGUAGE DeriveFunctor #-}
 module Tile.Plicity
-( Plicity(..)
+( Plicit(..)
 ) where
 
-data Plicity a
+data Plicit a
   = Im a
   | Ex a
   deriving (Eq, Functor, Ord, Show)
