@@ -76,6 +76,7 @@ instance Lam Int (Print ()) where
     -- FIXME: combine successive lambdas into a single \ … . …
     put @Inner (prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> b')))
   -- FIXME: combine successive applications for purposes of wrapping
+
   f $$ a = Print $ do
     f' <- runPrint f *> get
     a' <- runPrint a *> get
@@ -83,6 +84,7 @@ instance Lam Int (Print ()) where
 
 instance Type Int (Print ()) where
   type' = Print (put @Inner (annotate Type (pretty "Type")))
+
   t >-> b = Print $ do
     t' <- runPrint t *> get
     (lhs, b') <- bind (runPrint . b) (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
