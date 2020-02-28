@@ -20,7 +20,7 @@ data Term v a
   | Type
   | (Plicit, Term v a) :-> (v -> Term v a)
   | E (Term v a) (v -> Term v a)
-  | (Term v a, Term v a) :===: (Term v a, Term v a)
+  | (Term v a ::: Term v a) :===: (Term v a ::: Term v a)
   | Err String
 
 instance Functor (Term v) where
@@ -81,7 +81,7 @@ instance Type v (Term v v) where
 
 instance Prob v (Term v v) where
   ex = E
-  (m1 ::: t1) === (m2 ::: t2) = (m1, t1) :===: (m2, t2)
+  (===) = (:===:)
 
 instance Err (Term v v) where
   err = Err
@@ -92,12 +92,12 @@ infixl 4 :===:
 
 interpret :: (Let v t, Lam v t, Type v t, Prob v t, Err t) => Term v v -> t
 interpret = \case
-  Var v                   -> var v
-  Let v b                 -> let' (interpret v) (interpret . b)
-  Lam p b                 -> lam p (interpret . b)
-  f :$ a                  -> interpret f $$ interpret a
-  Type                    -> type'
-  t :-> b                 -> fmap interpret t >-> interpret . b
-  E t b                   -> interpret t `ex` interpret . b
-  (m1, t1) :===: (m2, t2) -> (interpret m1 ::: interpret t1) === (interpret m2 ::: interpret t2)
-  Err s                   -> err s
+  Var v       -> var v
+  Let v b     -> let' (interpret v) (interpret . b)
+  Lam p b     -> lam p (interpret . b)
+  f :$ a      -> interpret f $$ interpret a
+  Type        -> type'
+  t :-> b     -> fmap interpret t >-> interpret . b
+  E t b       -> interpret t `ex` interpret . b
+  t1 :===: t2 -> bimap interpret interpret t1 === bimap interpret interpret t2
+  Err s       -> err s
