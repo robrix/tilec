@@ -43,6 +43,9 @@ class Var v expr => Let v expr where
 
 deriving instance Let v t => Let v (Identity t)
 
+instance Let v t => Let v (r -> t) where
+  let' v b r = let' (v r) (($ r) . b)
+
 instance Let v (m a) => Let v (ReaderC r m a) where
   let' v b = ReaderC (\ r -> let' (runReader r v) (runReader r . b))
 
