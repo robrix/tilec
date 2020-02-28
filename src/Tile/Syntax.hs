@@ -17,11 +17,13 @@ module Tile.Syntax
 , Def(..)
   -- * Re-exports
 , (:::)(..)
+, Plicity(..)
 ) where
 
 import Control.Carrier.Reader
 import Data.Functor.Const
 import Data.Functor.Identity
+import Tile.Plicity
 import Tile.Type
 
 class Var v expr | expr -> v where
