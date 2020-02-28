@@ -114,7 +114,7 @@ instance MonadTrans (Script v) where
   lift m = Script (m >>=)
 
 meta :: Prob v t => Script v t v -> Script v t v
-meta t = Script (ex (runScript var t))
+meta = Script . ex . runScript var
 
 introduce :: Lam v t => Script v t v
 introduce = Script lam
