@@ -1,2 +1,5 @@
 module Tile.Reconstruct
-() where
+( Reconstruct(..)
+) where
+
+newtype Reconstruct t a = Reconstruct { runReconstruct :: a }
