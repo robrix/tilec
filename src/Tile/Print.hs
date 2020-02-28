@@ -24,7 +24,6 @@ import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
 import           Tile.Pretty
 import           Tile.Syntax
-import           Tile.Type
 
 prettyPrint :: MonadIO m => Print Inner -> m ()
 prettyPrint = prettyPrintWith defaultStyle

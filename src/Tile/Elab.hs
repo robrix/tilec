@@ -18,7 +18,6 @@ import Control.Carrier.Reader
 import Data.Functor.Identity
 import Data.Map
 import Tile.Syntax
-import Tile.Type
 
 newtype Elab v t b = Elab { runElab :: ReaderC t (ReaderC (Map v t) Identity) b }
   deriving (Applicative, Functor, Monad)

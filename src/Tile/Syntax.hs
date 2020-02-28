@@ -15,6 +15,8 @@ module Tile.Syntax
 , Prob(..)
 , Err(..)
 , Def(..)
+  -- * Re-exports
+, (:::)(..)
 ) where
 
 import Control.Carrier.Reader
