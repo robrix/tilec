@@ -11,23 +11,23 @@ module Tile.Term
 import Control.Monad (ap, (>=>))
 import Tile.Syntax
 
-data Term a b
-  = Var b
-  | Let (Term a b) (a -> Term a b)
-  | Lam Plicit (a -> Term a b)
-  | Term a b :$ Term a b
+data Term v a
+  = Var a
+  | Let (Term v a) (v -> Term v a)
+  | Lam Plicit (v -> Term v a)
+  | Term v a :$ Term v a
   | Type
-  | (Plicit, Term a b) :-> (a -> Term a b)
-  | E (Term a b) (a -> Term a b)
-  | (Term a b, Term a b) :===: (Term a b, Term a b)
+  | (Plicit, Term v a) :-> (v -> Term v a)
+  | E (Term v a) (v -> Term v a)
+  | (Term v a, Term v a) :===: (Term v a, Term v a)
   | Err String
   deriving (Functor)
 
-instance Applicative (Term a) where
+instance Applicative (Term v) where
   pure = Var
   (<*>) = ap
 
-instance Monad (Term a) where
+instance Monad (Term v) where
   t >>= f = case t of
     Var a                   -> f a
     Let v b                 -> Let (v >>= f) (b >=> f)
@@ -39,32 +39,32 @@ instance Monad (Term a) where
     (m1, t1) :===: (m2, t2) -> (m1 >>= f, t1 >>= f) :===: (m2 >>= f, t2 >>= f)
     Err s                   -> Err s
 
-instance Var a (Term a a) where
+instance Var v (Term v v) where
   var = Var
 
-instance Let a (Term a a) where
+instance Let v (Term v v) where
   let' = Let
 
-instance Lam a (Term a a) where
+instance Lam v (Term v v) where
   lam = Lam
   ($$) = (:$)
 
-instance Type a (Term a a) where
+instance Type v (Term v v) where
   type' = Type
   (>->) = (:->)
 
-instance Prob a (Term a a) where
+instance Prob v (Term v v) where
   ex = E
   (m1 ::: t1) === (m2 ::: t2) = (m1, t1) :===: (m2, t2)
 
-instance Err (Term a a) where
+instance Err (Term v v) where
   err = Err
 
 infixl 9 :$
 infixr 0 :->
 infixl 4 :===:
 
-interpret :: (Let a t, Lam a t, Type a t, Prob a t, Err t) => Term a a -> t
+interpret :: (Let v t, Lam v t, Type v t, Prob v t, Err t) => Term v v -> t
 interpret = \case
   Var v                   -> var v
   Let v b                 -> let' (interpret v) (interpret . b)
