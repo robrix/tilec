@@ -85,8 +85,10 @@ instance Type Int (Print Inner) where
   type' = pure (annotate Type (pretty "Type"))
 
   t >-> b = do
-    t' <- t
-    (lhs, b') <- bind b (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
+    t' <- sequenceA t
+    (lhs, b') <- case t' of
+      Im t' -> bind b (\ v -> braces (prettyVar v <+> op ":" <+> t')) (braces t')
+      Ex t' -> bind b (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
     pure (prec (Level 0) (lhs <> line <> op "→" <+> b'))
 
 instance Prob Int (Print Inner) where
