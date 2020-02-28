@@ -15,7 +15,6 @@ module Tile.Print
 
 import           Control.Applicative ((<**>))
 import           Control.Carrier.Fresh.Strict
-import           Control.Carrier.State.Strict
 import           Control.Carrier.Writer.Strict
 import           Control.Monad.IO.Class
 import           Data.Functor.Identity
@@ -27,10 +26,10 @@ import           Tile.Pretty
 import           Tile.Syntax
 import           Tile.Type
 
-prettyPrint :: MonadIO m => Print () -> m ()
+prettyPrint :: MonadIO m => Print Inner -> m ()
 prettyPrint = prettyPrintWith defaultStyle
 
-prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> Print () -> m ()
+prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> Print Inner -> m ()
 prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc
 
 defaultStyle :: Highlight Int -> ANSI.AnsiStyle
@@ -55,54 +54,54 @@ defaultStyle = \case
 
 type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 
-newtype Print a = Print { runPrint :: Ap (FreshC (WriterC IntSet.IntSet (StateC Inner Identity))) a }
+newtype Print a = Print { runPrint :: Ap (FreshC (WriterC IntSet.IntSet Identity)) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
-instance Show (Print a) where
+instance Show (Print Inner) where
   showsPrec p = showsPrec p . toDoc
 
-instance Var Int (Print ()) where
-  var a = Print (tell (IntSet.singleton a) *> put @Inner (prettyVar a))
+instance Var Int (Print Inner) where
+  var a = Print (tell (IntSet.singleton a) *> pure (prettyVar a))
 
-instance Let Int (Print ()) where
+instance Let Int (Print Inner) where
   let' tm b = Print $ do
-    tm' <- runPrint tm *> get
+    tm' <- runPrint tm
     (lhs, b') <- bind (runPrint . b) prettyVar (pretty '_')
     -- FIXME: bind variables on the lhs when tm is a lambda
-    put @Inner (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm'))) <> line <> kw "in" <+> b')))
+    pure (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm'))) <> line <> kw "in" <+> b')))
 
-instance Lam Int (Print ()) where
+instance Lam Int (Print Inner) where
   lam b  = Print $ do
     (lhs, b') <- bind (runPrint . b) prettyVar (pretty '_')
     -- FIXME: combine successive lambdas into a single \ … . …
-    put @Inner (prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> b')))
+    pure (prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> b')))
   -- FIXME: combine successive applications for purposes of wrapping
 
   f $$ a = Print $ do
-    f' <- runPrint f *> get
-    a' <- runPrint a *> get
-    put @Inner (prec (Level 10) (f' <+> prec (Level 11) a'))
+    f' <- runPrint f
+    a' <- runPrint a
+    pure (prec (Level 10) (f' <+> prec (Level 11) a'))
 
-instance Type Int (Print ()) where
-  type' = Print (put @Inner (annotate Type (pretty "Type")))
+instance Type Int (Print Inner) where
+  type' = Print (pure (annotate Type (pretty "Type")))
 
   t >-> b = Print $ do
-    t' <- runPrint t *> get
+    t' <- runPrint t
     (lhs, b') <- bind (runPrint . b) (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
-    put @Inner (prec (Level 0) (lhs <> line <> op "→" <+> b'))
+    pure (prec (Level 0) (lhs <> line <> op "→" <+> b'))
 
-instance Prob Int (Print ()) where
+instance Prob Int (Print Inner) where
   ex t b = Print $ do
-    t' <- runPrint t *> get
+    t' <- runPrint t
     (lhs, b') <- bind (runPrint . b) prettyVar (pretty '_')
-    put @Inner (prec (Level 0) (pretty '∃' <+> lhs <+> op ":" <+> t' <+> op "." <+> b'))
+    pure (prec (Level 0) (pretty '∃' <+> lhs <+> op ":" <+> t' <+> op "." <+> b'))
 
   (tm1 ::: ty1) === (tm2 ::: ty2) = Print $ do
-    tm1' <- runPrint tm1 *> get
-    ty1' <- runPrint ty1 *> get
-    tm2' <- runPrint tm2 *> get
-    ty2' <- runPrint ty2 *> get
-    put @Inner (prec (Level 4) (tm1' <+> op ":" <+> ty1' <+> op "≡" <+> tm2' <+> op ":" <+> ty2'))
+    tm1' <- runPrint tm1
+    ty1' <- runPrint ty1
+    tm2' <- runPrint tm2
+    ty2' <- runPrint ty2
+    pure (prec (Level 4) (tm1' <+> op ":" <+> ty1' <+> op "≡" <+> tm2' <+> op ":" <+> ty2'))
 
 data Highlight a
   = Var
@@ -133,11 +132,11 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
-bind :: (Has Fresh sig m, Has (State Inner) sig m, Has (Writer IntSet.IntSet) sig m) => (Int -> m a) -> (Int -> Inner) -> Inner -> m (Inner, Inner)
+bind :: (Has Fresh sig m, Has (Writer IntSet.IntSet) sig m) => (Int -> m a) -> (Int -> Inner) -> Inner -> m (Inner, a)
 bind b used unused = do
   v <- fresh
-  (fvs, b') <- listen @IntSet.IntSet (b v *> get)
+  (fvs, b') <- listen @IntSet.IntSet (b v)
   pure (if v `IntSet.member` fvs then used v else unused, b')
 
-toDoc :: Print a -> PP.Doc (Highlight Int)
-toDoc (Print m) = rainbow (runPrec (run (execState mempty (runWriter (evalFresh 0 (getAp m))))) (Level 0))
+toDoc :: Print Inner -> PP.Doc (Highlight Int)
+toDoc (Print m) = rainbow (runPrec (snd (run (runWriter (evalFresh 0 (getAp m))))) (Level 0))
