@@ -80,6 +80,13 @@ class Var v expr => Type v expr where
 
 deriving instance Type v t => Type v (Identity t)
 
+instance Type v t => Type v (r -> t) where
+  type' = const type'
+
+  (t >-> b) r = t r >-> ($ r) . b
+
+  (m .:. t) r = m r .:. t r
+
 instance Type v (m a) => Type v (ReaderC r m a) where
   type' = ReaderC (const type')
 
