@@ -44,10 +44,10 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     var _B `ex` \ res ->
-    let' (runElab a) (\ a' ->
+    let' (runElab a) $ \ a' ->
     (runElab f $$ var a' ::: (var _A --> var _B) $$ var a')
     ===
-    (var res ::: var _B))
+    (var res ::: var _B)
 
 instance (Ord v, Show v, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
   type' = Elab type'
