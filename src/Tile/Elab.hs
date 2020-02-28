@@ -20,13 +20,13 @@ import Tile.Stack
 import Tile.Syntax
 import Tile.Type
 
-elab :: Stack (t a) -> Elab t a b -> t b
+elab :: Stack (t a) -> Elab a t b -> t b
 elab ctx = runReader ctx . runElab
 
-newtype Elab t a b = Elab { runElab :: ReaderC (Stack (t a)) t b }
+newtype Elab a t b = Elab { runElab :: ReaderC (Stack (t a)) t b }
   deriving (Applicative, Functor, Monad)
 
-instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t Int) where
+instance (Prob Int t, Type Int t, Err t) => Var Int (Elab Int t) where
   var n = Elab $
     type' `ex` \ _A ->
     var _A `ex` \ v ->
@@ -34,12 +34,12 @@ instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t Int) where
     ===
     (var v ::: var _A)
 
-instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab t Int) where
+instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab Int t) where
   let' tm b = Elab $
     type' `ex` \ _A ->
     let' (runElab tm .:. var _A) (var _A |- runElab . b)
 
-instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t Int) where
+instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab Int t) where
   lam b = Elab $
     type' `ex` \ _A ->
     type' `ex` \ _B ->
@@ -57,7 +57,7 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t Int) wher
     ===
     (var res ::: var _B)
 
-instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t Int) where
+instance (Prob Int t, Type Int t, Err t) => Type Int (Elab Int t) where
   type' = Elab type'
 
   t >-> b = Elab $
