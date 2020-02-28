@@ -38,6 +38,7 @@ library
     Tile.Library
     Tile.Pretty
     Tile.Print
+    Tile.Reconstruct
     Tile.Syntax
     Tile.Type
   -- other-modules:
