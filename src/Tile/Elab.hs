@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 -- | Elaboration, implemented as a mash-up of:
@@ -56,7 +57,8 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
     let' (elab (a ::: type')) $ \ a' ->
     exp === ((var a' >-> \ x -> x ::: var a' |- elab (b x ::: var _B)) ::: type')
 
--- FIXME: this should likely have a Prob instance
+deriving instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Prob v (Elab v t t)
+
 
 typeOf :: (Has (Reader (Map v t)) sig m, Ord v, Show v, Err (m t)) => v -> m t
 typeOf n = asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure
