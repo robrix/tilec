@@ -15,7 +15,6 @@ module Tile.Elab
 
 import Control.Effect.Reader
 import Data.Map
-import Data.Maybe (fromMaybe)
 import Tile.Syntax
 import Tile.Type
 
@@ -78,8 +77,8 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
 
 -- FIXME: this should likely have a Prob instance
 
-typeOf :: (Ord v, Show v, Err t) => v -> Map v t -> t
-typeOf n = fromMaybe (err ("free variable: " <> show n)) . (!? n)
+typeOf :: (Has (Reader (Map v t)) sig m, Ord v, Show v, Err (m t)) => v -> m t
+typeOf n = asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure
 
 (|-) :: (Has (Reader (Map v t)) sig m, Ord v) => v ::: m t -> m t -> m t
 (a ::: t) |- b = do
