@@ -63,10 +63,7 @@ instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t t) where
     let t' = runElab t
     in (t' .:. type') >-> t' |- runElab . b
 
-  tm .:. ty = Elab $
-    let ty' = runElab ty
-        tm' = runElab tm
-    in tm' .:. ty' .:. type'
+  tm .:. ty = Elab (runElab tm .:. runElab ty .:. type')
 
 -- FIXME: this should likely have a Prob instance
 
