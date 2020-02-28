@@ -15,6 +15,7 @@ module Tile.Syntax
 , runScript
 , Script(..)
 , meta
+, introduce
 ) where
 
 import Control.Carrier.Reader
@@ -114,3 +115,6 @@ instance MonadTrans (Script v) where
 
 meta :: Prob v t => Script v t v -> Script v t v
 meta t = Script (\ k -> runScript var t `ex` k)
+
+introduce :: Lam v t => Script v t v
+introduce = Script lam
