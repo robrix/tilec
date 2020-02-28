@@ -38,7 +38,7 @@ instance (Let Int t, Prob Int t, Type Int t, Err t) => Let Int (Elab t t) where
     type' `ex` \ _A ->
     let' (runElab tm .:. var _A) (var _A |- runElab . b)
 
-instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t t) where
+instance (Let Int t, Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t t) where
   lam b = Elab $
     type' `ex` \ _A ->
     type' `ex` \ _B ->
@@ -48,10 +48,10 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t t) where
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     var _B `ex` \ res ->
-    let a' = runElab a in
-    (runElab f $$ a' ::: (var _A --> var _B) $$ a')
+    let' (runElab a) (\ a' ->
+    (runElab f $$ var a' ::: (var _A --> var _B) $$ var a')
     ===
-    (var res ::: var _B)
+    (var res ::: var _B))
 
 instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t t) where
   type' = Elab type'
