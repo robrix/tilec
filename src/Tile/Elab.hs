@@ -29,11 +29,7 @@ newtype Elab v t b = Elab { runElab :: ReaderC t (ReaderC (Map v t) Identity) b 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
   var n = check (=== (var n ::: typeOf n))
 
-instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
-  let' tm b = check $ \ exp ->
-    type' `ex` \ _A ->
-    type' `ex` \ _B ->
-    exp === (let' (elab (tm ::: var _A)) (\ x -> x ::: var _A |- elab (b x ::: var _B)) ::: var _B)
+deriving instance (Ord v, Show v, Let v t, Prob v t, Err t) => Let v (Elab v t t)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
   lam b = check $ \ exp ->
