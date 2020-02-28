@@ -14,16 +14,15 @@ module Tile.Elab
 , Elab(..)
 ) where
 
-import Control.Carrier.Reader
-import Data.Functor.Identity
+import Data.Maybe (fromMaybe)
 import Tile.Stack
 import Tile.Syntax
 import Tile.Type
 
 elab :: Stack t -> Elab t t -> t
-elab ctx = run . runReader ctx . runElab
+elab = flip runElab
 
-newtype Elab t b = Elab { runElab :: ReaderC (Stack t) Identity b }
+newtype Elab t b = Elab { runElab :: Stack t -> b }
   deriving (Applicative, Functor, Monad)
 
 instance (Prob Int t, Type Int t, Err t) => Var Int (Elab t t) where
@@ -71,10 +70,10 @@ instance (Prob Int t, Type Int t, Err t) => Type Int (Elab t t) where
 
 -- FIXME: this should likely have a Prob instance
 
-typeOf :: Err t => Int -> ReaderC (Stack t) Identity t
-typeOf n = ReaderC $ maybe (err ("free variable: " <> show n)) pure . (!? n)
+typeOf :: Err t => Int -> Stack t -> t
+typeOf n = fromMaybe (err ("free variable: " <> show n)) . (!? n)
 
-(|-) :: ReaderC (Stack t) Identity t -> (a -> ReaderC (Stack t) Identity t) -> (a -> ReaderC (Stack t) Identity t)
-(t |- b) a = ReaderC $ \ ctx -> runReader (ctx :> run (runReader ctx t)) (b a)
+(|-) :: (Stack t -> t) -> (a -> Stack t -> t) -> (a -> Stack t -> t)
+(t |- b) a ctx = b a (ctx :> t ctx)
 
 infixr 1 |-
