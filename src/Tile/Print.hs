@@ -68,13 +68,13 @@ instance Var Int Print where
 instance Let Int Print where
   let' tm b = Print $ do
     tm' <- runPrint tm *> get
-    (lhs, b', x) <- bind b prettyVar (pretty '_')
+    (lhs, b', x) <- bind (runPrint . b) prettyVar (pretty '_')
     -- FIXME: bind variables on the lhs when tm is a lambda
     x <$ put @Inner (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm'))) <> line <> kw "in" <+> b')))
 
 instance Lam Int Print where
   lam b  = Print $ do
-    (lhs, b', x) <- bind b prettyVar (pretty '_')
+    (lhs, b', x) <- bind (runPrint . b) prettyVar (pretty '_')
     -- FIXME: combine successive lambdas into a single \ … . …
     x <$ put @Inner (prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> b')))
   -- FIXME: combine successive applications for purposes of wrapping
@@ -87,7 +87,7 @@ instance Type Int Print where
   type' = Print (-1 <$ put @Inner (annotate Type (pretty "Type")))
   t >-> b = Print $ do
     t' <- runPrint t *> get
-    (lhs, b', x) <- bind b (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
+    (lhs, b', x) <- bind (runPrint . b) (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
     x <$ put @Inner (prec (Level 0) (lhs <> line <> op "→" <+> b'))
   tm .:. ty = Print $ do
     tm' <- runPrint tm *> get
@@ -124,10 +124,10 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
-bind :: (Int -> Print a) -> (Int -> Inner) -> Inner -> M (Inner, Inner, a)
+bind :: (Int -> M a) -> (Int -> Inner) -> Inner -> M (Inner, Inner, a)
 bind b used unused = do
   v <- fresh
-  (fvs, (x, b')) <- listen @IntSet.IntSet ((,) <$> runPrint (b v) <*> get)
+  (fvs, (x, b')) <- listen @IntSet.IntSet ((,) <$> b v <*> get)
   pure (if v `IntSet.member` fvs then used v else unused, b', x)
 
 toDoc :: Print a -> PP.Doc (Highlight Int)
