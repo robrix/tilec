@@ -37,9 +37,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
   f $$ a = check $ \ exp ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
-    let' (elab (a ::: var _A)) $ \ a' ->
-    let' (var _A --> var _B) $ \ f' ->
-    exp === (elab (f ::: var f') $$ var a' ::: var f' $$ var a')
+    exp === (elab (f ::: (var _A --> var _B)) $$ elab (a ::: var _A) ::: var _B)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
   type' = check (=== (type' ::: type'))
