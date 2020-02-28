@@ -17,6 +17,7 @@ data Term a b
   | Term a b :$ Term a b
   | Type
   | (Plicit, Term a b) :-> (a -> Term a b)
+  | E (Term a b) (a -> Term a b)
   | Err String
   deriving (Functor)
 
@@ -32,6 +33,7 @@ instance Monad (Term a) where
     g :$ a  -> (g >>= f) :$ (a >>= f)
     Type    -> Type
     t :-> b -> fmap (>>= f) t :-> (b >=> f)
+    E t b   -> E (t >>= f) (b >=> f)
     Err s   -> Err s
 
 instance Var a (Term a a) where
@@ -54,7 +56,7 @@ instance Err (Term a a) where
 infixl 9 :$
 infixr 0 :->
 
-interpret :: (Let a t, Lam a t, Type a t, Err t) => Term a a -> t
+interpret :: (Let a t, Lam a t, Type a t, Prob a t, Err t) => Term a a -> t
 interpret = \case
   Var v   -> var v
   Let v b -> let' (interpret v) (interpret . b)
@@ -62,4 +64,5 @@ interpret = \case
   f :$ a  -> interpret f $$ interpret a
   Type    -> type'
   t :-> b -> fmap interpret t >-> interpret . b
+  E t b   -> interpret t `ex` interpret . b
   Err s   -> err s
