@@ -34,8 +34,7 @@ deriving instance Var v t => Var v (Identity t)
 instance Var v t => Var v (r -> t) where
   var = const . var
 
-instance Var v (m a) => Var v (ReaderC r m a) where
-  var = ReaderC . const . var
+deriving instance Var v (m a) => Var v (ReaderC r m a)
 
 
 class Var v expr => Let v expr where
@@ -46,8 +45,7 @@ deriving instance Let v t => Let v (Identity t)
 instance Let v t => Let v (r -> t) where
   let' v b r = let' (v r) (($ r) . b)
 
-instance Let v (m a) => Let v (ReaderC r m a) where
-  let' v b = ReaderC (\ r -> let' (runReader r v) (runReader r . b))
+deriving instance Let v (m a) => Let v (ReaderC r m a)
 
 
 class Var v expr => Lam v expr where
@@ -63,10 +61,7 @@ instance Lam v t => Lam v (r -> t) where
 
   (f $$ a) r = f r $$ a r
 
-instance Lam v (m a) => Lam v (ReaderC r m a) where
-  lam b = ReaderC (\ r -> lam (runReader r . b))
-
-  f $$ a = ReaderC (\ r -> runReader r f $$ runReader r a)
+deriving instance Lam v (m a) => Lam v (ReaderC r m a)
 
 
 class Var v expr => Type v expr where
@@ -87,12 +82,7 @@ instance Type v t => Type v (r -> t) where
 
   (m .:. t) r = m r .:. t r
 
-instance Type v (m a) => Type v (ReaderC r m a) where
-  type' = ReaderC (const type')
-
-  t >-> b = ReaderC (\ r -> runReader r t >-> runReader r . b)
-
-  m .:. t = ReaderC (\ r -> runReader r m .:. runReader r t)
+deriving instance Type v (m a) => Type v (ReaderC r m a)
 
 (-->) :: Type a expr => expr -> expr -> expr
 a --> b = a >-> const b
@@ -113,10 +103,7 @@ instance Prob v t => Prob v (r -> t) where
 
   ((tm1 ::: ty1) === (tm2 ::: ty2)) r = (tm1 r ::: ty1 r) === (tm2 r ::: ty2 r)
 
-instance Prob v (m a) => Prob v (ReaderC r m a) where
-  ex t b = ReaderC (\ r -> ex (runReader r t) (runReader r . b))
-
-  (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderC (\ r -> (runReader r tm1 ::: runReader r ty1) === (runReader r tm2 ::: runReader r ty2))
+deriving instance Prob v (m a) => Prob v (ReaderC r m a)
 
 
 class Err expr where
@@ -127,8 +114,7 @@ deriving instance Err t => Err (Identity t)
 instance Err t => Err (r -> t) where
   err = const . err
 
-instance Err (m a) => Err (ReaderC r m a) where
-  err = ReaderC . const . err
+deriving instance Err (m a) => Err (ReaderC r m a)
 
 
 class Def tm ty a def | def -> tm ty where
