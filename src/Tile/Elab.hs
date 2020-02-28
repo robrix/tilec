@@ -48,11 +48,8 @@ instance (Lam Int t, Prob Int t, Type Int t, Err t) => Lam Int (Elab t t) where
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     var _B `ex` \ res ->
-    let f' = runElab f
-        a' = runElab a
-        _F = var _A --> var _B
-    in
-    (f' $$ a' ::: _F $$ a')
+    let a' = runElab a in
+    (runElab f $$ a' ::: (var _A --> var _B) $$ a')
     ===
     (var res ::: var _B)
 
