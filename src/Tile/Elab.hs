@@ -31,8 +31,8 @@ deriving instance (Ord v, Show v, Let v t, Prob v t, Err t) => Let v (Elab v t t
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
   lam b = check $ \ exp ->
     type' `ex` \ _A ->
-    type' `ex` \ _B ->
-    exp === (lam (\ x -> x ::: var _A |- elab (b x ::: var _B)) ::: (var _A --> var _B))
+    (var _A --> type') `ex` \ _B ->
+    exp === (lam (\ x -> x ::: var _A |- elab (b x ::: var _B $$ var x)) ::: (var _A >-> \ x -> var _B $$ var x))
 
   f $$ a = check $ \ exp ->
     type' `ex` \ _A ->
