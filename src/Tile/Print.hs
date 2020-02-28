@@ -87,10 +87,6 @@ instance Type Int (Print ()) where
     t' <- runPrint t *> get
     (lhs, b') <- bind (runPrint . b) (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
     put @Inner (prec (Level 0) (lhs <> line <> op "→" <+> b'))
-  tm .:. ty = Print $ do
-    tm' <- runPrint tm *> get
-    ty' <- runPrint ty *> get
-    put @Inner (prec (Level 0) (tm' <+> op ":" <+> prec (Level 1) ty'))
 
 
 data Highlight a

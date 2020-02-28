@@ -75,8 +75,6 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
     ===
     (var v ::: pure t)
 
-  tm .:. ty = Elab (runElab tm .:. runElab ty .:. type')
-
 -- FIXME: this should likely have a Prob instance
 
 typeOf :: (Ord v, Show v) => Err t => v -> Map v t -> t

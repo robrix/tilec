@@ -74,9 +74,6 @@ class Var v expr => Type v expr where
   (>->) :: expr -> (v -> expr) -> expr
   infixr 0 >->
 
-  (.:.) :: expr -> expr -> expr
-  infixl 0 .:.
-
 deriving instance Type v t => Type v (Identity t)
 deriving instance Type v t => Type v (Const t a)
 
@@ -84,8 +81,6 @@ instance Type v t => Type v (r -> t) where
   type' = const type'
 
   (t >-> b) r = t r >-> ($ r) . b
-
-  (m .:. t) r = m r .:. t r
 
 deriving instance Type v (m a) => Type v (ReaderC r m a)
 
