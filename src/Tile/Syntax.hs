@@ -15,14 +15,9 @@ module Tile.Syntax
 , Prob(..)
 , Err(..)
 , Def(..)
-, runScript
-, Script(..)
-, meta
-, introduce
 ) where
 
 import Control.Carrier.Reader
-import Control.Monad (ap)
 import Data.Functor.Const
 import Data.Functor.Identity
 import Tile.Type
@@ -126,23 +121,3 @@ class Def tm ty a def | def -> tm ty where
 
 -- FIXME: modules
 -- FIXME: packages
-
-
-runScript :: (a -> t) -> Script t a -> t
-runScript k (Script r) = r k
-
-newtype Script t a = Script ((a -> t) -> t)
-  deriving (Functor)
-
-instance Applicative (Script t) where
-  pure a = Script (\ k -> k a)
-  (<*>) = ap
-
-instance Monad (Script t) where
-  Script r >>= f = Script (\ k -> r (runScript k . f))
-
-meta :: Prob v t => Script t v -> Script t v
-meta = Script . ex . runScript var
-
-introduce :: Lam v t => Script t v
-introduce = Script lam
