@@ -1,2 +1,8 @@
 module Tile.Plicity
-() where
+( Plicity(..)
+) where
+
+data Plicity a
+  = Im a
+  | Ex a
+  deriving (Eq, Ord, Show)
