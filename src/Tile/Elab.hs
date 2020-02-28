@@ -10,17 +10,13 @@
 -- * Typed Tagless Final Interpreters, Oleg Kiselyov
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module Tile.Elab
-( elab
-, Elab(..)
+( Elab(..)
 ) where
 
 import Data.Maybe (fromMaybe)
 import Tile.Stack
 import Tile.Syntax
 import Tile.Type
-
-elab :: Stack t -> Elab t t -> t
-elab = flip runElab
 
 newtype Elab t b = Elab { runElab :: Stack t -> b }
   deriving (Applicative, Functor, Monad)
