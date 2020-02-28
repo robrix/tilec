@@ -1,5 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
-module Tile.Plicity
+module Tile.Plicit
 ( Plicit(..)
 ) where
 
