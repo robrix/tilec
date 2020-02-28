@@ -61,7 +61,7 @@ instance Show (Print Inner) where
   showsPrec p = showsPrec p . toDoc
 
 instance Var Int (Print Inner) where
-  var a = Print (tell (IntSet.singleton a) *> pure (prettyVar a))
+  var a = Print (prettyVar a <$ tell (IntSet.singleton a))
 
 instance Let Int (Print Inner) where
   let' tm b = Print $ do
