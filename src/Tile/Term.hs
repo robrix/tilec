@@ -53,6 +53,10 @@ instance Type a (Term a a) where
   type' = Type
   (>->) = (:->)
 
+instance Prob a (Term a a) where
+  ex = E
+  (m1 ::: t1) === (m2 ::: t2) = (m1, t1) :===: (m2, t2)
+
 instance Err (Term a a) where
   err = Err
 
