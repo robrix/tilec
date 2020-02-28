@@ -92,6 +92,7 @@ infixr 0 -->
 
 class Var v expr => Prob v expr where
   ex :: expr -> (v -> expr) -> expr
+  infixr 0 `ex`
 
   (===) :: expr ::: expr -> expr ::: expr -> expr
   infixl 4 ===
