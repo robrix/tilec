@@ -49,7 +49,7 @@ deriving instance Let v (m a) => Let v (ReaderC r m a)
 
 
 class Var v expr => Lam v expr where
-  lam :: (v -> expr) -> expr
+  lam :: Plicit -> (v -> expr) -> expr
 
   ($$) :: expr -> expr -> expr
   infixl 9 $$
@@ -58,7 +58,7 @@ deriving instance Lam v t => Lam v (Identity t)
 deriving instance Lam v t => Lam v (Const t a)
 
 instance Lam v t => Lam v (r -> t) where
-  lam b r = lam (($ r) . b)
+  lam p b r = lam p (($ r) . b)
 
   (f $$ a) r = f r $$ a r
 

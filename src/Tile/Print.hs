@@ -70,8 +70,10 @@ instance Let Int (Print Inner) where
     pure (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm'))) <> line <> kw "in" <+> b')))
 
 instance Lam Int (Print Inner) where
-  lam b  = do
-    (lhs, b') <- bind b prettyVar (pretty '_')
+  lam p b  = do
+    (lhs, b') <- case p of
+      Im -> bind b (braces . prettyVar) (braces (pretty '_'))
+      Ex -> bind b prettyVar (pretty '_')
     -- FIXME: combine successive lambdas into a single \ … . …
     pure (prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> b')))
   -- FIXME: combine successive applications for purposes of wrapping

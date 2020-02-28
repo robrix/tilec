@@ -17,6 +17,7 @@ module Tile.Elab
 import Control.Carrier.Reader
 import Data.Functor.Identity
 import Data.Map
+import Data.Maybe (fromMaybe)
 import Tile.Syntax
 
 newtype Elab v t b = Elab { runElab :: ReaderC t (ReaderC (Map v t) Identity) b }
@@ -28,10 +29,10 @@ instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
 deriving instance (Ord v, Show v, Let v t, Prob v t, Err t) => Let v (Elab v t t)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
-  lam b = check $ \ exp ->
+  lam p b = check $ \ exp ->
     type' `ex` \ _A ->
     (var _A --> type') `ex` \ _B ->
-    exp === (lam (\ x -> x ::: var _A |- elab (b x ::: var _B $$ var x)) ::: ((Im, var _A) >-> \ x -> var _B $$ var x))
+    exp === (lam p (\ x -> x ::: var _A |- elab (b x ::: var _B $$ var x)) ::: ((p, var _A) >-> \ x -> var _B $$ var x))
 
   f $$ a = check $ \ exp ->
     type' `ex` \ _A ->
