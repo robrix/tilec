@@ -25,6 +25,7 @@ import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
 import           Tile.Pretty
 import           Tile.Syntax
+import           Tile.Type
 
 prettyPrint :: MonadIO m => Print () -> m ()
 prettyPrint = prettyPrintWith defaultStyle
@@ -90,6 +91,18 @@ instance Type Int (Print ()) where
     (lhs, b') <- bind (runPrint . b) (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
     put @Inner (prec (Level 0) (lhs <> line <> op "→" <+> b'))
 
+instance Prob Int (Print ()) where
+  ex t b = Print $ do
+    t' <- runPrint t *> get
+    (lhs, b') <- bind (runPrint . b) prettyVar (pretty '_')
+    put @Inner (prec (Level 0) (pretty '∃' <+> lhs <+> op ":" <+> t' <+> op "." <+> b'))
+
+  (tm1 ::: ty1) === (tm2 ::: ty2) = Print $ do
+    tm1' <- runPrint tm1 *> get
+    ty1' <- runPrint ty1 *> get
+    tm2' <- runPrint tm2 *> get
+    ty2' <- runPrint ty2 *> get
+    put @Inner (prec (Level 4) (tm1' <+> op ":" <+> ty1' <+> op "≡" <+> tm2' <+> op ":" <+> ty2'))
 
 data Highlight a
   = Var
