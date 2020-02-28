@@ -58,6 +58,11 @@ class Var v expr => Lam v expr where
 
 deriving instance Lam v t => Lam v (Identity t)
 
+instance Lam v t => Lam v (r -> t) where
+  lam b r = lam (($ r) . b)
+
+  (f $$ a) r = f r $$ a r
+
 instance Lam v (m a) => Lam v (ReaderC r m a) where
   lam b = ReaderC (\ r -> lam (runReader r . b))
 
