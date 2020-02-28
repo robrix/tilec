@@ -10,15 +10,15 @@ module Tile.Term
 import Control.Monad (ap, (>=>))
 import Tile.Syntax
 
-data Term v b
-  = Pure b
-  | Var b
-  | Let (Term v b) (v -> Term v b)
-  | Lam (v -> Term v b)
-  | Term v b :$ Term v b
+data Term v a
+  = Pure a
+  | Var a
+  | Let (Term v a) (v -> Term v a)
+  | Lam (v -> Term v a)
+  | Term v a :$ Term v a
   | Type
-  | Term v b :-> (v -> Term v b)
-  | Term v b :. Term v b
+  | Term v a :-> (v -> Term v a)
+  | Term v a :. Term v a
   | Err String
   deriving (Functor)
 
