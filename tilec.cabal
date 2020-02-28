@@ -36,6 +36,7 @@ library
   exposed-modules:
     Tile.Elab
     Tile.Library
+    Tile.Plicity
     Tile.Pretty
     Tile.Print
     Tile.Reconstruct
