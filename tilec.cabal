@@ -41,6 +41,7 @@ library
     Tile.Print
     Tile.Reconstruct
     Tile.Syntax
+    Tile.Term
     Tile.Type
   -- other-modules:
   -- other-extensions:
