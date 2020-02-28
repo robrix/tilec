@@ -40,7 +40,6 @@ library
     Tile.Print
     Tile.Stack
     Tile.Syntax
-    Tile.Term
     Tile.Type
   -- other-modules:
   -- other-extensions:
