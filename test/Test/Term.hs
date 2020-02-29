@@ -7,7 +7,6 @@ import Control.Monad.Writer
 import Data.Foldable (for_)
 import Data.Set as Set
 import Hedgehog as H
-import Hedgehog.Gen as Gen
 import Test.Gen as Gen
 import Test.Tasty
 import Test.Tasty.Hedgehog
@@ -30,6 +29,4 @@ forAllLabelled gen = do
   t <$ for_ labels label
 
 term :: ReaderT Int (WriterT (Set LabelName) Gen) (Term Int Int)
-term = ask >>= \ i -> recursive (small . choice)
-  ([ var_ | i > 0 ] <> [ type_, err_ ])
-  ([ let_, lam_, app_, pi_, ex_, eq_ ] <*> [term])
+term = term_
