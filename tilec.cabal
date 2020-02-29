@@ -60,6 +60,7 @@ test-suite test
   hs-source-dirs: test
   main-is: Test.hs
   other-modules:
+    Test.Gen
     Test.Term
   build-depends:
     , base
