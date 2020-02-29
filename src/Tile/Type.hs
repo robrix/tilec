@@ -9,6 +9,7 @@ module Tile.Type
 import Data.Bifoldable
 import Data.Bifunctor
 import Data.Bitraversable
+import Data.Functor.Classes
 
 data a ::: b = a ::: b
   deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
@@ -21,6 +22,9 @@ instance Bifunctor (:::) where
 
 instance Bitraversable (:::) where
   bitraverse f g (l ::: r) = (:::) <$> f l <*> g r
+
+instance Show a => Show1 ((:::) a) where
+  liftShowsPrec sp _ p (a ::: b) = showParen (p > 0) $ shows a . showString " ::: " . sp 1 b
 
 infixl 0 :::
 
