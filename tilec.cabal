@@ -65,6 +65,7 @@ test-suite test
     Test.Term
   build-depends:
     , base
+    , containers
     , mtl
     , tasty ^>= 1.2
     , tasty-hedgehog ^>= 1
