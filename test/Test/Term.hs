@@ -1,6 +1,3 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
 module Test.Term
 ( tests
 ) where
@@ -11,7 +8,6 @@ import Data.Foldable (for_)
 import Data.Set as Set
 import Hedgehog as H
 import Hedgehog.Gen as Gen
-import Hedgehog.Range as Range
 import Test.Gen as Gen
 import Test.Tasty
 import Test.Tasty.Hedgehog
@@ -36,11 +32,5 @@ forAllLabelled gen = do
 term :: ReaderT Int (WriterT (Set LabelName) Gen) (Term Int Int)
 term = go where
   go = ask >>= \ i -> recursive (small . choice)
-    ((if i > 0 then (var_ :) else id) [ type' <$ tag "type", err <$> string (linear 0 10) alphaNum <* tag "err" ])
-    [ subtermM2 go (local succ go) (\ t b -> let' t (const b) <$ tag "let")
-    , subtermM (local succ go) (\ b -> lam <$> plicit <*> pure (const b) <* tag "lam")
-    , subtermM2 go go (\ f a -> f $$ a <$ tag "$$")
-    , subtermM2 go (local succ go) (\ t b -> (>-> const b) . (, t) <$> plicit <* tag ">->")
-    , subtermM2 go (local succ go) (\ t b -> (t `ex` const b) <$ tag "ex")
-    , subtermM2 go go (\ m1 t1 -> subtermM2 go go (\ m2 t2 -> ((m1 ::: t1) Gen.=== (m2 ::: t2)) <$ tag "==="))
-    ]
+    ((if i > 0 then (var_ :) else id) [ type_, err_ ])
+    ([ let_, lam_, app_, pi_, ex_, eq_ ] <*> [go])
