@@ -22,6 +22,10 @@ tests = testGroup "Term"
   [ testProperty "reflexivity of ==" . property $ do
     t <- forAllLabelled (runReaderT term 0)
     t H.=== t
+  , testProperty "counterexamples of ==" . property $ do
+    t <- forAllLabelled (runReaderT term 0)
+    t H./== lam Im (const t)
+    lam Im (const t) H./== t
   ]
 
 forAllLabelled :: Show a => WriterT (Set LabelName) Gen a -> PropertyT IO a
