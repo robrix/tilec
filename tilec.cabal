@@ -66,3 +66,4 @@ test-suite test
     , base
     , tasty ^>= 1.2
     , tasty-hedgehog ^>= 1
+    , transformers
