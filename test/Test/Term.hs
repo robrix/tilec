@@ -3,7 +3,7 @@ module Test.Term
 ) where
 
 import Hedgehog
-import Test.Gen as Gen
+import Test.Gen as Gen hiding (Gen)
 import Test.Tasty
 import Test.Tasty.Hedgehog
 import Tile.Term
