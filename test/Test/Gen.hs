@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Test.Gen
 ( var
@@ -42,3 +43,6 @@ plicit = Gen.enumBounded
 
 newtype Gen a = Gen { runGen :: ReaderT Int Hedgehog.Gen a }
   deriving (Applicative, Functor, Monad, MonadGen, MonadReader Int)
+
+instance Syn.Var Int t => Syn.Var Int (Gen t) where
+  var = pure . Syn.var
