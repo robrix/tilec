@@ -8,6 +8,7 @@ module Test.Gen
 , Lam(..)
 , Type(..)
 , plicit
+, localVar
 , Gen(..)
 ) where
 
@@ -16,11 +17,15 @@ import           Control.Monad.Reader
 import           Hedgehog (MonadGen(..))
 import qualified Hedgehog
 import qualified Hedgehog.Gen as Gen
+import qualified Hedgehog.Range as Range
 import           Tile.Plicit
 import           Tile.Syntax
 
 plicit :: MonadGen m => m Plicit
 plicit = Gen.enumBounded
+
+localVar :: (Var Int (m t), MonadGen m, MonadReader Int m) => m t
+localVar = ask >>= \ i -> if i <= 0 then Gen.discard else Gen.int (Range.constant 0 i) >>= var
 
 
 newtype Gen a = Gen { runGen :: ReaderT Int Hedgehog.Gen a }
