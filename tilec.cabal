@@ -45,8 +45,6 @@ library
     Tile.Syntax
     Tile.Term
     Tile.Type
-  -- other-modules:
-  -- other-extensions:
   build-depends:
     , base ^>= 4.13
     , containers
