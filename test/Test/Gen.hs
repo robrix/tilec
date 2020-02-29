@@ -1,5 +1,4 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Test.Gen
 ( var
 , let'
@@ -7,7 +6,6 @@ module Test.Gen
 , ($$)
 , type'
 , plicit
-, Gen(..)
 ) where
 
 import           Control.Monad.Reader
@@ -36,7 +34,3 @@ type' = pure Syn.type'
 
 plicit :: MonadGen m => m Plicit
 plicit = Gen.enumBounded
-
-
-newtype Gen a = Gen { runGen :: ReaderT Int Gen a }
-  deriving (Applicative, Functor, Monad)
