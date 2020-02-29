@@ -13,6 +13,7 @@
     - preserve user names
 
 - parsing
+  - s-expressions?
   - de/serialization instead?
   - literate-by-default?
   - first-class doc comments?
