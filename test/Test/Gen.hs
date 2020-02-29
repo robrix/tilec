@@ -13,6 +13,7 @@ module Test.Gen
 , ex_
 , eq_
 , err_
+, term_
 , tag
 ) where
 
@@ -54,6 +55,11 @@ eq_ t = Gen.subtermM2 t t (\ m1 t1 -> Gen.subtermM2 t t (\ m2 t2 -> ((m1 ::: t1)
 
 err_ :: (Err t, MonadGen m, MonadWriter (Set LabelName) m) => m t
 err_ = err <$> Gen.string (Range.linear 0 10) Gen.alphaNum <* tag "err"
+
+term_ :: (Let Int t, Lam Int t, Type Int t, Prob Int t, Err t, MonadGen m, MonadReader Int m, MonadWriter (Set LabelName) m) => m t
+term_ = ask >>= \ i -> Gen.recursive (Gen.small . Gen.choice)
+  ([ var_ | i > 0 ] <> [ type_, err_ ])
+  ([ let_, lam_, app_, pi_, ex_, eq_ ] <*> [term_])
 
 
 tag :: MonadWriter (Set LabelName) m => LabelName -> m ()
