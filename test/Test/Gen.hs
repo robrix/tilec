@@ -19,6 +19,7 @@ import qualified Hedgehog
 import qualified Hedgehog.Gen as Gen
 import           Tile.Plicit
 import qualified Tile.Syntax as Syn
+import           Tile.Type
 
 var :: (Syn.Var v t, Functor m) => m v -> m t
 var v = Syn.var <$> v
@@ -58,3 +59,7 @@ instance Syn.Lam Int t => Syn.Lam Int (Gen t) where
 instance Syn.Type Int t => Syn.Type Int (Gen t) where
   type' = pure Syn.type'
   (p, a) >-> b = Gen ((Syn.>->) . (,) p <$> runGen a <*> (ask >>= fmap const . local succ . runGen . b))
+
+instance Syn.Prob Int t => Syn.Prob Int (Gen t) where
+  ex t b = Gen (Syn.ex <$> runGen t <*> (ask >>= fmap const . local succ . runGen . b))
+  (m1 ::: t1) === (m2 ::: t2) = Gen ((Syn.===) <$> ((:::) <$> runGen m1 <*> runGen t1) <*> ((:::) <$> runGen m2 <*> runGen t2))
