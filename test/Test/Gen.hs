@@ -41,4 +41,4 @@ plicit = Gen.enumBounded
 
 
 newtype Gen a = Gen { runGen :: ReaderT Int Hedgehog.Gen a }
-  deriving (Applicative, Functor, Monad, MonadGen, MonadReader Int)
+  deriving (Applicative, Functor, Monad, MonadGen)
