@@ -22,6 +22,12 @@
 
 - repl
 
+- optimization
+  - phrase individual optimizations as algebras
+  - flags to enable each individually?
+  - script to select which get used when?
+  - optimizer reflection…?
+
 - compilation
   - codegen
 
