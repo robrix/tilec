@@ -44,5 +44,3 @@ term = go where
     , subtermM2 go (local succ go) (\ t b -> (t `ex` const b) <$ tag "ex")
     , subtermM2 go go (\ m1 t1 -> subtermM2 go go (\ m2 t2 -> ((m1 ::: t1) Gen.=== (m2 ::: t2)) <$ tag "==="))
     ]
-  tag :: MonadWriter (Set LabelName) m => LabelName -> m ()
-  tag s = tell (Set.singleton s)
