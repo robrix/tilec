@@ -12,6 +12,7 @@ module Test.Gen
 , Gen(..)
 ) where
 
+import           Control.Applicative (liftA2)
 import           Control.Monad.Reader
 import           Hedgehog (MonadGen(..))
 import qualified Hedgehog
@@ -49,3 +50,7 @@ instance Syn.Var Int t => Syn.Var Int (Gen t) where
 
 instance Syn.Let Int t => Syn.Let Int (Gen t) where
   let' t b = Gen (Syn.let' <$> runGen t <*> (ask >>= fmap const . local succ . runGen . b))
+
+instance Syn.Lam Int t => Syn.Lam Int (Gen t) where
+  lam p b = Gen (Syn.lam p <$> (ask >>= fmap const . local succ . runGen . b))
+  ($$) = liftA2 (Syn.$$)
