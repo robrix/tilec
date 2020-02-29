@@ -64,7 +64,7 @@ test-suite test
     Test.Term
   build-depends:
     , base
+    , mtl
     , tasty ^>= 1.2
     , tasty-hedgehog ^>= 1
     , tilec
-    , transformers
