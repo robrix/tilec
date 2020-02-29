@@ -20,3 +20,6 @@
 - error reporting
 
 - repl
+
+- compilation
+  - codegen
