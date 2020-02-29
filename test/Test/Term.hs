@@ -28,6 +28,7 @@ term = go where
     ((if i > 0 then (tag "var" Gen.localVar :) else id) [ tag "type" Gen.type' ])
     [ tag "let" $ Gen.subterm2 go' (local succ go') (\ t b -> let' t (const b))
     , tag "lam" $ Gen.subtermM (local succ go') (\ b -> lam <$> plicit <*> pure (const b))
+    , tag "$$"  $ Gen.subterm2 go' go' ($$)
     ]
   go' = snd <$> go
   tag s = fmap (singleton s,)
