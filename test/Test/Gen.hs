@@ -4,6 +4,7 @@ module Test.Gen
 , let'
 , lam
 , ($$)
+, type'
 , plicit
 ) where
 
@@ -26,6 +27,9 @@ lam b = Syn.lam <$> plicit <*> local succ b
 f $$ a = (Syn.$$) <$> f <*> a
 
 infixl 9 $$
+
+type' :: (Syn.Type v t, Applicative m) => m t
+type' = pure Syn.type'
 
 
 plicit :: MonadGen m => m Plicit
