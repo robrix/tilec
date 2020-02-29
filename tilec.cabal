@@ -52,6 +52,7 @@ library
     , prettyprinter
     , prettyprinter-ansi-terminal
     , terminal-size
+    , transformers
   hs-source-dirs:      src
 
 test-suite test

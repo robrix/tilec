@@ -19,6 +19,7 @@ module Tile.Syntax
 ) where
 
 import Control.Carrier.Reader
+import Control.Monad.Trans.Reader
 import Data.Functor.Const
 import Data.Functor.Identity
 import Tile.Plicit
@@ -34,6 +35,7 @@ instance Var v t => Var v (r -> t) where
   var = const . var
 
 deriving instance Var v (m a) => Var v (ReaderC r m a)
+deriving instance Var v (m a) => Var v (ReaderT r m a)
 
 
 class Var v expr => Let v expr where
@@ -46,6 +48,7 @@ instance Let v t => Let v (r -> t) where
   let' v b r = let' (v r) (($ r) . b)
 
 deriving instance Let v (m a) => Let v (ReaderC r m a)
+deriving instance Let v (m a) => Let v (ReaderT r m a)
 
 
 class Var v expr => Lam v expr where
@@ -63,6 +66,7 @@ instance Lam v t => Lam v (r -> t) where
   (f $$ a) r = f r $$ a r
 
 deriving instance Lam v (m a) => Lam v (ReaderC r m a)
+deriving instance Lam v (m a) => Lam v (ReaderT r m a)
 
 
 class Var v expr => Type v expr where
@@ -80,6 +84,7 @@ instance Type v t => Type v (r -> t) where
   (t >-> b) r = fmap ($ r) t >-> ($ r) . b
 
 deriving instance Type v (m a) => Type v (ReaderC r m a)
+deriving instance Type v (m a) => Type v (ReaderT r m a)
 
 (-->) :: Type a expr => expr -> expr -> expr
 a --> b = (Ex, a) >-> const b
@@ -103,6 +108,7 @@ instance Prob v t => Prob v (r -> t) where
   ((tm1 ::: ty1) === (tm2 ::: ty2)) r = (tm1 r ::: ty1 r) === (tm2 r ::: ty2 r)
 
 deriving instance Prob v (m a) => Prob v (ReaderC r m a)
+deriving instance Prob v (m a) => Prob v (ReaderT r m a)
 
 
 class Err expr where
@@ -115,6 +121,7 @@ instance Err t => Err (r -> t) where
   err = const . err
 
 deriving instance Err (m a) => Err (ReaderC r m a)
+deriving instance Err (m a) => Err (ReaderT r m a)
 
 
 class Def tm ty a def | def -> tm ty where
