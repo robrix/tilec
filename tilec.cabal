@@ -65,3 +65,4 @@ test-suite test
   build-depends:
     , base
     , tasty ^>= 1.2
+    , tasty-hedgehog ^>= 1
