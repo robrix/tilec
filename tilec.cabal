@@ -61,3 +61,4 @@ test-suite test
   main-is: Test.hs
   build-depends:
     , base
+    , tasty ^>= 1.2
