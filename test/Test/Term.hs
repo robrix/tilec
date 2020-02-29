@@ -30,7 +30,6 @@ forAllLabelled gen = do
   t <$ for_ labels label
 
 term :: ReaderT Int (WriterT (Set LabelName) Gen) (Term Int Int)
-term = go where
-  go = ask >>= \ i -> recursive (small . choice)
-    ([ var_ | i > 0 ] <> [ type_, err_ ])
-    ([ let_, lam_, app_, pi_, ex_, eq_ ] <*> [go])
+term = ask >>= \ i -> recursive (small . choice)
+  ([ var_ | i > 0 ] <> [ type_, err_ ])
+  ([ let_, lam_, app_, pi_, ex_, eq_ ] <*> [term])
