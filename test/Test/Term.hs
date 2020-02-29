@@ -7,7 +7,7 @@ module Test.Term
 import Control.Monad.Reader
 import Data.Foldable (for_)
 import Data.Set
-import Hedgehog hiding (Gen)
+import Hedgehog
 import Hedgehog.Gen as Gen
 import Test.Gen as Gen
 import Test.Tasty
@@ -17,12 +17,12 @@ import Tile.Term
 tests :: TestTree
 tests = testGroup "Term"
   [ testProperty "reflexivity of ==" . property $ do
-    (labels, t) <- forAll (runReaderT (runGen term) 0)
+    (labels, t) <- forAll (runReaderT term 0)
     for_ labels label
     t === t
   ]
 
-term :: Gen (Set LabelName, Term Int Int)
+term :: ReaderT Int Gen (Set LabelName, Term Int Int)
 term = go where
   go = ask >>= \ i -> recursive choice
     ((if i > 0 then (tag "var" Gen.localVar :) else id) [ tag "type" (pure type') ])
