@@ -2,6 +2,7 @@
 module Test.Gen
 ( var
 , let'
+, lam
 , plicit
 ) where
 
@@ -16,6 +17,9 @@ var v = Syn.var <$> v
 
 let' :: (Syn.Let v t, MonadGen m, MonadReader Int m) => m t -> m (v -> t) -> m t
 let' t b = Syn.let' <$> t <*> local succ b
+
+lam :: (Syn.Lam v t, MonadGen m, MonadReader Int m) => m (v -> t) -> m t
+lam b = Syn.lam <$> plicit <*> local succ b
 
 
 plicit :: MonadGen m => m Plicit
