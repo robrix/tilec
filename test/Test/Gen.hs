@@ -12,6 +12,7 @@ module Test.Gen
 
 import           Control.Monad.Reader
 import           Hedgehog (MonadGen(..))
+import qualified Hedgehog
 import qualified Hedgehog.Gen as Gen
 import           Tile.Plicit
 import qualified Tile.Syntax as Syn
@@ -38,5 +39,5 @@ plicit :: MonadGen m => m Plicit
 plicit = Gen.enumBounded
 
 
-newtype Gen a = Gen { runGen :: ReaderT Int Gen a }
+newtype Gen a = Gen { runGen :: ReaderT Int Hedgehog.Gen a }
   deriving (Applicative, Functor, Monad)
