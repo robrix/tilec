@@ -10,6 +10,8 @@ module Tile.Term
 import Control.Monad (ap, (>=>))
 import Data.Bifoldable
 import Data.Bifunctor
+import Data.Functor.Classes
+import Text.Show
 import Tile.Syntax
 
 data Term v a
@@ -83,6 +85,19 @@ instance Num v => Foldable (Term v) where
       E t b       -> go n t <> go (n + 1) (b n)
       t1 :===: t2 -> bifoldMap (go n) (go n) t1 <> bifoldMap (go n) (go n) t2
       Err _       -> mempty
+
+instance (Num v, Show a) => Show (Term v a) where
+  showsPrec = go 0 where
+    go n p = \case
+      Var v -> showsUnaryWith showsPrec "Var" p v
+      Let v b -> showsBinaryWith (go n) (\ p b -> go (n + 1) p (b n)) "Let" p v b
+      Lam x b -> showsBinaryWith showsPrec (\ p b -> go (n + 1) p (b n)) "Lam" p x b
+      f :$ a -> showParen (p > 9) $ go n 9 f . showString " :$ " . go n 10 a
+      Type -> showString "Type"
+      a :-> b -> showParen (p > 0) $ liftShowsPrec (go n) (showListWith (go n 0)) 1 a . showString " :-> " . go (n + 1) 0 (b n)
+      E t b -> showsBinaryWith (go n) (\ p b -> go (n + 1) p (b n)) "E" p t b
+      t1 :===: t2 -> showParen (p > 4) $ liftShowsPrec (go n) (showListWith (go n 0)) 4 t1 . showString " ::: " . liftShowsPrec (go n) (showListWith (go n 0)) 5 t2
+      Err s -> showsUnaryWith showsPrec "Err" p s
 
 instance Applicative (Term v) where
   pure = Var
