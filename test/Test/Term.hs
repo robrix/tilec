@@ -20,10 +20,14 @@ import Tile.Term
 tests :: TestTree
 tests = testGroup "Term"
   [ testProperty "reflexivity of ==" . property $ do
-    (t, labels) <- forAll (runWriterT (runReaderT term 0))
-    for_ labels label
+    t <- forAllLabelled (runReaderT term 0)
     t H.=== t
   ]
+
+forAllLabelled :: Show a => WriterT (Set LabelName) Gen a -> PropertyT IO a
+forAllLabelled gen = do
+  (t, labels) <- forAll (runWriterT gen)
+  t <$ for_ labels label
 
 term :: ReaderT Int (WriterT (Set LabelName) Gen) (Term Int Int)
 term = go where
