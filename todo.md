@@ -27,3 +27,4 @@
 
 - testing
   - compare/equate by algebra
+  - generate from simple combinations of sample programs
