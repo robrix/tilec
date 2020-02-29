@@ -54,3 +54,7 @@ instance Syn.Let Int t => Syn.Let Int (Gen t) where
 instance Syn.Lam Int t => Syn.Lam Int (Gen t) where
   lam p b = Gen (Syn.lam p <$> (ask >>= fmap const . local succ . runGen . b))
   ($$) = liftA2 (Syn.$$)
+
+instance Syn.Type Int t => Syn.Type Int (Gen t) where
+  type' = pure Syn.type'
+  (p, a) >-> b = Gen ((Syn.>->) . (,) p <$> runGen a <*> (ask >>= fmap const . local succ . runGen . b))
