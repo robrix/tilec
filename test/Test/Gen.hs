@@ -1,6 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE UndecidableInstances #-}
 module Test.Gen
 ( var
 , let'
@@ -41,4 +40,4 @@ plicit = Gen.enumBounded
 
 
 newtype Gen a = Gen { runGen :: ReaderT Int Hedgehog.Gen a }
-  deriving (Applicative, Functor, Monad, MonadGen)
+  deriving (Applicative, Functor, Monad)
