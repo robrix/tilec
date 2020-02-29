@@ -32,5 +32,5 @@ forAllLabelled gen = do
 term :: ReaderT Int (WriterT (Set LabelName) Gen) (Term Int Int)
 term = go where
   go = ask >>= \ i -> recursive (small . choice)
-    ((if i > 0 then (var_ :) else id) [ type_, err_ ])
+    ([ var_ | i > 0 ] <> [ type_, err_ ])
     ([ let_, lam_, app_, pi_, ex_, eq_ ] <*> [go])
