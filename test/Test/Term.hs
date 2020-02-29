@@ -29,6 +29,7 @@ term = go where
     [ tag "let" $ Gen.subterm2 go' (local succ go') (\ t b -> let' t (const b))
     , tag "lam" $ Gen.subtermM (local succ go') (\ b -> lam <$> plicit <*> pure (const b))
     , tag "$$"  $ Gen.subterm2 go' go' ($$)
+    , tag ">->" $ Gen.subtermM2 go' (local succ go') (\ t b -> (>-> const b) . (, t) <$> plicit)
     ]
   go' = snd <$> go
   tag s = fmap (singleton s,)
