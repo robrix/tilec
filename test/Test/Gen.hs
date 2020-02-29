@@ -3,7 +3,7 @@
 module Test.Gen
 ( module Tile.Syntax
 , plicit
-, localVar
+, var_
 , tag
 ) where
 
@@ -19,8 +19,8 @@ import           Tile.Syntax
 plicit :: MonadGen m => m Plicit
 plicit = Gen.enumBounded
 
-localVar :: (Var Int t, MonadGen m, MonadReader Int m, MonadWriter (Set LabelName) m) => m t
-localVar = ask >>= \ i -> if i <= 0 then Gen.discard else var <$> Gen.int (Range.constant 0 i) <* tag "var"
+var_ :: (Var Int t, MonadGen m, MonadReader Int m, MonadWriter (Set LabelName) m) => m t
+var_ = ask >>= \ i -> if i <= 0 then Gen.discard else var <$> Gen.int (Range.constant 0 i) <* tag "var"
 
 tag :: MonadWriter (Set LabelName) m => LabelName -> m ()
 tag s = tell (singleton s)

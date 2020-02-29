@@ -36,7 +36,7 @@ forAllLabelled gen = do
 term :: ReaderT Int (WriterT (Set LabelName) Gen) (Term Int Int)
 term = go where
   go = ask >>= \ i -> recursive (small . choice)
-    ((if i > 0 then (localVar :) else id) [ type' <$ tag "type", err <$> string (linear 0 10) alphaNum <* tag "err" ])
+    ((if i > 0 then (var_ :) else id) [ type' <$ tag "type", err <$> string (linear 0 10) alphaNum <* tag "err" ])
     [ subtermM2 go (local succ go) (\ t b -> let' t (const b) <$ tag "let")
     , subtermM (local succ go) (\ b -> lam <$> plicit <*> pure (const b) <* tag "lam")
     , subtermM2 go go (\ f a -> f $$ a <$ tag "$$")
