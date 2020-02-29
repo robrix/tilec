@@ -46,3 +46,6 @@ newtype Gen a = Gen { runGen :: ReaderT Int Hedgehog.Gen a }
 
 instance Syn.Var Int t => Syn.Var Int (Gen t) where
   var = pure . Syn.var
+
+instance Syn.Let Int t => Syn.Let Int (Gen t) where
+  let' t b = Gen (Syn.let' <$> runGen t <*> (ask >>= fmap const . local succ . runGen . b))
