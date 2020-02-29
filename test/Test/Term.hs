@@ -7,7 +7,7 @@ module Test.Term
 import Control.Monad.Reader
 import Data.Foldable (for_)
 import Data.Set
-import Hedgehog
+import Hedgehog as H
 import Hedgehog.Gen as Gen
 import Test.Gen as Gen
 import Test.Tasty
@@ -19,7 +19,7 @@ tests = testGroup "Term"
   [ testProperty "reflexivity of ==" . property $ do
     (labels, t) <- forAll (runReaderT term 0)
     for_ labels label
-    t === t
+    t H.=== t
   ]
 
 term :: ReaderT Int Gen (Set LabelName, Term Int Int)
@@ -30,6 +30,7 @@ term = go where
     , tag "lam" $ Gen.subtermM (local succ go') (\ b -> lam <$> plicit <*> pure (const b))
     , tag "$$"  $ Gen.subterm2 go' go' ($$)
     , tag ">->" $ Gen.subtermM2 go' (local succ go') (\ t b -> (>-> const b) . (, t) <$> plicit)
+    , tag "ex"  $ Gen.subterm2 go' (local succ go') (\ t b -> t `ex` const b)
     ]
   go' = snd <$> go
   tag s = fmap (singleton s,)

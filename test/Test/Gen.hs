@@ -1,9 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Test.Gen
-( Var(..)
-, Let(..)
-, Lam(..)
-, Type(..)
+( module Tile.Syntax
 , plicit
 , localVar
 ) where
