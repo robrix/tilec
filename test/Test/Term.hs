@@ -26,7 +26,7 @@ tests = testGroup "Term"
 
 term :: ReaderT Int (WriterT (Set LabelName) Gen) (Term Int Int)
 term = go where
-  go = ask >>= \ i -> recursive choice
+  go = ask >>= \ i -> recursive (small . choice)
     ((if i > 0 then ((localVar <* tag "var") :) else id) [ type' <$ tag "type" ])
     [ subtermM2 go (local succ go) (\ t b -> let' t (const b) <$ tag "let")
     , subtermM (local succ go) (\ b -> lam <$> plicit <*> pure (const b) <* tag "lam")
