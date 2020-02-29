@@ -59,6 +59,8 @@ test-suite test
   type: exitcode-stdio-1.0
   hs-source-dirs: test
   main-is: Test.hs
+  other-modules:
+    Test.Term
   build-depends:
     , base
     , tasty ^>= 1.2
