@@ -24,3 +24,6 @@
 
 - compilation
   - codegen
+
+- testing
+  - compare/equate by algebra
