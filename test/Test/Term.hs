@@ -22,4 +22,5 @@ term = runReaderT go (0 :: Int) where
   go = ask >>= \ i -> recursive choice
     (if i > 0 then [ Gen.localVar, Gen.type' ] else [ Gen.type' ])
     [ Gen.subterm2 go (local succ go) (\ t b -> let' t (const b))
+    , Gen.subtermM (local succ go) (\ b -> lam <$> plicit <*> pure (const b))
     ]
