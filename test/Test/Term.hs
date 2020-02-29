@@ -8,9 +8,10 @@ module Test.Term
 import Control.Monad.Reader
 import Control.Monad.Writer
 import Data.Foldable (for_)
-import Data.Set
+import Data.Set as Set
 import Hedgehog as H
 import Hedgehog.Gen as Gen
+import Hedgehog.Range as Range
 import Test.Gen as Gen
 import Test.Tasty
 import Test.Tasty.Hedgehog
@@ -27,7 +28,7 @@ tests = testGroup "Term"
 term :: ReaderT Int (WriterT (Set LabelName) Gen) (Term Int Int)
 term = go where
   go = ask >>= \ i -> recursive (small . choice)
-    ((if i > 0 then ((localVar <* tag "var") :) else id) [ type' <$ tag "type" ])
+    ((if i > 0 then ((localVar <* tag "var") :) else id) [ type' <$ tag "type", err <$> string (linear 0 10) alphaNum <* tag "err" ])
     [ subtermM2 go (local succ go) (\ t b -> let' t (const b) <$ tag "let")
     , subtermM (local succ go) (\ b -> lam <$> plicit <*> pure (const b) <* tag "lam")
     , subtermM2 go go (\ f a -> f $$ a <$ tag "$$")
@@ -36,4 +37,4 @@ term = go where
     , subtermM2 go go (\ m1 t1 -> subtermM2 go go (\ m2 t2 -> ((m1 ::: t1) Gen.=== (m2 ::: t2)) <$ tag "==="))
     ]
   tag :: MonadWriter (Set LabelName) m => LabelName -> m ()
-  tag s = tell (singleton s)
+  tag s = tell (Set.singleton s)
