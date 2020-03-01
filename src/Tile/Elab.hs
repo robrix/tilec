@@ -88,8 +88,8 @@ instance Applicative (Script t) where
 instance Monad (Script t) where
   m >>= f = Script (\ k -> runScript (runScript k . f) m)
 
-meta :: Prob v t => Script t v -> Script t v
-meta = Script . ex . runScript var
+meta :: Prob v t => t -> Script t v
+meta = Script . ex
 
 intro :: Lam v t => Script t v
 intro = Script (lam Ex)
