@@ -57,7 +57,7 @@ type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 newtype Print a = Print { runPrint :: Ap (FreshC (WriterC IntSet.IntSet Identity)) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
-deriving instance Doc (Highlight Int) (Print Inner)
+deriving instance Doc     (Highlight Int) (Print Inner)
 deriving instance PrecDoc (Highlight Int) (Print Inner)
 
 instance Show (Print Inner) where
