@@ -17,6 +17,7 @@ module Tile.Elab
 , Script(..)
 , meta
 , intro
+, letbind
 ) where
 
 import Control.Carrier.Reader
@@ -83,3 +84,6 @@ meta = Script . ex . runScript var
 
 intro :: Lam v t => Script t v
 intro = Script (lam Ex)
+
+letbind :: Let v t => Script t v -> Script t v
+letbind = Script . let' . runScript var
