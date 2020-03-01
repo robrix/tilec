@@ -1,5 +1,4 @@
 {-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -58,8 +57,8 @@ type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 newtype Print a = Print { runPrint :: Ap (FreshC (WriterC IntSet.IntSet Identity)) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
-deriving via Ap Print Inner instance Doc (Highlight Int) (Print Inner)
-deriving via Ap Print Inner instance PrecDoc (Highlight Int) (Print Inner)
+deriving instance Doc (Highlight Int) (Print Inner)
+deriving instance PrecDoc (Highlight Int) (Print Inner)
 
 instance Show (Print Inner) where
   showsPrec p = showsPrec p . toDoc
