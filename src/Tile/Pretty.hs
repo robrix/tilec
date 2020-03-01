@@ -24,6 +24,7 @@ module Tile.Pretty
 import           Control.Applicative (liftA2)
 import           Control.Arrow ((&&&), (***))
 import           Control.Monad.IO.Class
+import           Data.Monoid (Ap(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
 import           System.Console.Terminal.Size as Size
@@ -82,6 +83,25 @@ instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   group = group *** group
 
   flatAlt d = flatAlt (fst d) *** flatAlt (snd d)
+
+instance (Applicative f, Doc ann a) => Doc ann (Ap f a) where
+  pretty = pure . pretty
+
+  line = pure line
+
+  annotate = fmap . annotate
+
+  align = fmap align
+
+  group = fmap group
+
+  flatAlt = liftA2 flatAlt
+
+  parens = fmap parens
+
+  brackets = fmap brackets
+
+  braces = fmap braces
 
 line' :: Doc ann doc => doc
 line' = flatAlt line mempty
