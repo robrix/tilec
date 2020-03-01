@@ -59,6 +59,7 @@ newtype Print a = Print { runPrint :: Ap (FreshC (WriterC IntSet.IntSet Identity
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
 deriving via Ap Print Inner instance Doc (Highlight Int) (Print Inner)
+deriving via Ap Print Inner instance PrecDoc (Highlight Int) (Print Inner)
 
 instance Show (Print Inner) where
   showsPrec p = showsPrec p . toDoc
