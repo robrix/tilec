@@ -1,9 +1,11 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
 module Tile.Print
 ( prettyPrint
@@ -55,6 +57,8 @@ type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 
 newtype Print a = Print { runPrint :: Ap (FreshC (WriterC IntSet.IntSet Identity)) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
+
+deriving via Ap Print Inner instance Doc (Highlight Int) (Print Inner)
 
 instance Show (Print Inner) where
   showsPrec p = showsPrec p . toDoc
