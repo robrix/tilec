@@ -12,6 +12,7 @@
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module Tile.Elab
 ( Elab(..)
+, Script(..)
 ) where
 
 import Control.Carrier.Reader
@@ -65,3 +66,6 @@ infixl 0 |-
 
 check :: Prob v t => (Elab v t t ::: Elab v t t -> Elab v t t) -> Elab v t t
 check f = Elab $ ask `ex` \ v -> runElab (f (pure (var v) ::: Elab ask))
+
+
+newtype Script t a = Script ((a -> t) -> t)
