@@ -96,8 +96,9 @@ instance (Num v, Show a) => Show (Term v a) where
       Type -> showString "Type"
       a :-> b -> showParen (p > 0) $ liftShowsPrec (go n) (showListWith (go n 0)) 1 a . showString " :-> " . go (n + 1) 0 (b n)
       E t b -> showsBinaryWith (go n) (\ p b -> go (n + 1) p (b n)) "E" p t b
-      t1 :===: t2 -> showParen (p > 4) $ liftShowsPrec (go n) (showListWith (go n 0)) 4 t1 . showString " :===: " . liftShowsPrec (go n) (showListWith (go n 0)) 5 t2
+      t1 :===: t2 -> showParen (p > 4) $ showAnn n 4 t1 . showString " :===: " . showAnn n 5 t2
       Err s -> showsUnaryWith showsPrec "Err" p s
+    showAnn n = liftShowsPrec (go n) (showListWith (go n 0))
 
 instance Applicative (Term v) where
   pure = Var
