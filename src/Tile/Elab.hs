@@ -22,7 +22,6 @@ module Tile.Elab
 
 import Control.Carrier.Reader
 import Control.Monad (ap)
-import Data.Bifunctor
 import Data.Functor.Identity
 import Data.Map
 import Tile.Syntax
@@ -94,5 +93,5 @@ meta = Script . ex
 intro :: Lam v t => Script t v
 intro = Script (lam Ex)
 
-letbind :: Let v t => Script t v ::: Script t v -> Script t v
-letbind = Script . let' . bimap (runScript var) (runScript var)
+letbind :: Let v t => t ::: t -> Script t v
+letbind = Script . let'
