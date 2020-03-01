@@ -16,6 +16,7 @@ module Tile.Elab
 , runScript
 , Script(..)
 , meta
+, intro
 ) where
 
 import Control.Carrier.Reader
@@ -79,3 +80,6 @@ newtype Script t a = Script ((a -> t) -> t)
 
 meta :: Prob v t => Script t v -> Script t v
 meta = Script . ex . runScript var
+
+intro :: Lam v t => Script t v
+intro = Script (lam Ex)
