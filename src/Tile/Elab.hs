@@ -21,6 +21,7 @@ module Tile.Elab
 ) where
 
 import Control.Carrier.Reader
+import Control.Monad (ap)
 import Data.Bifunctor
 import Data.Functor.Identity
 import Data.Map
@@ -79,6 +80,13 @@ runScript k (Script r) = r k
 
 newtype Script t a = Script ((a -> t) -> t)
   deriving (Functor)
+
+instance Applicative (Script t) where
+  pure = Script . flip ($)
+  (<*>) = ap
+
+instance Monad (Script t) where
+  m >>= f = Script (\ k -> runScript (runScript k . f) m)
 
 meta :: Prob v t => Script t v -> Script t v
 meta = Script . ex . runScript var
