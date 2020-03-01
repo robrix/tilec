@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -69,3 +70,4 @@ check f = Elab $ ask `ex` \ v -> runElab (f (pure (var v) ::: Elab ask))
 
 
 newtype Script t a = Script ((a -> t) -> t)
+  deriving (Functor)
