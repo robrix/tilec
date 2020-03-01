@@ -92,7 +92,7 @@ instance Type Int (Print Inner) where
     (lhs, b') <- case p of
       Im -> bind b (\ v -> braces (prettyVar v <+> op ":" <+> t')) (braces t')
       Ex -> bind b (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
-    pure (prec (Level 0) (lhs <> line <> op "→" <+> b'))
+    pure (prec (Level 0) (group (lhs <> line <> op "→" <+> b')))
 
 instance Prob Int (Print Inner) where
   ex t b = do
