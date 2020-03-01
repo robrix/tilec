@@ -39,13 +39,13 @@ deriving instance Var v (m a) => Var v (ReaderT r m a)
 
 
 class Var v expr => Let v expr where
-  let' :: expr -> (v -> expr) -> expr
+  let' :: expr ::: expr -> (v -> expr) -> expr
 
 deriving instance Let v t => Let v (Identity t)
 deriving instance Let v t => Let v (Const t a)
 
 instance Let v t => Let v (r -> t) where
-  let' v b r = let' (v r) (($ r) . b)
+  let' (v ::: t) b r = let' (v r ::: t r) (($ r) . b)
 
 deriving instance Let v (m a) => Let v (ReaderC r m a)
 deriving instance Let v (m a) => Let v (ReaderT r m a)

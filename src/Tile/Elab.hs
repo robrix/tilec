@@ -21,6 +21,7 @@ module Tile.Elab
 ) where
 
 import Control.Carrier.Reader
+import Data.Bifunctor
 import Data.Functor.Identity
 import Data.Map
 import Tile.Syntax
@@ -48,7 +49,7 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
   type' = check (=== (type' ::: type'))
 
   (p, a) >-> b = check $ \ exp ->
-    let' (elab (a ::: type')) $ \ a' ->
+    let' (elab (a ::: type') ::: type') $ \ a' ->
     exp === (((p, var a') >-> \ x -> x ::: var a' |- elab (b x ::: type')) ::: type')
 
 deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
@@ -85,5 +86,5 @@ meta = Script . ex . runScript var
 intro :: Lam v t => Script t v
 intro = Script (lam Ex)
 
-letbind :: Let v t => Script t v -> Script t v
-letbind = Script . let' . runScript var
+letbind :: Let v t => Script t v ::: Script t v -> Script t v
+letbind = Script . let' . bimap (runScript var) (runScript var)

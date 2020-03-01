@@ -33,7 +33,7 @@ var_ :: (Var Int t, MonadGen m, MonadReader Int m, MonadWriter (Set LabelName) m
 var_ = ask >>= \ i -> if i <= 0 then Gen.discard else var <$> Gen.int (Range.constant 0 i) <* tag "var"
 
 let_ :: (MonadGen m, MonadReader Int m, Let v t, MonadWriter (Set LabelName) m) => m t -> m t
-let_ t = Gen.subtermM2 t (local succ t) (\ v b -> let' v (const b) <$ tag "let")
+let_ t = Gen.subtermM3 t t (local succ t) (\ v t b -> let' (v ::: t) (const b) <$ tag "let")
 
 lam_ :: (MonadGen m, MonadReader Int m, Lam v t, MonadWriter (Set LabelName) m) => m t -> m t
 lam_ t = Gen.subtermM (local succ t) (\ b -> lam <$> plicit <*> pure (const b) <* tag "lam")

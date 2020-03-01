@@ -63,11 +63,12 @@ instance Var Int (Print Inner) where
   var a = Print (prettyVar a <$ tell (IntSet.singleton a))
 
 instance Let Int (Print Inner) where
-  let' tm b = do
+  let' (tm ::: ty) b = do
     tm' <- tm
+    ty' <- ty
     (lhs, b') <- bind b prettyVar (pretty '_')
     -- FIXME: bind variables on the lhs when tm is a lambda
-    pure (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm'))) <> line <> kw "in" <+> b')))
+    pure (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm'))) <> line <> align (group (align (op ":" <+> ty'))) <> line <> kw "in" <+> b')))
 
 instance Lam Int (Print Inner) where
   lam p b  = do

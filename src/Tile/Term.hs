@@ -16,7 +16,7 @@ import Tile.Syntax
 
 data Term v a
   = Var a
-  | Let (Term v a) (v -> Term v a)
+  | Let (Term v a ::: Term v a) (v -> Term v a)
   | Lam Plicit (v -> Term v a)
   | Term v a :$ Term v a
   | Type
@@ -29,7 +29,7 @@ instance (Eq a, Num v) => Eq (Term v a) where
   (==) = eq 0 where
     eq n l r = case (l, r) of
       (Var v1, Var v2) -> v1 == v2
-      (Let v1 b1, Let v2 b2) -> eq n v1 v2 && eq (n + 1) (b1 n) (b2 n)
+      (Let (v1 ::: t1) b1, Let (v2 ::: t2) b2) -> eq n v1 v2 && eq n t1 t2 && eq (n + 1) (b1 n) (b2 n)
       (Lam p1 b1, Lam p2 b2) -> p1 == p2 && eq (n + 1) (b1 n) (b2 n)
       (f1 :$ a1, f2 :$ a2) -> eq n f1 f2 && eq n a1 a2
       (Type, Type) -> True
@@ -44,7 +44,7 @@ instance (Ord a, Num v) => Ord (Term v a) where
     cmp n l r = case (l, r) of
       (Var v1, Var v2) -> v1 `compare` v2
       (Var{}, _) -> LT
-      (Let v1 b1, Let v2 b2) -> cmp n v1 v2 <> cmp (n + 1) (b1 n) (b2 n)
+      (Let (v1 ::: t1) b1, Let (v2 ::: t2) b2) -> cmp n v1 v2 <> cmp n t1 t2 <> cmp (n + 1) (b1 n) (b2 n)
       (Let{}, _) -> LT
       (Lam p1 b1, Lam p2 b2) -> p1 `compare` p2 <> cmp (n + 1) (b1 n) (b2 n)
       (Lam{}, _) -> LT
@@ -64,7 +64,7 @@ instance Functor (Term v) where
   fmap f = go where
     go = \case
       Var a       -> Var (f a)
-      Let v b     -> Let (go v) (go . b)
+      Let v b     -> Let (bimap go go v) (go . b)
       Lam p b     -> Lam p (go . b)
       f :$ a      -> go f :$ go a
       Type        -> Type
@@ -77,7 +77,7 @@ instance Num v => Foldable (Term v) where
   foldMap f = go 0 where
     go n = \case
       Var a       -> f a
-      Let v b     -> go n v <> go (n + 1) (b n)
+      Let v b     -> bifoldMap (go n) (go n) v <> go (n + 1) (b n)
       Lam _ b     -> go (n + 1) (b n)
       f :$ a      -> go n f <> go n a
       Type        -> mempty
@@ -90,7 +90,7 @@ instance (Num v, Show a) => Show (Term v a) where
   showsPrec = go 0 where
     go n p = \case
       Var v -> showsUnaryWith showsPrec "Var" p v
-      Let v b -> showsBinaryWith (go n) (\ p b -> go (n + 1) p (b n)) "Let" p v b
+      Let v b -> showsBinaryWith (showAnn n) (\ p b -> go (n + 1) p (b n)) "Let" p v b
       Lam x b -> showsBinaryWith showsPrec (\ p b -> go (n + 1) p (b n)) "Lam" p x b
       f :$ a -> showParen (p > 9) $ go n 9 f . showString " :$ " . go n 10 a
       Type -> showString "Type"
@@ -107,7 +107,7 @@ instance Applicative (Term v) where
 instance Monad (Term v) where
   t >>= f = case t of
     Var a       -> f a
-    Let v b     -> Let (v >>= f) (b >=> f)
+    Let v b     -> Let (bimap (>>= f) (>>= f) v) (b >=> f)
     Lam p b     -> Lam p (b >=> f)
     g :$ a      -> (g >>= f) :$ (a >>= f)
     Type        -> Type
@@ -144,7 +144,7 @@ infixl 4 :===:
 interpret :: (Let v t, Lam v t, Type v t, Prob v t, Err t) => Term v v -> t
 interpret = \case
   Var v       -> var v
-  Let v b     -> let' (interpret v) (interpret . b)
+  Let v b     -> let' (bimap interpret interpret v) (interpret . b)
   Lam p b     -> lam p (interpret . b)
   f :$ a      -> interpret f $$ interpret a
   Type        -> type'
