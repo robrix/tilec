@@ -15,6 +15,7 @@ module Tile.Elab
 ( Elab(..)
 , runScript
 , Script(..)
+, meta
 ) where
 
 import Control.Carrier.Reader
@@ -75,3 +76,6 @@ runScript k (Script r) = r k
 
 newtype Script t a = Script ((a -> t) -> t)
   deriving (Functor)
+
+meta :: Prob v t => Script t v -> Script t v
+meta = Script . ex . runScript var
