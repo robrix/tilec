@@ -13,6 +13,7 @@
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module Tile.Elab
 ( Elab(..)
+, runScript
 , Script(..)
 ) where
 
@@ -68,6 +69,9 @@ infixl 0 |-
 check :: Prob v t => (Elab v t t ::: Elab v t t -> Elab v t t) -> Elab v t t
 check f = Elab $ ask `ex` \ v -> runElab (f (pure (var v) ::: Elab ask))
 
+
+runScript :: (a -> t) -> Script t a -> t
+runScript k (Script r) = r k
 
 newtype Script t a = Script ((a -> t) -> t)
   deriving (Functor)
