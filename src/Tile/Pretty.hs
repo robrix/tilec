@@ -13,6 +13,7 @@ module Tile.Pretty
 , vcat
 , concatWith
 , (<+>)
+, (</>)
 , parensIf
 , Level(..)
 , PrecDoc(..)
@@ -133,6 +134,11 @@ concatWith (<>) ds
 (<+>) = surround (pretty ' ')
 
 infixr 6 <+>
+
+(</>) :: Doc ann doc => doc -> doc -> doc
+(</>) = surround line
+
+infixr 6 </>
 
 parensIf :: Doc ann doc => Bool -> doc -> doc
 parensIf True = parens
