@@ -92,7 +92,7 @@ instance Prob Int (Print Inner) where
   ex t b = inContext Exists . bind b $ \ v b ->
     pretty '∃' <+> prettyAnn (maybe (pretty '_') prettyVar v ::: t) </> group (align (op "." <+> b))
 
-  t1 === t2 = prec (Level 4) (group (prettyAnn t1 <+> op "≡" <+> prettyAnn t2))
+  t1 === t2 = prettyAnn t1 <+> op "≡" <+> prettyAnn t2
 
 data Highlight a
   = Name
@@ -130,6 +130,7 @@ transition from to = exit from . enter to where
     Just App    -> prec (Level 10) . group . align
     Just Pi     -> prec (Level 0) . group
     Just Exists -> prec (Level 0) . group
+    Just Equate -> prec (Level 4) . group
     _ -> id
   exit = \case
     Just Lam -> group . align . (op "." <+>)
