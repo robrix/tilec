@@ -78,8 +78,8 @@ instance Lam Int (Print Inner) where
     (lhs, b') <- bind b (wrap . prettyVar) (wrap (pretty '_'))
     -- FIXME: combine successive lambdas into a single \ … . …
     prec (Level 0) (group (align (op "\\" <+> lhs <+> op "." </> pure b')))
-  -- FIXME: combine successive applications for purposes of wrapping
 
+  -- FIXME: combine successive applications for purposes of wrapping
   f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
 
 instance Type Int (Print Inner) where
