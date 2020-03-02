@@ -13,6 +13,7 @@
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module Tile.Elab
 ( Elab(..)
+, elab
 , runScript
 , Script(..)
 , meta
