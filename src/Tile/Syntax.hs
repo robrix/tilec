@@ -87,12 +87,12 @@ instance Type v t => Type v (r -> t) where
 deriving instance Type v (m a) => Type v (ReaderC r m a)
 deriving instance Type v (m a) => Type v (ReaderT r m a)
 
-(-->) :: Type a expr => expr -> expr -> expr
+(-->) :: Type v expr => expr -> expr -> expr
 a --> b = (Ex, a) >-> const b
 
 infixr 0 -->
 
-(==>) :: Type a expr => expr -> (a -> expr) -> expr
+(==>) :: Type v expr => expr -> (v -> expr) -> expr
 a ==> b = (Im, a) >-> b
 
 infixr 0 ==>
