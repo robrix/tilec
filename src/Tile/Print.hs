@@ -79,7 +79,6 @@ instance Lam Int (Print Inner) where
     wrap (maybe (pretty '_') prettyVar v) </> b where
     wrap = case p of { Im -> braces ; _ -> id }
 
-  -- FIXME: combine successive applications for purposes of wrapping
   f $$ a = inContext App (f <+> prec (Level 11) a)
 
 instance Type Int (Print Inner) where
