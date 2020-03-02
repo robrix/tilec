@@ -26,8 +26,8 @@ import qualified Hedgehog.Range as Range
 import           Tile.Plicit
 import           Tile.Syntax
 
-plicit :: MonadGen m => m Plicit
-plicit = Gen.enumBounded
+genPlicit :: MonadGen m => m Plicit
+genPlicit = Gen.enumBounded
 
 var_ :: (Var Int t, MonadGen m, MonadReader Int m, MonadWriter (Set LabelName) m) => m t
 var_ = ask >>= \ i -> if i <= 0 then Gen.discard else var <$> Gen.int (Range.constant 0 i) <* tag "var"
@@ -36,7 +36,7 @@ let_ :: (MonadGen m, MonadReader Int m, Let v t, MonadWriter (Set LabelName) m) 
 let_ t = Gen.subtermM3 t t (local succ t) (\ v t b -> let' (v ::: t) (const b) <$ tag "let")
 
 lam_ :: (MonadGen m, MonadReader Int m, Lam v t, MonadWriter (Set LabelName) m) => m t -> m t
-lam_ t = Gen.subtermM (local succ t) (\ b -> lam <$> plicit <*> pure (const b) <* tag "lam")
+lam_ t = Gen.subtermM (local succ t) (\ b -> lam <$> genPlicit <*> pure (const b) <* tag "lam")
 
 app_ :: (Lam Int t, MonadGen m, MonadWriter (Set LabelName) m) => m t -> m t
 app_ t = Gen.subtermM2 t t (\ f a -> f $$ a <$ tag "$$")
@@ -45,7 +45,7 @@ type_ :: (Type Int t, MonadWriter (Set LabelName) m) => m t
 type_ = type' <$ tag "type"
 
 pi_ :: (MonadGen m, MonadReader Int m, Type v t, MonadWriter (Set LabelName) m) => m t -> m t
-pi_ t = Gen.subtermM2 t (local succ t) (\ t b -> (>-> const b) . (, t) <$> plicit <* tag ">->")
+pi_ t = Gen.subtermM2 t (local succ t) (\ t b -> (>-> const b) . (, t) <$> genPlicit <* tag ">->")
 
 ex_ :: (MonadGen m, MonadReader Int m, Prob v t, MonadWriter (Set LabelName) m) => m t -> m t
 ex_ t = Gen.subtermM2 t (local succ t) (\ t b -> (t `ex` const b) <$ tag "ex")
