@@ -91,7 +91,7 @@ instance Type Int (Print Inner) where
 
 instance Prob Int (Print Inner) where
   ex t b = bind b $ \ v b ->
-    prec (Level 0) (group (pretty '∃' <+> maybe (pretty '_') prettyVar v </> group (align (op ":" <+> t)) </> group (align (op "." <+> b))))
+    prec (Level 0) (group (pretty '∃' <+> prettyAnn (maybe (pretty '_') prettyVar v ::: t) </> group (align (op "." <+> b))))
 
   t1 === t2 = prec (Level 4) (group (prettyAnn t1 <+> op "≡" <+> prettyAnn t2))
 
