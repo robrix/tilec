@@ -75,9 +75,8 @@ instance Let Int (Print Inner) where
     group (align (kw "let" <+> maybe (pretty '_') prettyVar v <+> prettyAnn (align (group (align (op "=" <+> tm))) ::: ty) </> kw "in" <+> b))
 
 instance Lam Int (Print Inner) where
-  lam p b  = bind b $ \ v b ->
-    -- FIXME: combine successive lambdas into a single \ … . …
-    prec (Level 0) (group (align (op "\\" <+> wrap (maybe (pretty '_') prettyVar v) <+> op "." </> b))) where
+  lam p b = inContext Lam . bind b $ \ v b ->
+    wrap (maybe (pretty '_') prettyVar v) </> b where
     wrap = case p of { Im -> braces ; _ -> id }
 
   -- FIXME: combine successive applications for purposes of wrapping
