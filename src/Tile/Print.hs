@@ -86,7 +86,7 @@ instance Type Int (Print Inner) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
   (p, t) >-> b = inContext Pi . bind b $ \ v b ->
-    prec (Level 0) (group (maybe (wrap0 t) (wrapN . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b)) where
+    maybe (wrap0 t) (wrapN . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b where
     (wrapN, wrap0) = case p of { Im -> (braces, braces) ; _ -> (parens, prec (Level 1)) }
 
 instance Prob Int (Print Inner) where
@@ -129,6 +129,7 @@ transition from to = exit from . enter to where
   enter = \case
     Just Lam -> prec (Level 0) . group . align . (op "\\" <+>)
     Just App -> prec (Level 10) . group . align
+    Just Pi  -> prec (Level 0) . group
     _ -> id
   exit = \case
     Just Lam -> group . align . (op "." <+>)
