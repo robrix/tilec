@@ -27,7 +27,7 @@ import Data.Functor.Identity
 import Data.Map
 import Tile.Syntax
 
-newtype Elab v t b = Elab { runElab :: ReaderC t (ReaderC (Map v t) Identity) b }
+newtype Elab v t b = Elab (ReaderC t (ReaderC (Map v t) Identity) b)
   deriving (Applicative, Functor, Monad)
 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
@@ -59,20 +59,20 @@ deriving instance Err t => Err (Elab v t t)
 
 
 elab :: Elab v t b ::: t -> Elab v t b
-elab (m ::: t) = Elab (local (const t) (runElab m))
+elab (Elab m ::: t) = Elab (local (const t) m)
 
 typeOf :: (Ord v, Show v, Err t) => v -> Elab v t t
 typeOf n = Elab (asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure)
 
 (|-) :: Ord v => v ::: Elab v t t -> Elab v t t -> Elab v t t
-(a ::: t) |- b = Elab $ do
-  t' <- runElab t
-  local (insert a t') (runElab b)
+(a ::: Elab t) |- Elab b = Elab $ do
+  t' <- t
+  local (insert a t') b
 
 infixl 0 |-
 
 check :: Prob v t => (Elab v t t ::: Elab v t t -> Elab v t t) -> Elab v t t
-check f = Elab $ ask `ex` \ v -> runElab (f (pure (var v) ::: Elab ask))
+check f = Elab $ ask `ex` \ v -> let Elab m = f (pure (var v) ::: Elab ask) in m
 
 
 runScript :: (a -> t) -> Script t a -> t
