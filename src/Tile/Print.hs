@@ -124,8 +124,8 @@ data Ctx
   | Equate
   deriving (Eq, Ord, Show)
 
-entering :: Ctx -> (Print a -> Print a) -> Print a -> Print a
-entering ctx f m = do
+inContext :: Ctx -> (Print a -> Print a) -> Print a -> Print a
+inContext ctx f m = do
   ctx' <- Print get
   if ctx' == Just ctx then
     m
