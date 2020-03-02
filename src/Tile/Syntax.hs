@@ -17,6 +17,7 @@ module Tile.Syntax
   -- * Re-exports
 , (:::)(..)
 , Plicit(..)
+, plicit
 ) where
 
 import Control.Carrier.Reader
