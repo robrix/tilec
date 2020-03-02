@@ -70,9 +70,9 @@ instance Var Int (Print Inner) where
   var a = inContext Var (Print (prettyVar a <$ tell (IntSet.singleton a)))
 
 instance Let Int (Print Inner) where
-  let' (tm ::: ty) b = bind b $ \ v b ->
+  let' (tm ::: ty) b = inContext Let . bind b $ \ v b ->
     -- FIXME: bind variables on the lhs when tm is a lambda
-    group (align (kw "let" <+> maybe (pretty '_') prettyVar v <+> prettyAnn (align (group (align (op "=" <+> tm))) ::: ty) </> kw "in" <+> b))
+    kw "let" <+> maybe (pretty '_') prettyVar v <+> prettyAnn (align (group (align (op "=" <+> tm))) ::: ty) </> kw "in" <+> b
 
 instance Lam Int (Print Inner) where
   lam p b = inContext Lam . bind b $ \ v b ->
@@ -126,6 +126,7 @@ data Ctx
 transition :: Maybe Ctx -> Maybe Ctx -> Print Inner -> Print Inner
 transition from to = exit from . enter to where
   enter = \case
+    Just Let    -> group . align
     Just Lam    -> prec (Level 0) . group . align . (op "\\" <+>)
     Just App    -> prec (Level 10) . group . align
     Just Pi     -> prec (Level 0) . group
