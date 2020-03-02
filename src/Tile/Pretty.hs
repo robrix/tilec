@@ -5,6 +5,7 @@
 module Tile.Pretty
 ( putDoc
 , Doc(..)
+, space
 , line
 , line'
 , enclose
@@ -99,8 +100,11 @@ instance (Applicative f, Doc ann a) => Doc ann (Ap f a) where
 
   braces = fmap braces
 
+space :: Doc ann doc => doc
+space = pretty ' '
+
 line :: Doc ann doc => doc
-line = flatAlt line (pretty ' ')
+line = flatAlt line space
 
 line' :: Doc ann doc => doc
 line' = flatAlt line mempty
@@ -135,7 +139,7 @@ concatWith (<>) ds
   | otherwise = foldr1 (<>) ds
 
 (<+>) :: Doc ann doc => doc -> doc -> doc
-(<+>) = surround (pretty ' ')
+(<+>) = surround space
 
 infixr 6 <+>
 
