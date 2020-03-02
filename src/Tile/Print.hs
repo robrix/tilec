@@ -71,11 +71,11 @@ instance Var Int (Print Inner) where
 instance Let Int (Print Inner) where
   let' (tm ::: ty) b = inContext Let . bind b $ \ v b ->
     -- FIXME: bind variables on the lhs when tm is a lambda
-    kw "let" <+> maybe (pretty '_') prettyVar v <+> prettyAnn (align (group (align (op "=" <+> tm))) ::: ty) </> kw "in" <+> b
+    kw "let" <+> prettyBind v <+> prettyAnn (align (group (align (op "=" <+> tm))) ::: ty) </> kw "in" <+> b
 
 instance Lam Int (Print Inner) where
   lam p b = inContext Lam . prec (Level 0) . bind b $ \ v b ->
-    plicit braces id p (maybe (pretty '_') prettyVar v) </> b
+    plicit braces id p (prettyBind v) </> b
 
   f $$ a = inContext App (prec (Level 10) (f <+> prec (Level 11) a))
 
@@ -87,7 +87,7 @@ instance Type Int (Print Inner) where
 
 instance Prob Int (Print Inner) where
   ex t b = inContext Exists . prec (Level 0) . bind b $ \ v b ->
-    pretty '∃' <+> prettyAnn (maybe (pretty '_') prettyVar v ::: t) </> group (align (op "." <+> b))
+    pretty '∃' <+> prettyAnn (prettyBind v ::: t) </> group (align (op "." <+> b))
 
   t1 === t2 = inContext Equate (prec (Level 4) (prettyAnn t1 <+> op "≡" <+> prettyAnn t2))
 
@@ -150,6 +150,9 @@ kw = annotate Keyword . pretty
 
 op :: Doc (Highlight Int) doc => String -> doc
 op = annotate Op . pretty
+
+prettyBind :: Doc (Highlight Int) doc => Maybe Int -> doc
+prettyBind = maybe (pretty '_') prettyVar
 
 prettyVar :: Doc (Highlight Int) doc => Int -> doc
 prettyVar i = annotate Name (pretty (alphabet !! r) <> if q > 0 then pretty q else mempty) where
