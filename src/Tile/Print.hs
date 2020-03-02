@@ -68,11 +68,9 @@ instance Var Int (Print Inner) where
 
 instance Let Int (Print Inner) where
   let' (tm ::: ty) b = do
-    tm' <- tm
-    ty' <- ty
     (lhs, b') <- bind b prettyVar (pretty '_')
     -- FIXME: bind variables on the lhs when tm is a lambda
-    pure (group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm'))) <> line <> align (group (align (op ":" <+> ty'))) <> line <> kw "in" <+> b')))
+    group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm))) <> line <> align (group (align (op ":" <+> ty))) <> line <> kw "in" <+> pure b'))
 
 instance Lam Int (Print Inner) where
   lam p b  = do
@@ -80,7 +78,7 @@ instance Lam Int (Print Inner) where
       Im -> bind b (braces . prettyVar) (braces (pretty '_'))
       Ex -> bind b prettyVar (pretty '_')
     -- FIXME: combine successive lambdas into a single \ … . …
-    pure (prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> b')))
+    prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> pure b'))
   -- FIXME: combine successive applications for purposes of wrapping
 
   f $$ a = do
@@ -92,24 +90,18 @@ instance Type Int (Print Inner) where
   type' = pure (annotate Type (pretty "Type"))
 
   (p, t) >-> b = do
-    t' <- t
     (lhs, b') <- case p of
-      Im -> bind b (\ v -> braces (prettyVar v <+> op ":" <+> t')) (braces t')
-      Ex -> bind b (\ v -> parens (prettyVar v <+> op ":" <+> t')) (prec (Level 1) t')
-    pure (prec (Level 0) (group (lhs <> line <> op "→" <+> b')))
+      Im -> bind b (\ v -> braces (prettyVar v <+> op ":" <+> t)) (braces t)
+      Ex -> bind b (\ v -> parens (prettyVar v <+> op ":" <+> t)) (prec (Level 1) t)
+    prec (Level 0) (group (lhs <> line <> op "→" <+> pure b'))
 
 instance Prob Int (Print Inner) where
   ex t b = do
-    t' <- t
     (lhs, b') <- bind b prettyVar (pretty '_')
-    pure (prec (Level 0) (pretty '∃' <+> lhs <+> op ":" <+> t' <+> op "." <+> b'))
+    prec (Level 0) (pretty '∃' <+> lhs <+> op ":" <+> t <+> op "." <+> pure b')
 
-  (tm1 ::: ty1) === (tm2 ::: ty2) = do
-    tm1' <- tm1
-    ty1' <- ty1
-    tm2' <- tm2
-    ty2' <- ty2
-    pure (prec (Level 4) (tm1' <+> op ":" <+> ty1' <+> op "≡" <+> tm2' <+> op ":" <+> ty2'))
+  (tm1 ::: ty1) === (tm2 ::: ty2) =
+    prec (Level 4) (tm1 <+> op ":" <+> ty1 <+> op "≡" <+> tm2 <+> op ":" <+> ty2)
 
 data Highlight a
   = Var
@@ -140,7 +132,7 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
-bind :: (Int -> Print a) -> (Int -> Inner) -> Inner -> Print (Inner, a)
+bind :: (Int -> Print a) -> (Int -> Print Inner) -> Print Inner -> Print (Print Inner, a)
 bind b used unused = Print $ do
   v <- fresh
   (fvs, b') <- listen @IntSet.IntSet (runPrint (b v))
