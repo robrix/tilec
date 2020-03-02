@@ -78,7 +78,7 @@ instance Lam Int (Print Inner) where
       Im -> bind b (braces . prettyVar) (braces (pretty '_'))
       Ex -> bind b prettyVar (pretty '_')
     -- FIXME: combine successive lambdas into a single \ … . …
-    prec (Level 0) (align (op "\\" <+> lhs <+> op "." <> line <> pure b'))
+    prec (Level 0) (group (align (op "\\" <+> lhs <+> op "." <> line <> pure b')))
   -- FIXME: combine successive applications for purposes of wrapping
 
   f $$ a = do
