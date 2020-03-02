@@ -28,7 +28,7 @@ import Data.Functor.Identity
 import Data.Map
 import Tile.Syntax
 
-runElab :: Elab v t a ::: t -> a
+runElab :: Elab v t t ::: t -> t
 runElab (Elab m ::: t) = run (runReader empty (runReader t m))
 
 newtype Elab v t a = Elab (ReaderC t (ReaderC (Map v t) Identity) a)
