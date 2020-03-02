@@ -5,6 +5,7 @@
 module Tile.Pretty
 ( putDoc
 , Doc(..)
+, line
 , line'
 , enclose
 , surround
@@ -42,8 +43,6 @@ putDoc doc = do
 class Monoid doc => Doc ann doc | doc -> ann where
   pretty :: PP.Pretty a => a -> doc
 
-  line :: doc
-
   annotate :: ann -> doc -> doc
 
   align :: doc -> doc
@@ -64,8 +63,6 @@ class Monoid doc => Doc ann doc | doc -> ann where
 instance Doc ann (PP.Doc ann) where
   pretty = PP.pretty
 
-  line = PP.line
-
   annotate = PP.annotate
 
   align = PP.align
@@ -77,8 +74,6 @@ instance Doc ann (PP.Doc ann) where
 instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   pretty = pretty &&& pretty
 
-  line = (line, line)
-
   annotate a = annotate a *** annotate a
 
   align = align *** align
@@ -89,8 +84,6 @@ instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
 
 instance (Applicative f, Doc ann a) => Doc ann (Ap f a) where
   pretty = pure . pretty
-
-  line = pure line
 
   annotate = fmap . annotate
 
@@ -105,6 +98,9 @@ instance (Applicative f, Doc ann a) => Doc ann (Ap f a) where
   brackets = fmap brackets
 
   braces = fmap braces
+
+line :: Doc ann doc => doc
+line = flatAlt line (pretty ' ')
 
 line' :: Doc ann doc => doc
 line' = flatAlt line mempty
@@ -169,8 +165,6 @@ newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
 instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) where
   pretty = pure . pretty
 
-  line = pure line
-
   annotate = fmap . annotate
 
   align = fmap align
@@ -192,8 +186,6 @@ newtype Prec a = Prec { runPrec :: Level -> a }
 
 instance Doc ann doc => Doc ann (Prec doc) where
   pretty = pure . pretty
-
-  line = pure line
 
   annotate = fmap . annotate
 
