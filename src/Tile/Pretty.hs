@@ -104,10 +104,10 @@ space :: Doc ann doc => doc
 space = pretty ' '
 
 line :: Doc ann doc => doc
-line = flatAlt line space
+line = flatAlt (pretty '\n') space
 
 line' :: Doc ann doc => doc
-line' = flatAlt line mempty
+line' = flatAlt (pretty '\n') mempty
 
 enclose :: Doc ann doc => doc -> doc -> doc -> doc
 enclose l r x = l <> x <> r
