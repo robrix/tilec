@@ -117,6 +117,7 @@ data Ctx
   = Var
   | Let
   | Lam
+  | App
   | Type
   | Pi
   | Exists
