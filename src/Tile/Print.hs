@@ -133,14 +133,14 @@ transition from to = exit from . enter to where
     Just Lam -> group . align . (op "." <+>)
     _ -> id
 
-inContext :: Ctx -> (Print a -> Print a) -> Print a -> Print a
-inContext ctx f m = do
+inContext :: Ctx -> Print Inner -> Print Inner
+inContext ctx m = do
   ctx' <- Print get
   if ctx' == Just ctx then
     m
   else do
     Print (put (Just ctx))
-    a <- f m
+    a <- transition ctx' (Just ctx) m
     a <$ Print (put ctx')
 
 isWithin :: Ctx -> Print Bool
