@@ -44,6 +44,8 @@ putDoc doc = do
 class Monoid doc => Doc ann doc | doc -> ann where
   pretty :: PP.Pretty a => a -> doc
 
+  hardline :: doc
+
   annotate :: ann -> doc -> doc
 
   align :: doc -> doc
@@ -64,6 +66,8 @@ class Monoid doc => Doc ann doc | doc -> ann where
 instance Doc ann (PP.Doc ann) where
   pretty = PP.pretty
 
+  hardline = PP.hardline
+
   annotate = PP.annotate
 
   align = PP.align
@@ -75,6 +79,8 @@ instance Doc ann (PP.Doc ann) where
 instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
   pretty = pretty &&& pretty
 
+  hardline = (hardline, hardline)
+
   annotate a = annotate a *** annotate a
 
   align = align *** align
@@ -85,6 +91,8 @@ instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
 
 instance (Applicative f, Doc ann a) => Doc ann (Ap f a) where
   pretty = pure . pretty
+
+  hardline = pure hardline
 
   annotate = fmap . annotate
 
@@ -104,10 +112,10 @@ space :: Doc ann doc => doc
 space = pretty ' '
 
 line :: Doc ann doc => doc
-line = flatAlt (pretty '\n') space
+line = flatAlt hardline space
 
 line' :: Doc ann doc => doc
-line' = flatAlt (pretty '\n') mempty
+line' = flatAlt hardline mempty
 
 enclose :: Doc ann doc => doc -> doc -> doc -> doc
 enclose l r x = l <> x <> r
@@ -169,6 +177,8 @@ newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
 instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) where
   pretty = pure . pretty
 
+  hardline = pure hardline
+
   annotate = fmap . annotate
 
   align = fmap align
@@ -190,6 +200,8 @@ newtype Prec a = Prec { runPrec :: Level -> a }
 
 instance Doc ann doc => Doc ann (Prec doc) where
   pretty = pure . pretty
+
+  hardline = pure hardline
 
   annotate = fmap . annotate
 
