@@ -165,7 +165,7 @@ prettyAnn (tm ::: ty) = tm </> group (align (op ":" <+> ty))
 bind :: (Int -> Print a) -> (Maybe Int -> Print a -> Print b) -> Print b
 bind b f = Print $ do
   v <- fresh
-  (fvs, b') <- listen @IntSet.IntSet (runPrint (b v))
+  (fvs, b') <- censor (IntSet.delete v) (listen @IntSet.IntSet (runPrint (b v)))
   runPrint (f (v <$ guard (v `IntSet.member` fvs)) (pure b'))
 
 toDoc :: Print Inner -> PP.Doc (Highlight Int)
