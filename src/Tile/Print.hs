@@ -70,7 +70,7 @@ instance Let Int (Print Inner) where
   let' (tm ::: ty) b = do
     (lhs, b') <- bind b prettyVar (pretty '_')
     -- FIXME: bind variables on the lhs when tm is a lambda
-    group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm))) <> line <> align (group (align (op ":" <+> ty))) <> line <> kw "in" <+> pure b'))
+    group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm))) </> align (group (align (op ":" <+> ty))) </> kw "in" <+> pure b'))
 
 instance Lam Int (Print Inner) where
   lam p b  = do
@@ -78,7 +78,7 @@ instance Lam Int (Print Inner) where
       Im -> bind b (braces . prettyVar) (braces (pretty '_'))
       Ex -> bind b prettyVar (pretty '_')
     -- FIXME: combine successive lambdas into a single \ … . …
-    prec (Level 0) (group (align (op "\\" <+> lhs <+> op "." <> line <> pure b')))
+    prec (Level 0) (group (align (op "\\" <+> lhs <+> op "." </> pure b')))
   -- FIXME: combine successive applications for purposes of wrapping
 
   f $$ a = do
@@ -93,7 +93,7 @@ instance Type Int (Print Inner) where
     (lhs, b') <- case p of
       Im -> bind b (\ v -> braces (prettyVar v <+> op ":" <+> t)) (braces t)
       Ex -> bind b (\ v -> parens (prettyVar v <+> op ":" <+> t)) (prec (Level 1) t)
-    prec (Level 0) (group (lhs <> line <> op "→" <+> pure b'))
+    prec (Level 0) (group (lhs </> op "→" <+> pure b'))
 
 instance Prob Int (Print Inner) where
   ex t b = do
