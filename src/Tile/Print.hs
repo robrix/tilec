@@ -127,7 +127,7 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
-bind :: (Int -> Print a) -> (Int -> Print b) -> Print b -> Print (Print b, Print a)
+bind :: (Int -> Print a) -> (Int -> b) -> b -> Print (b, Print a)
 bind b used unused = Print $ do
   v <- fresh
   (fvs, b') <- listen @IntSet.IntSet (runPrint (b v))
