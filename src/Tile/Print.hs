@@ -71,7 +71,7 @@ instance Var Int (Print Inner) where
 instance Let Int (Print Inner) where
   let' (tm ::: ty) b = bind b $ \ v b ->
     -- FIXME: bind variables on the lhs when tm is a lambda
-    group (align (kw "let" <+> maybe (pretty '_') prettyVar v <+> align (group (align (op "=" <+> tm))) </> align (group (align (op ":" <+> ty))) </> kw "in" <+> b))
+    group (align (kw "let" <+> maybe (pretty '_') prettyVar v <+> prettyAnn (align (group (align (op "=" <+> tm))) ::: ty) </> kw "in" <+> b))
 
 instance Lam Int (Print Inner) where
   lam p b  = bind b $ \ v b ->
