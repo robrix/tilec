@@ -124,6 +124,9 @@ data Ctx
   | Equate
   deriving (Eq, Ord, Show)
 
+within :: Ctx -> Print a -> Print a
+within ctx = (Print (put (Just ctx)) >>)
+
 isWithin :: Ctx -> Print Bool
 isWithin = Print . gets . (==) . Just
 
