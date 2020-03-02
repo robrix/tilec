@@ -27,7 +27,7 @@ import Data.Functor.Identity
 import Data.Map
 import Tile.Syntax
 
-newtype Elab v t b = Elab (ReaderC t (ReaderC (Map v t) Identity) b)
+newtype Elab v t a = Elab (ReaderC t (ReaderC (Map v t) Identity) a)
   deriving (Applicative, Functor, Monad)
 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
