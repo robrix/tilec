@@ -124,6 +124,14 @@ data Ctx
   | Equate
   deriving (Eq, Ord, Show)
 
+entering :: Ctx -> (Print a -> Print a) -> Print a -> Print a
+entering ctx f m = do
+  isInCtx <- isWithin ctx
+  if isInCtx then
+    m
+  else
+    within ctx (f m)
+
 within :: Ctx -> Print a -> Print a
 within ctx = (Print (put (Just ctx)) >>)
 
