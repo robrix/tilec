@@ -11,6 +11,7 @@ module Tile.Pretty
 , encloseSep
 , cat
 , vcat
+, sep
 , vsep
 , concatWith
 , (<+>)
@@ -125,6 +126,9 @@ cat = group . vcat
 
 vcat :: Doc ann doc => [doc] -> doc
 vcat = concatWith (surround line')
+
+sep :: Doc ann doc => [doc] -> doc
+sep = group . vsep
 
 vsep :: Doc ann doc => [doc] -> doc
 vsep = concatWith (surround line)
