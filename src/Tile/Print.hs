@@ -125,7 +125,7 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   alphabet = ['a'..'z']
 
 prettyAnn :: Doc (Highlight Int) doc => doc ::: doc -> doc
-prettyAnn (tm ::: ty) = tm <+> op ":" <+> ty
+prettyAnn (tm ::: ty) = tm </> group (align (op ":" <+> ty))
 
 bind :: (Int -> Print a) -> (Maybe Int -> Print a -> Print b) -> Print b
 bind b f = Print $ do
