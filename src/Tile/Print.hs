@@ -67,7 +67,7 @@ instance Show (Print Inner) where
   showsPrec p = showsPrec p . toDoc
 
 instance Var Int (Print Inner) where
-  var a = Print (prettyVar a <$ tell (IntSet.singleton a))
+  var a = inContext Var (Print (prettyVar a <$ tell (IntSet.singleton a)))
 
 instance Let Int (Print Inner) where
   let' (tm ::: ty) b = bind b $ \ v b ->
