@@ -17,6 +17,7 @@ module Tile.Print
 import           Control.Applicative ((<**>))
 import           Control.Carrier.Fresh.Strict
 import           Control.Carrier.Writer.Strict
+import           Control.Monad (guard)
 import           Control.Monad.IO.Class
 import           Data.Functor.Identity
 import qualified Data.IntSet as IntSet
@@ -67,17 +68,15 @@ instance Var Int (Print Inner) where
   var a = Print (prettyVar a <$ tell (IntSet.singleton a))
 
 instance Let Int (Print Inner) where
-  let' (tm ::: ty) b = do
-    (lhs, b') <- bind b prettyVar (pretty '_')
+  let' (tm ::: ty) b = bind b $ \ v b ->
     -- FIXME: bind variables on the lhs when tm is a lambda
-    group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm))) </> align (group (align (op ":" <+> ty))) </> kw "in" <+> b'))
+    group (align (kw "let" <+> maybe (pretty '_') prettyVar v <+> align (group (align (op "=" <+> tm))) </> align (group (align (op ":" <+> ty))) </> kw "in" <+> b))
 
 instance Lam Int (Print Inner) where
-  lam p b  = do
-    let wrap = case p of { Im -> braces ; _ -> id }
-    (lhs, b') <- bind b (wrap . prettyVar) (wrap (pretty '_'))
+  lam p b  = bind b $ \ v b ->
     -- FIXME: combine successive lambdas into a single \ … . …
-    prec (Level 0) (group (align (op "\\" <+> lhs <+> op "." </> b')))
+    prec (Level 0) (group (align (op "\\" <+> wrap (maybe (pretty '_') prettyVar v) <+> op "." </> b))) where
+    wrap = case p of { Im -> braces ; _ -> id }
 
   -- FIXME: combine successive applications for purposes of wrapping
   f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
@@ -85,15 +84,13 @@ instance Lam Int (Print Inner) where
 instance Type Int (Print Inner) where
   type' = annotate Type (pretty "Type")
 
-  (p, t) >-> b = do
-    let (wrapN, wrap0) = case p of { Im -> (braces, braces) ; _ -> (parens, prec (Level 1)) }
-    (lhs, b') <- bind b (\ v -> wrapN (prettyVar v <+> op ":" <+> t)) (wrap0 t)
-    prec (Level 0) (group (lhs </> op "→" <+> b'))
+  (p, t) >-> b = bind b $ \ v b ->
+    prec (Level 0) (group (maybe (wrap0 t) (wrapN . (<+> op ":" <+> t) . prettyVar) v </> op "→" <+> b)) where
+    (wrapN, wrap0) = case p of { Im -> (braces, braces) ; _ -> (parens, prec (Level 1)) }
 
 instance Prob Int (Print Inner) where
-  ex t b = do
-    (lhs, b') <- bind b prettyVar (pretty '_')
-    prec (Level 0) (group (pretty '∃' <+> lhs </> group (align (op ":" <+> t)) </> group (align (op "." <+> b'))))
+  ex t b = bind b $ \ v b ->
+    prec (Level 0) (group (pretty '∃' <+> maybe (pretty '_') prettyVar v </> group (align (op ":" <+> t)) </> group (align (op "." <+> b))))
 
   (tm1 ::: ty1) === (tm2 ::: ty2) =
     prec (Level 4) (group (tm1 <+> op ":" <+> ty1 <+> op "≡" <+> tm2 <+> op ":" <+> ty2))
@@ -127,11 +124,11 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
-bind :: (Int -> Print a) -> (Int -> b) -> b -> Print (b, Print a)
-bind b used unused = Print $ do
+bind :: (Int -> Print a) -> (Maybe Int -> Print a -> Print b) -> Print b
+bind b f = Print $ do
   v <- fresh
   (fvs, b') <- listen @IntSet.IntSet (runPrint (b v))
-  pure (if v `IntSet.member` fvs then used v else unused, pure b')
+  runPrint (f (v <$ guard (v `IntSet.member` fvs)) (pure b'))
 
 toDoc :: Print Inner -> PP.Doc (Highlight Int)
 toDoc (Print m) = rainbow (runPrec (snd (run (runWriter (evalFresh 0 (getAp m))))) (Level 0))
