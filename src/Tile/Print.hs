@@ -92,7 +92,7 @@ instance Prob Int (Print Inner) where
   ex t b = inContext Exists . bind b $ \ v b ->
     pretty '∃' <+> prettyAnn (maybe (pretty '_') prettyVar v ::: t) </> group (align (op "." <+> b))
 
-  t1 === t2 = prettyAnn t1 <+> op "≡" <+> prettyAnn t2
+  t1 === t2 = inContext Equate (prettyAnn t1 <+> op "≡" <+> prettyAnn t2)
 
 data Highlight a
   = Name
