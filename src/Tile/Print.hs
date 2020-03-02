@@ -80,7 +80,7 @@ instance Lam Int (Print Inner) where
     wrap = case p of { Im -> braces ; _ -> id }
 
   -- FIXME: combine successive applications for purposes of wrapping
-  f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
+  f $$ a = inContext App (prec (Level 10) (f <+> prec (Level 11) a))
 
 instance Type Int (Print Inner) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
