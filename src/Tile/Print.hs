@@ -36,11 +36,11 @@ prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc
 
 defaultStyle :: Highlight Int -> ANSI.AnsiStyle
 defaultStyle = \case
-  Name -> mempty
-  Op -> ANSI.color ANSI.Cyan
-  Type -> ANSI.color ANSI.Yellow
+  Name    -> mempty
+  Op      -> ANSI.color ANSI.Cyan
+  Type    -> ANSI.color ANSI.Yellow
   Keyword -> ANSI.color ANSI.Magenta
-  Nest i -> colours !! (i `mod` len)
+  Nest i  -> colours !! (i `mod` len)
   where
   colours =
     [ ANSI.Red
