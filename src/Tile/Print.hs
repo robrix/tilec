@@ -74,9 +74,8 @@ instance Let Int (Print Inner) where
 
 instance Lam Int (Print Inner) where
   lam p b  = do
-    (lhs, b') <- case p of
-      Im -> bind b (braces . prettyVar) (braces (pretty '_'))
-      Ex -> bind b prettyVar (pretty '_')
+    let wrap = case p of { Im -> braces ; _ -> id }
+    (lhs, b') <- bind b (wrap . prettyVar) (wrap (pretty '_'))
     -- FIXME: combine successive lambdas into a single \ … . …
     prec (Level 0) (group (align (op "\\" <+> lhs <+> op "." </> pure b')))
   -- FIXME: combine successive applications for purposes of wrapping
