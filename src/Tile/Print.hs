@@ -134,9 +134,6 @@ inContext ctx f m = do
     a <- f m
     a <$ Print (put ctx')
 
-within :: Ctx -> Print a -> Print a
-within ctx = (Print (put (Just ctx)) >>)
-
 isWithin :: Ctx -> Print Bool
 isWithin = Print . gets . (==) . Just
 
