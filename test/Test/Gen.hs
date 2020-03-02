@@ -3,7 +3,7 @@
 {-# LANGUAGE TupleSections #-}
 module Test.Gen
 ( module Tile.Syntax
-, plicit
+, genPlicit
 , var_
 , let_
 , lam_
