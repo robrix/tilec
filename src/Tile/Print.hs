@@ -75,24 +75,24 @@ instance Let Int (Print Inner) where
     kw "let" <+> maybe (pretty '_') prettyVar v <+> prettyAnn (align (group (align (op "=" <+> tm))) ::: ty) </> kw "in" <+> b
 
 instance Lam Int (Print Inner) where
-  lam p b = inContext Lam . bind b $ \ v b ->
+  lam p b = inContext Lam . prec (Level 0) . bind b $ \ v b ->
     wrap (maybe (pretty '_') prettyVar v) </> b where
     wrap = case p of { Im -> braces ; _ -> id }
 
-  f $$ a = inContext App (f <+> prec (Level 11) a)
+  f $$ a = inContext App (prec (Level 10) (f <+> prec (Level 11) a))
 
 instance Type Int (Print Inner) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
-  (p, t) >-> b = inContext Pi . bind b $ \ v b ->
+  (p, t) >-> b = inContext Pi . prec (Level 0) . bind b $ \ v b ->
     maybe (wrap0 t) (wrapN . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b where
     (wrapN, wrap0) = case p of { Im -> (braces, braces) ; _ -> (parens, prec (Level 1)) }
 
 instance Prob Int (Print Inner) where
-  ex t b = inContext Exists . bind b $ \ v b ->
+  ex t b = inContext Exists . prec (Level 0) . bind b $ \ v b ->
     pretty '∃' <+> prettyAnn (maybe (pretty '_') prettyVar v ::: t) </> group (align (op "." <+> b))
 
-  t1 === t2 = inContext Equate (prettyAnn t1 <+> op "≡" <+> prettyAnn t2)
+  t1 === t2 = inContext Equate (prec (Level 4) (prettyAnn t1 <+> op "≡" <+> prettyAnn t2))
 
 data Highlight a
   = Name
@@ -127,11 +127,11 @@ transition :: Maybe Ctx -> Maybe Ctx -> Print Inner -> Print Inner
 transition from to = exit from . enter to where
   enter = \case
     Just Let    -> group . align
-    Just Lam    -> prec (Level 0) . group . align . (op "\\" <+>)
-    Just App    -> prec (Level 10) . group . align
-    Just Pi     -> prec (Level 0) . group
-    Just Exists -> prec (Level 0) . group
-    Just Equate -> prec (Level 4) . group
+    Just Lam    -> group . align . (op "\\" <+>)
+    Just App    -> group . align
+    Just Pi     -> group
+    Just Exists -> group
+    Just Equate -> group
     _ -> id
   exit = \case
     Just Lam -> group . align . (op "." <+>)
