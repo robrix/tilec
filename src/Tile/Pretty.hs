@@ -131,7 +131,7 @@ sep :: Doc ann doc => [doc] -> doc
 sep = group . vsep
 
 vsep :: Doc ann doc => [doc] -> doc
-vsep = concatWith (surround line)
+vsep = concatWith (</>)
 
 concatWith :: (Doc ann doc, Foldable t) => (doc -> doc -> doc) -> t doc -> doc
 concatWith (<>) ds
