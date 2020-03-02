@@ -10,6 +10,7 @@ module Tile.Syntax
 , Lam(..)
 , Type(..)
 , (-->)
+, (==>)
 , Prob(..)
 , Err(..)
 , Def(..)
@@ -90,6 +91,11 @@ deriving instance Type v (m a) => Type v (ReaderT r m a)
 a --> b = (Ex, a) >-> const b
 
 infixr 0 -->
+
+(==>) :: Type a expr => expr -> expr -> expr
+a ==> b = (Im, a) >-> const b
+
+infixr 0 ==>
 
 
 class Var v expr => Prob v expr where
