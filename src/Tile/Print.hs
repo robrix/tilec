@@ -92,6 +92,9 @@ instance Prob Int (Print Inner) where
 
   t1 === t2 = inContext Equate (prec (Level 4) (prettyAnn t1 <+> op "≡" <+> prettyAnn t2))
 
+instance Err (Print Inner) where
+  err s = annotate Error (pretty "error") <> pretty ':' <+> pretty s
+
 data Highlight a
   = Name
   | Op
