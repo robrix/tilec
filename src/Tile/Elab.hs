@@ -35,7 +35,7 @@ newtype Elab v t a = Elab (ReaderC t (ReaderC (Map v t) Identity) a)
   deriving (Applicative, Functor, Monad)
 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
-  var n = check (=== (var n ::: typeOf n))
+  var n = check (=== (pure (var n) ::: typeOf n))
 
 deriving instance (Ord v, Show v, Let v t, Prob v t, Err t) => Let v (Elab v t t)
 
