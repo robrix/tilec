@@ -86,9 +86,8 @@ instance Type Int (Print Inner) where
   type' = annotate Type (pretty "Type")
 
   (p, t) >-> b = do
-    (lhs, b') <- case p of
-      Im -> bind b (\ v -> braces (prettyVar v <+> op ":" <+> t)) (braces t)
-      Ex -> bind b (\ v -> parens (prettyVar v <+> op ":" <+> t)) (prec (Level 1) t)
+    let (wrapN, wrap0) = case p of { Im -> (braces, braces) ; _ -> (parens, prec (Level 1)) }
+    (lhs, b') <- bind b (\ v -> wrapN (prettyVar v <+> op ":" <+> t)) (wrap0 t)
     prec (Level 0) (group (lhs </> op "→" <+> pure b'))
 
 instance Prob Int (Print Inner) where
