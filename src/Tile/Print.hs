@@ -80,7 +80,7 @@ instance Lam Int (Print Inner) where
     wrap = case p of { Im -> braces ; _ -> id }
 
   -- FIXME: combine successive applications for purposes of wrapping
-  f $$ a = inContext App (prec (Level 10) (f <+> prec (Level 11) a))
+  f $$ a = inContext App (f <+> prec (Level 11) a)
 
 instance Type Int (Print Inner) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
@@ -128,6 +128,7 @@ transition :: Maybe Ctx -> Maybe Ctx -> Print Inner -> Print Inner
 transition from to = exit from . enter to where
   enter = \case
     Just Lam -> prec (Level 0) . group . align . (op "\\" <+>)
+    Just App -> prec (Level 10) . group . align
     _ -> id
   exit = \case
     Just Lam -> group . align . (op "." <+>)
