@@ -17,6 +17,7 @@ module Tile.Print
 
 import           Control.Applicative ((<**>))
 import           Control.Carrier.Fresh.Strict
+import           Control.Carrier.State.Strict
 import           Control.Carrier.Writer.Strict
 import           Control.Monad (guard)
 import           Control.Monad.IO.Class
@@ -56,7 +57,7 @@ defaultStyle = \case
 
 type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 
-newtype Print a = Print { runPrint :: Ap (FreshC (WriterC IntSet.IntSet Identity)) a }
+newtype Print a = Print { runPrint :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
 deriving instance Doc     (Highlight Int) (Print Inner)
@@ -145,4 +146,4 @@ bind b f = Print $ do
   runPrint (f (v <$ guard (v `IntSet.member` fvs)) (pure b'))
 
 toDoc :: Print Inner -> PP.Doc (Highlight Int)
-toDoc (Print m) = rainbow (runPrec (snd (run (runWriter (evalFresh 0 (getAp m))))) (Level 0))
+toDoc (Print m) = rainbow (runPrec (snd (run (runWriter (evalFresh 0 (evalState Nothing (getAp m)))))) (Level 0))
