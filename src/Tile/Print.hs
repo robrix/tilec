@@ -142,9 +142,6 @@ inContext ctx m = do
     a <- transition ctx' (Just ctx) m
     a <$ Print (put ctx')
 
-isWithin :: Ctx -> Print Bool
-isWithin = Print . gets . (==) . Just
-
 
 kw :: Doc (Highlight Int) doc => String -> doc
 kw = annotate Keyword . pretty
