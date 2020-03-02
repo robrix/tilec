@@ -85,7 +85,7 @@ instance Lam Int (Print Inner) where
 instance Type Int (Print Inner) where
   type' = annotate TypeName (pretty "Type")
 
-  (p, t) >-> b = bind b $ \ v b ->
+  (p, t) >-> b = inContext Pi . bind b $ \ v b ->
     prec (Level 0) (group (maybe (wrap0 t) (wrapN . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b)) where
     (wrapN, wrap0) = case p of { Im -> (braces, braces) ; _ -> (parens, prec (Level 1)) }
 
