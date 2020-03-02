@@ -98,7 +98,7 @@ instance Type Int (Print Inner) where
 instance Prob Int (Print Inner) where
   ex t b = do
     (lhs, b') <- bind b prettyVar (pretty '_')
-    prec (Level 0) (pretty '∃' <+> lhs <+> op ":" <+> t <+> op "." <+> pure b')
+    prec (Level 0) (group (pretty '∃' <+> lhs <+> op ":" <+> t <+> op "." <+> pure b'))
 
   (tm1 ::: ty1) === (tm2 ::: ty2) =
     prec (Level 4) (tm1 <+> op ":" <+> ty1 <+> op "≡" <+> tm2 <+> op ":" <+> ty2)
