@@ -124,6 +124,15 @@ data Ctx
   | Equate
   deriving (Eq, Ord, Show)
 
+transition :: Maybe Ctx -> Maybe Ctx -> Print Inner -> Print Inner
+transition from to = exit from . enter to where
+  enter = \case
+    Just Lam -> prec (Level 0) . group . align . (op "\\" <+>)
+    _ -> id
+  exit = \case
+    Just Lam -> group . align . (op "." <+>)
+    _ -> id
+
 inContext :: Ctx -> (Print a -> Print a) -> Print a -> Print a
 inContext ctx f m = do
   ctx' <- Print get
