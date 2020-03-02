@@ -89,8 +89,8 @@ instance Type Int (Print Inner) where
     (wrapN, wrap0) = case p of { Im -> (braces, braces) ; _ -> (parens, prec (Level 1)) }
 
 instance Prob Int (Print Inner) where
-  ex t b = bind b $ \ v b ->
-    prec (Level 0) (group (pretty '∃' <+> prettyAnn (maybe (pretty '_') prettyVar v ::: t) </> group (align (op "." <+> b))))
+  ex t b = inContext Exists . bind b $ \ v b ->
+    pretty '∃' <+> prettyAnn (maybe (pretty '_') prettyVar v ::: t) </> group (align (op "." <+> b))
 
   t1 === t2 = prec (Level 4) (group (prettyAnn t1 <+> op "≡" <+> prettyAnn t2))
 
@@ -126,9 +126,10 @@ data Ctx
 transition :: Maybe Ctx -> Maybe Ctx -> Print Inner -> Print Inner
 transition from to = exit from . enter to where
   enter = \case
-    Just Lam -> prec (Level 0) . group . align . (op "\\" <+>)
-    Just App -> prec (Level 10) . group . align
-    Just Pi  -> prec (Level 0) . group
+    Just Lam    -> prec (Level 0) . group . align . (op "\\" <+>)
+    Just App    -> prec (Level 10) . group . align
+    Just Pi     -> prec (Level 0) . group
+    Just Exists -> prec (Level 0) . group
     _ -> id
   exit = \case
     Just Lam -> group . align . (op "." <+>)
