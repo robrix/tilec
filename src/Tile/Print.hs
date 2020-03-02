@@ -36,7 +36,7 @@ prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc
 
 defaultStyle :: Highlight Int -> ANSI.AnsiStyle
 defaultStyle = \case
-  Var -> mempty
+  Name -> mempty
   Op -> ANSI.color ANSI.Cyan
   Type -> ANSI.color ANSI.Yellow
   Keyword -> ANSI.color ANSI.Magenta
@@ -96,7 +96,7 @@ instance Prob Int (Print Inner) where
   t1 === t2 = prec (Level 4) (group (prettyAnn t1 <+> op "≡" <+> prettyAnn t2))
 
 data Highlight a
-  = Var
+  = Name
   | Op
   | Type
   | Keyword
@@ -106,7 +106,7 @@ data Highlight a
 instance Applicative Highlight where
   pure = Nest
   f <*> a = case f of
-    Var     -> Var
+    Name    -> Name
     Op      -> Op
     Type    -> Type
     Keyword -> Keyword
@@ -120,7 +120,7 @@ op :: Doc (Highlight Int) doc => String -> doc
 op = annotate Op . pretty
 
 prettyVar :: Doc (Highlight Int) doc => Int -> doc
-prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q else mempty) where
+prettyVar i = annotate Name (pretty (alphabet !! r) <> if q > 0 then pretty q else mempty) where
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
