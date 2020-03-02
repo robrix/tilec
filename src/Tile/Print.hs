@@ -6,6 +6,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeOperators #-}
 module Tile.Print
 ( prettyPrint
 , prettyPrintWith
@@ -92,8 +93,7 @@ instance Prob Int (Print Inner) where
   ex t b = bind b $ \ v b ->
     prec (Level 0) (group (pretty '∃' <+> maybe (pretty '_') prettyVar v </> group (align (op ":" <+> t)) </> group (align (op "." <+> b))))
 
-  (tm1 ::: ty1) === (tm2 ::: ty2) =
-    prec (Level 4) (group (tm1 <+> op ":" <+> ty1 <+> op "≡" <+> tm2 <+> op ":" <+> ty2))
+  t1 === t2 = prec (Level 4) (group (prettyAnn t1 <+> op "≡" <+> prettyAnn t2))
 
 data Highlight a
   = Var
@@ -123,6 +123,9 @@ prettyVar :: Doc (Highlight Int) doc => Int -> doc
 prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q else mempty) where
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
+
+prettyAnn :: Doc (Highlight Int) doc => doc ::: doc -> doc
+prettyAnn (tm ::: ty) = tm <+> op ":" <+> ty
 
 bind :: (Int -> Print a) -> (Maybe Int -> Print a -> Print b) -> Print b
 bind b f = Print $ do
