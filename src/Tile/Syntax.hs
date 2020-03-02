@@ -92,8 +92,8 @@ a --> b = (Ex, a) >-> const b
 
 infixr 0 -->
 
-(==>) :: Type a expr => expr -> expr -> expr
-a ==> b = (Im, a) >-> const b
+(==>) :: Type a expr => expr -> (a -> expr) -> expr
+a ==> b = (Im, a) >-> b
 
 infixr 0 ==>
 
