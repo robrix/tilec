@@ -132,7 +132,7 @@ deriving instance Err (m a) => Err (ReaderT r m a)
 
 
 class Def tm ty a def | def -> tm ty where
-  def :: tm a -> ty a -> def a
+  def :: tm a ::: ty a -> def a
 
 
 -- FIXME: modules
