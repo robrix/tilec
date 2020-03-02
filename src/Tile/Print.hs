@@ -101,7 +101,7 @@ instance Prob Int (Print Inner) where
     prec (Level 0) (group (pretty '∃' <+> lhs <+> op ":" <+> t <+> op "." <+> pure b'))
 
   (tm1 ::: ty1) === (tm2 ::: ty2) =
-    prec (Level 4) (tm1 <+> op ":" <+> ty1 <+> op "≡" <+> tm2 <+> op ":" <+> ty2)
+    prec (Level 4) (group (tm1 <+> op ":" <+> ty1 <+> op "≡" <+> tm2 <+> op ":" <+> ty2))
 
 data Highlight a
   = Var
