@@ -75,8 +75,7 @@ instance Let Int (Print Inner) where
 
 instance Lam Int (Print Inner) where
   lam p b = inContext Lam . prec (Level 0) . bind b $ \ v b ->
-    wrap (maybe (pretty '_') prettyVar v) </> b where
-    wrap = case p of { Im -> braces ; _ -> id }
+    plicit braces id p (maybe (pretty '_') prettyVar v) </> b
 
   f $$ a = inContext App (prec (Level 10) (f <+> prec (Level 11) a))
 
@@ -84,8 +83,7 @@ instance Type Int (Print Inner) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
   (p, t) >-> b = inContext Pi . prec (Level 0) . bind b $ \ v b ->
-    maybe (wrap0 t) (wrapN . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b where
-    (wrapN, wrap0) = case p of { Im -> (braces, braces) ; _ -> (parens, prec (Level 1)) }
+    maybe (plicit braces (prec (Level 1)) p t) (plicit braces parens p . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b
 
 instance Prob Int (Print Inner) where
   ex t b = inContext Exists . prec (Level 0) . bind b $ \ v b ->
