@@ -126,11 +126,13 @@ data Ctx
 
 entering :: Ctx -> (Print a -> Print a) -> Print a -> Print a
 entering ctx f m = do
-  isInCtx <- isWithin ctx
-  if isInCtx then
+  ctx' <- Print get
+  if ctx' == Just ctx then
     m
-  else
-    within ctx (f m)
+  else do
+    Print (put (Just ctx))
+    a <- f m
+    a <$ Print (put ctx')
 
 within :: Ctx -> Print a -> Print a
 within ctx = (Print (put (Just ctx)) >>)
