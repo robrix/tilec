@@ -54,8 +54,8 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
   type' = check (=== (pure type' ::: pure type'))
 
   (p, a) >-> b = check $ \ exp ->
-    let' (elab (a ::: type') ::: type') $ \ a' ->
-    exp === (((p, var a') >-> \ x -> x ::: var a' |- elab (b x ::: type')) ::: type')
+    let' (elab (a ::: type') ::: pure type') $ \ a' ->
+    exp === (((p, var a') >-> \ x -> x ::: var a' |- elab (b x ::: type')) ::: pure type')
 
 deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
 
