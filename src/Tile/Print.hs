@@ -113,6 +113,17 @@ instance Applicative Highlight where
     Nest f   -> f <$> a
 
 
+data Ctx
+  = Var
+  | Let
+  | Lam
+  | Type
+  | Pi
+  | Exists
+  | Equate
+  deriving (Eq, Ord, Show)
+
+
 kw :: Doc (Highlight Int) doc => String -> doc
 kw = annotate Keyword . pretty
 
