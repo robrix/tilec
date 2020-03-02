@@ -81,13 +81,10 @@ instance Lam Int (Print Inner) where
     prec (Level 0) (group (align (op "\\" <+> lhs <+> op "." </> pure b')))
   -- FIXME: combine successive applications for purposes of wrapping
 
-  f $$ a = do
-    f' <- f
-    a' <- a
-    pure (prec (Level 10) (f' <+> prec (Level 11) a'))
+  f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
 
 instance Type Int (Print Inner) where
-  type' = pure (annotate Type (pretty "Type"))
+  type' = annotate Type (pretty "Type")
 
   (p, t) >-> b = do
     (lhs, b') <- case p of
