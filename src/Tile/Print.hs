@@ -70,14 +70,14 @@ instance Let Int (Print Inner) where
   let' (tm ::: ty) b = do
     (lhs, b') <- bind b prettyVar (pretty '_')
     -- FIXME: bind variables on the lhs when tm is a lambda
-    group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm))) </> align (group (align (op ":" <+> ty))) </> kw "in" <+> pure b'))
+    group (align (kw "let" <+> lhs <+> align (group (align (op "=" <+> tm))) </> align (group (align (op ":" <+> ty))) </> kw "in" <+> b'))
 
 instance Lam Int (Print Inner) where
   lam p b  = do
     let wrap = case p of { Im -> braces ; _ -> id }
     (lhs, b') <- bind b (wrap . prettyVar) (wrap (pretty '_'))
     -- FIXME: combine successive lambdas into a single \ … . …
-    prec (Level 0) (group (align (op "\\" <+> lhs <+> op "." </> pure b')))
+    prec (Level 0) (group (align (op "\\" <+> lhs <+> op "." </> b')))
 
   -- FIXME: combine successive applications for purposes of wrapping
   f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
@@ -88,12 +88,12 @@ instance Type Int (Print Inner) where
   (p, t) >-> b = do
     let (wrapN, wrap0) = case p of { Im -> (braces, braces) ; _ -> (parens, prec (Level 1)) }
     (lhs, b') <- bind b (\ v -> wrapN (prettyVar v <+> op ":" <+> t)) (wrap0 t)
-    prec (Level 0) (group (lhs </> op "→" <+> pure b'))
+    prec (Level 0) (group (lhs </> op "→" <+> b'))
 
 instance Prob Int (Print Inner) where
   ex t b = do
     (lhs, b') <- bind b prettyVar (pretty '_')
-    prec (Level 0) (group (pretty '∃' <+> lhs </> group (align (op ":" <+> t)) </> group (align (op "." <+> pure b'))))
+    prec (Level 0) (group (pretty '∃' <+> lhs </> group (align (op ":" <+> t)) </> group (align (op "." <+> b'))))
 
   (tm1 ::: ty1) === (tm2 ::: ty2) =
     prec (Level 4) (group (tm1 <+> op ":" <+> ty1 <+> op "≡" <+> tm2 <+> op ":" <+> ty2))
@@ -127,11 +127,11 @@ prettyVar i = annotate Var (pretty (alphabet !! r) <> if q > 0 then pretty q els
   (q, r) = i `divMod` 26
   alphabet = ['a'..'z']
 
-bind :: (Int -> Print a) -> (Int -> Print Inner) -> Print Inner -> Print (Print Inner, a)
+bind :: (Int -> Print a) -> (Int -> Print Inner) -> Print Inner -> Print (Print Inner, Print a)
 bind b used unused = Print $ do
   v <- fresh
   (fvs, b') <- listen @IntSet.IntSet (runPrint (b v))
-  pure (if v `IntSet.member` fvs then used v else unused, b')
+  pure (if v `IntSet.member` fvs then used v else unused, pure b')
 
 toDoc :: Print Inner -> PP.Doc (Highlight Int)
 toDoc (Print m) = rainbow (runPrec (snd (run (runWriter (evalFresh 0 (getAp m))))) (Level 0))
