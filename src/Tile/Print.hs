@@ -83,7 +83,7 @@ instance Lam Int (Print Inner) where
   f $$ a = prec (Level 10) (f <+> prec (Level 11) a)
 
 instance Type Int (Print Inner) where
-  type' = annotate TypeName (pretty "Type")
+  type' = inContext Type (annotate TypeName (pretty "Type"))
 
   (p, t) >-> b = inContext Pi . bind b $ \ v b ->
     prec (Level 0) (group (maybe (wrap0 t) (wrapN . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b)) where
