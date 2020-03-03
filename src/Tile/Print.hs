@@ -84,7 +84,7 @@ instance Type Int (Print Inner) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
   (p, t) >-> b = inContext Pi . prec (Level 0) . bind b $ \ v b ->
-    maybe (plicit braces (prec (Level 1)) p t) (plicit braces parens p . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b
+    maybe (plicit braces (prec (Level 1)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b
 
 instance Prob Int (Print Inner) where
   ex t b = inContext Exists . prec (Level 0) . bind b $ \ v b ->
