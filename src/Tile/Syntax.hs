@@ -91,17 +91,17 @@ deriving instance Type v (m a) => Type v (ReaderT r m a)
 (-->) :: Type v expr => expr -> expr -> expr
 a --> b = (Ex, a) >-> const b
 
-infixr 0 -->
+infixr 1 -->
 
 (==>) :: Type v expr => expr -> (v -> expr) -> expr
 a ==> b = (Im, a) >-> b
 
-infixr 0 ==>
+infixr 1 ==>
 
 
 class Var v expr => Prob v expr where
   ex :: expr -> (v -> expr) -> expr
-  infixr 0 `ex`
+  infixr 1 `ex`
 
   (===) :: expr ::: expr -> expr ::: expr -> expr
   infixl 4 ===

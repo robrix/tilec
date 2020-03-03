@@ -75,7 +75,7 @@ instance Let Int (Print Inner) where
     kw "let" <+> prettyBind v <+> group (align (prettyAnn (op "=" <+> tm ::: ty))) </> kw "in" <+> b
 
 instance Lam Int (Print Inner) where
-  lam p b = inContext Lam . prec (Level 0) . bind b $ \ v b ->
+  lam p b = inContext Lam . prec (Level 1) . bind b $ \ v b ->
     plicit braces id p (prettyBind v) </> b
 
   f $$ a = inContext App (prec (Level 10) (f </> prec (Level 11) a))
@@ -83,11 +83,11 @@ instance Lam Int (Print Inner) where
 instance Type Int (Print Inner) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
-  (p, t) >-> b = inContext Pi . prec (Level 0) . bind b $ \ v b ->
+  (p, t) >-> b = inContext Pi . prec (Level 1) . bind b $ \ v b ->
     maybe (plicit braces (prec (Level 1)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b
 
 instance Prob Int (Print Inner) where
-  ex t b = inContext Exists . prec (Level 0) . bind b $ \ v b ->
+  ex t b = inContext Exists . prec (Level 1) . bind b $ \ v b ->
     group (align (pretty '∃' <+> group (align (prettyAnn (prettyBind v ::: t))) </> group (align (op "." <+> b))))
 
   t1 === t2 = inContext Equate (prec (Level 4) (align (group (prettyAnn t1) </> op "≡" </> group (prettyAnn t2))))
