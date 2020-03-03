@@ -51,7 +51,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     exp === (($$) <$> elab (f ::: (var _A --> var _B)) <*> elab (a ::: var _A) ::: pure (var _B))
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
-  type' = check (=== (pure type' ::: pure type'))
+  type' = pure type'
 
   (p, a) >-> b = check $ \ exp ->
     let' (elab (a ::: type') ::: pure type') $ \ a' ->
