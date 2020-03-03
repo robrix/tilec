@@ -43,7 +43,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
   lam p b = check $ \ exp ->
     type' `ex` \ _A ->
     (var _A --> type') `ex` \ _B ->
-    exp === (Elab (lam p (\ x -> let Elab m = x ::: var _A |- elab (b x ::: var _B $$ var x) in m)) ::: ((p, var _A) >-> \ x -> var _B $$ var x))
+    exp === (Elab (lam p (\ x -> runElabC (x ::: var _A |- elab (b x ::: var _B $$ var x)))) ::: ((p, var _A) >-> \ x -> var _B $$ var x))
 
   f $$ a = check $ \ exp ->
     type' `ex` \ _A ->
@@ -55,7 +55,7 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
 
   (p, a) >-> b = check $ \ exp ->
     let' (elab (a ::: type') ::: pure type') $ \ a' ->
-    exp === (Elab ((p, var a') >-> \ x -> let Elab m = x ::: var a' |- elab (b x ::: type') in m) ::: pure type')
+    exp === (Elab ((p, var a') >-> \ x -> runElabC (x ::: var a' |- elab (b x ::: type'))) ::: pure type')
 
 deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
 
@@ -76,7 +76,7 @@ typeOf n = Elab (asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure)
 infixl 0 |-
 
 check :: Prob v t => (Elab v t t ::: Elab v t t -> Elab v t t) -> Elab v t t
-check f = Elab $ ask `ex` \ v -> let Elab m = f (pure (var v) ::: Elab ask) in m
+check f = Elab $ ask `ex` runElabC . \ v -> f (pure (var v) ::: Elab ask)
 
 
 runScript :: (a -> t) -> Script t a -> t
