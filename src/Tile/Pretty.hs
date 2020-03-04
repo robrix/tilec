@@ -166,6 +166,7 @@ newtype Level = Level Int
 
 class Doc ann doc => PrecDoc ann doc where
   prec :: Level -> doc -> doc
+  reset :: Level -> doc -> doc
 
 
 rainbow :: Rainbow doc -> doc
@@ -193,6 +194,7 @@ instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) whe
 
 instance (PrecDoc (ann Int) doc, Applicative ann) => PrecDoc (ann Int) (Rainbow doc) where
   prec = fmap . prec
+  reset = fmap . reset
 
 
 newtype Prec a = Prec { runPrec :: Level -> a }
@@ -219,6 +221,8 @@ instance Doc ann doc => Doc ann (Prec doc) where
 
 instance Doc ann doc => PrecDoc ann (Prec doc) where
   prec l (Prec d) = Prec $ \ l' -> parensIf (l' > l) (d l)
+  reset l (Prec d) = Prec $ \ _ -> d l
 
 instance (Applicative f, PrecDoc ann a) => PrecDoc ann (Ap f a) where
   prec = fmap . prec
+  reset = fmap . reset
