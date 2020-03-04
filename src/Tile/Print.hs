@@ -41,7 +41,7 @@ defaultStyle = \case
   Op       -> ANSI.color ANSI.Cyan
   TypeName -> ANSI.color ANSI.Yellow
   Keyword  -> ANSI.color ANSI.Magenta
-  MetaVar  -> ANSI.colorDull ANSI.Black
+  MetaVar  -> ANSI.colorDull ANSI.Black <> ANSI.bold
   Error    -> ANSI.color ANSI.Red
   Nest i   -> colours !! (i `mod` len)
   where
