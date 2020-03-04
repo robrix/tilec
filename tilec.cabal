@@ -44,6 +44,7 @@ library
     Tile.Pretty
     Tile.Print
     Tile.Reconstruct
+    Tile.Solve
     Tile.Syntax
     Tile.Term
     Tile.Type
