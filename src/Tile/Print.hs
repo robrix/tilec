@@ -94,7 +94,7 @@ instance Type V (Print Inner) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
   (p, t) >-> b = prec (Level 6) . inContext Pi . bind b $ \ v b ->
-    group (align (maybe (plicit braces (prec (Level 6)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . pure . vdoc) v </> op "→" <+> b))
+    group (align (maybe (plicit braces (prec (Level 7)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . pure . vdoc) v </> op "→" <+> b))
 
 instance Prob V (Print Inner) where
   ex t b = prec (Level 6) . inContext Exists . bind b $ \ v b ->
