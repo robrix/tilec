@@ -1,2 +1,5 @@
 module Tile.Solve
-() where
+( Solve(..)
+) where
+
+newtype Solve v t = Solve { runSolve :: t }
