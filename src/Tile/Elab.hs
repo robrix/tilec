@@ -79,8 +79,8 @@ deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
 deriving instance Err t => Err (Elab v t t)
 
 
-typeOf :: (Ord v, Show v, Err t) => v -> Elab v t t
-typeOf n = Elab (asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure)
+typeOf :: (Ord v, Show v, Err t) => Map v t -> v -> t
+typeOf ctx n = fromMaybe (err ("free variable: " <> show n)) (ctx !? n)
 
 (|-) :: Map v t -> Elab v t t ::: t -> t
 ctx |- b ::: t = elab (ctx :|-: b ::: t)
