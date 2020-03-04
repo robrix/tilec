@@ -62,11 +62,9 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
   type' = Elab $ \ _ _ -> type'
 
-  (p, a) >-> b = check $ \ exp ctx ->
-    let' ((ctx |- a ::: type') ::: type') $ \ a' ->
-    exp
-    ===
-    (   (p, var a') >-> (\ x -> ctx |> x ::: var a' |- b x ::: type')
+  (p, a) >-> b = check' $ \ ctx -> pure
+    (   let' ((ctx |- a ::: type') ::: type') (\ a' ->
+        (p, var a') >-> \ x -> ctx |> x ::: var a' |- b x ::: type')
     ::: type')
 
 deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
