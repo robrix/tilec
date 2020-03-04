@@ -38,10 +38,10 @@ instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
   let' (v ::: t) b = check $ \ ctx -> do
     _B <- meta type'
+    t' <- letbind ((ctx |- t ::: type')  ::: type')
     pure
-      (   let' ((ctx |- t ::: type')  ::: type')  (\ t' ->
-          let' ((ctx |- v ::: var t') ::: var t') (\ x ->
-            ctx |> x ::: var t' |- b x ::: var _B))
+      (   let' ((ctx |- v ::: var t') ::: var t') (\ x ->
+            ctx |> x ::: var t' |- b x ::: var _B)
       ::: var _B)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
