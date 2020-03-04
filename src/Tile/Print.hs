@@ -83,11 +83,11 @@ instance Lam Int (Print Inner) where
 instance Type Int (Print Inner) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
-  (p, t) >-> b = inContext Pi . prec (Level 1) . bind b $ \ v b ->
-    group (align (maybe (plicit braces (prec (Level 1)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b))
+  (p, t) >-> b = inContext Pi . prec (Level 3) . bind b $ \ v b ->
+    group (align (maybe (plicit braces (prec (Level 3)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b))
 
 instance Prob Int (Print Inner) where
-  ex t b = inContext Exists . prec (Level 1) . bind b $ \ v b ->
+  ex t b = inContext Exists . prec (Level 3) . bind b $ \ v b ->
     group (align (pretty '∃' <+> group (align (prettyAnn (prettyBind v ::: t))) <+> op "." </> b))
 
   t1 === t2 = inContext Equate (prec (Level 4) (align (group (prettyAnn t1) </> op "≡" </> group (prettyAnn t2))))
@@ -166,7 +166,7 @@ prettyVar i = annotate Name (pretty (alphabet !! r) <> if q > 0 then pretty q el
   alphabet = ['a'..'z']
 
 prettyAnn :: PrecDoc (Highlight Int) doc => doc ::: doc -> doc
-prettyAnn (tm ::: ty) = prec (Level 1) (tm </> group (align (op ":" <+> ty)))
+prettyAnn (tm ::: ty) = prec (Level 2) (tm </> group (align (op ":" <+> ty)))
 
 bind :: (Int -> Print a) -> (Maybe Int -> Print a -> Print b) -> Print b
 bind b f = Print $ do
