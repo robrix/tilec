@@ -60,7 +60,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
       ::: var _B)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
-  type' = Elab $ \ _ _ -> type'
+  type' = check (const (pure (type' ::: type')))
 
   (p, a) >-> b = check $ \ ctx -> pure
     (   let' ((ctx |- a ::: type') ::: type') (\ a' ->
