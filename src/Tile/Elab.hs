@@ -91,8 +91,8 @@ elab (Elab m ::: t) = Elab (local (const t) m)
 typeOf :: (Ord v, Show v, Err t) => v -> Elab v t t
 typeOf n = Elab (asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure)
 
-(|-) :: Ord v => v ::: t -> Elab v t t -> Elab v t t
-v |- Elab b = Elab (local (|> v) b)
+(|-) :: Map v t -> Elab v t t ::: t -> t
+ctx |- b ::: t = runElab (ctx :|-: b ::: t)
 
 infixl 1 |-
 
