@@ -24,4 +24,4 @@ instance Bitraversable (:::) where
 instance Show a => Show1 ((:::) a) where
   liftShowsPrec sp _ p (a ::: b) = showParen (p > 1) $ shows a . showString " ::: " . sp 2 b
 
-infix 1 :::
+infix 2 :::
