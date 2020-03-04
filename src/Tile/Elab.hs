@@ -62,10 +62,11 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
   type' = check (const (pure (type' ::: type')))
 
-  (p, a) >-> b = check $ \ ctx -> pure
-    (   let' ((ctx |- a ::: type') ::: type') (\ a' ->
-        (p, var a') >-> \ x -> ctx |> x ::: var a' |- b x ::: type')
-    ::: type')
+  (p, a) >-> b = check $ \ ctx -> do
+    a' <- letbind ((ctx |- a ::: type') ::: type')
+    pure
+      (   (p, var a') >-> (\ x -> ctx |> x ::: var a' |- b x ::: type')
+      ::: type')
 
 deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
 
