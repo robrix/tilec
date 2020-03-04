@@ -2,7 +2,6 @@
 {-# LANGUAGE TypeOperators #-}
 module Tile.Type
 ( (:::)(..)
-, term_
 ) where
 
 import Data.Bifoldable
@@ -26,6 +25,3 @@ instance Show a => Show1 ((:::) a) where
   liftShowsPrec sp _ p (a ::: b) = showParen (p > 1) $ shows a . showString " ::: " . sp 2 b
 
 infixl 1 :::
-
-term_ :: a ::: b -> a
-term_ (a ::: _) = a
