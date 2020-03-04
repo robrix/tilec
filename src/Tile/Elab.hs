@@ -60,7 +60,20 @@ instance (Ord v, Let v t, Prob v t, Type v t, Err v t) => Type v (Elab v t) wher
       (   (p, var a') >-> (\ x -> ctx |> x ::: var a' |- b x ::: type')
       ::: type')
 
-deriving instance (Ord v, Prob v t, Err v t) => Prob v (Elab v t)
+instance (Ord v, Let v t, Prob v t, Type v t, Err v t) => Prob v (Elab v t) where
+  t `ex` b = check $ \ ctx -> do
+    _B <- meta type'
+    t' <- letbind ((ctx |- t ::: type') ::: type')
+    pure
+      (   var t' `ex` (\ x -> ctx |> x ::: var t' |- b x ::: var _B)
+      ::: var _B)
+
+  m1 ::: t1 === m2 ::: t2 = check $ \ ctx -> do
+    t1' <- letbind ((ctx |- t1 ::: type') ::: type')
+    t2' <- letbind ((ctx |- t2 ::: type') ::: type')
+    pure
+      (   ((ctx |- m1 ::: var t1') ::: var t1' === (ctx |- m2 ::: var t2') ::: var t2')
+      ::: (var t1' ::: type' === var t2' ::: type'))
 
 deriving instance Err v t => Err v (Elab v t)
 
