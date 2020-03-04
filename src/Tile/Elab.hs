@@ -12,7 +12,7 @@
 -- * Typed Tagless Final Interpreters, Oleg Kiselyov
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module Tile.Elab
-( runElab
+( elab
 , Elab(..)
 , runScript
 , Script(..)
@@ -28,8 +28,8 @@ import Data.Maybe (fromMaybe)
 import Tile.Context
 import Tile.Syntax
 
-runElab :: Map v t :|-: Elab v t t ::: t -> t
-runElab (ctx :|-: Elab m ::: t) = runReader t m ctx
+elab :: Map v t :|-: Elab v t t ::: t -> t
+elab (ctx :|-: Elab m ::: t) = runReader t m ctx
 
 newtype Elab v t a = Elab { runElabC :: ReaderC t ((->) (Map v t)) a }
   deriving (Applicative, Functor)
@@ -88,7 +88,7 @@ typeOf :: (Ord v, Show v, Err t) => v -> Elab v t t
 typeOf n = Elab (asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure)
 
 (|-) :: Map v t -> Elab v t t ::: t -> t
-ctx |- b ::: t = runElab (ctx :|-: b ::: t)
+ctx |- b ::: t = elab (ctx :|-: b ::: t)
 
 infixl 1 |-
 
