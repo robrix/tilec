@@ -138,7 +138,7 @@ instance Err (Term v v) where
   err = Err
 
 infixl 9 :$
-infixr 0 :->
+infixr 6 :->
 infixl 4 :===:
 
 interpret :: (Let v t, Lam v t, Type v t, Prob v t, Err t) => Term v v -> t
