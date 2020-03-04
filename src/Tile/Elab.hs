@@ -14,7 +14,6 @@
 module Tile.Elab
 ( runElab
 , Elab(..)
-, elab
 , runScript
 , Script(..)
 , meta
@@ -84,9 +83,6 @@ deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
 
 deriving instance Err t => Err (Elab v t t)
 
-
-elab :: Elab v t b ::: t -> Elab v t b
-elab (Elab m ::: t) = Elab (local (const t) m)
 
 typeOf :: (Ord v, Show v, Err t) => v -> Elab v t t
 typeOf n = Elab (asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure)
