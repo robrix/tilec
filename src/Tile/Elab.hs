@@ -10,22 +10,17 @@
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module Tile.Elab
 ( (|-)
-, elab
 , Elab(..)
 ) where
 
 import Data.Map
 import Data.Maybe (fromMaybe)
-import Tile.Context
 import Tile.Syntax
 
 (|-) :: Map v t -> Elab v t ::: t -> t
 ctx |- (Elab m ::: t) = m t ctx
 
 infixl 1 |-
-
-elab :: Map v t :|-: Elab v t ::: t -> t
-elab (ctx :|-: Elab m ::: t) = m t ctx
 
 newtype Elab v t = Elab { runElabC :: t -> Map v t -> t }
 
