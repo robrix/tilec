@@ -36,14 +36,13 @@ instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
   var n = check' $ \ ctx -> pure (var n ::: typeOf ctx n)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
-  let' (v ::: t) b = check $ \ exp ctx ->
-    type' `ex` \ _B ->
-    exp
-    ===
-    (   let' ((ctx |- t ::: type')  ::: type')  (\ t' ->
-        let' ((ctx |- v ::: var t') ::: var t') (\ x ->
-          ctx |> x ::: var t' |- b x ::: var _B))
-    ::: var _B)
+  let' (v ::: t) b = check' $ \ ctx -> do
+    _B <- meta type'
+    pure
+      (   let' ((ctx |- t ::: type')  ::: type')  (\ t' ->
+          let' ((ctx |- v ::: var t') ::: var t') (\ x ->
+            ctx |> x ::: var t' |- b x ::: var _B))
+      ::: var _B)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
   lam p b = check' $ \ ctx -> do
