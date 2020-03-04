@@ -24,15 +24,14 @@ module Tile.Elab
 
 import Control.Carrier.Reader
 import Control.Monad (ap)
-import Data.Functor.Identity
 import Data.Map
 import Tile.Context
 import Tile.Syntax
 
 runElab :: Map v t :|-: Elab v t t ::: t -> t
-runElab (ctx :|-: Elab m ::: t) = run (runReader ctx (runReader t m))
+runElab (ctx :|-: Elab m ::: t) = runReader t m ctx
 
-newtype Elab v t a = Elab { runElabC :: ReaderC t (ReaderC (Map v t) Identity) a }
+newtype Elab v t a = Elab { runElabC :: ReaderC t ((->) (Map v t)) a }
   deriving (Applicative, Functor)
 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
