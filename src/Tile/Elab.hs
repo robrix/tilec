@@ -21,7 +21,6 @@ module Tile.Elab
 , letbind
 ) where
 
-import Control.Carrier.Reader
 import Control.Monad (ap)
 import Data.Map
 import Data.Maybe (fromMaybe)
@@ -29,9 +28,9 @@ import Tile.Context
 import Tile.Syntax
 
 elab :: Map v t :|-: Elab v t t ::: t -> t
-elab (ctx :|-: Elab m ::: t) = runReader t m ctx
+elab (ctx :|-: Elab m ::: t) = m t ctx
 
-newtype Elab v t a = Elab { runElabC :: ReaderC t ((->) (Map v t)) a }
+newtype Elab v t a = Elab { runElabC :: t -> Map v t -> a }
 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
   var n = check $ \ ctx exp ->
@@ -67,7 +66,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     ::: var _B)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
-  type' = Elab . ReaderC $ \ _ _ -> type'
+  type' = Elab $ \ _ _ -> type'
 
   (p, a) >-> b = check $ \ ctx exp ->
     let' ((ctx |- a ::: type') ::: type') $ \ a' ->
@@ -95,7 +94,7 @@ ctx |> v ::: t = insert v t ctx
 infixl 1 |>
 
 check :: Prob v t => (Map v t -> t ::: t -> t) -> Elab v t t
-check f = Elab . ReaderC $ \ ty ctx -> ty `ex` \ res -> f ctx (var res ::: ty)
+check f = Elab $ \ ty ctx -> ty `ex` \ res -> f ctx (var res ::: ty)
 
 
 runScript :: (a -> t) -> Script t a -> t
