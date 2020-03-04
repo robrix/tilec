@@ -25,6 +25,7 @@ module Tile.Elab
 import Control.Carrier.Reader
 import Control.Monad (ap)
 import Data.Map
+import Data.Maybe (fromMaybe)
 import Tile.Context
 import Tile.Syntax
 
@@ -35,7 +36,11 @@ newtype Elab v t a = Elab { runElabC :: ReaderC t ((->) (Map v t)) a }
   deriving (Applicative, Functor)
 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
-  var n = check (=== (pure (var n) ::: typeOf n))
+  var n = Elab . ReaderC $ \ ty ctx ->
+    ty `ex` \ res ->
+    (var res ::: ty)
+    ===
+    (var n ::: fromMaybe (err ("free variable: " <> show n)) (ctx !? n))
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
   let' (v ::: t) b = Elab . ReaderC $ \ ty ctx ->
