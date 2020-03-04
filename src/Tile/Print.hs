@@ -41,6 +41,7 @@ defaultStyle = \case
   Op       -> ANSI.color ANSI.Cyan
   TypeName -> ANSI.color ANSI.Yellow
   Keyword  -> ANSI.color ANSI.Magenta
+  MetaVar  -> ANSI.colorDull ANSI.Black
   Error    -> ANSI.color ANSI.Red
   Nest i   -> colours !! (i `mod` len)
   where
@@ -111,6 +112,7 @@ data Highlight a
   | Op
   | TypeName
   | Keyword
+  | MetaVar
   | Error
   | Nest a
   deriving (Eq, Functor, Ord, Show)
@@ -122,6 +124,7 @@ instance Applicative Highlight where
     Op       -> Op
     TypeName -> TypeName
     Keyword  -> Keyword
+    MetaVar  -> MetaVar
     Error    -> Error
     Nest f   -> f <$> a
 
