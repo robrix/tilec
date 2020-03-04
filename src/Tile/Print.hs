@@ -20,6 +20,7 @@ import           Control.Carrier.State.Strict
 import           Control.Carrier.Writer.Strict
 import           Control.Monad (guard)
 import           Control.Monad.IO.Class
+import           Data.Function (on)
 import           Data.Functor.Identity
 import qualified Data.IntSet as IntSet
 import           Data.Monoid (Ap(..))
@@ -61,6 +62,8 @@ data V = V
   { vvar :: {-# UNPACK #-} !Int
   , vdoc :: !Inner
   }
+
+instance Eq V where (==) = (==) `on` vvar
 
 newtype Print a = Print { runPrint :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
