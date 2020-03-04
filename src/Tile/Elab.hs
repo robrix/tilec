@@ -20,7 +20,7 @@ import Tile.Context
 import Tile.Syntax
 
 (|-) :: Map v t -> Elab v t ::: t -> t
-ctx |- (b ::: t) = elab (ctx :|-: b ::: t)
+ctx |- (Elab m ::: t) = m t ctx
 
 infixl 1 |-
 
