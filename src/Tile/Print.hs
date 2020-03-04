@@ -97,8 +97,9 @@ instance Type V (Print Inner) where
     group (align (maybe (plicit braces (prec (Level 7)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . pure . vdoc) v </> op "→" <+> b))
 
 instance Prob V (Print Inner) where
-  ex t b = prec (Level 6) . inContext Exists . bind b $ \ v b ->
-    group (align (pretty '∃' <+> group (align (reset (Level 0) (prettyAnn (prettyBind v ::: t)))) <+> op "." </> reset (Level 0) b))
+  ex t b = prec (Level 6) . inContext Exists . bind (b . toMeta) $ \ v b ->
+    group (align (pretty '∃' <+> group (align (reset (Level 0) (prettyAnn (prettyBind (toMeta <$> v) ::: t)))) <+> op "." </> reset (Level 0) b)) where
+    toMeta v = v { vdoc = pretty '?' <> vdoc v }
 
   t1 === t2 = prec (Level 4) (inContext Equate (group (align (flatAlt (space <> space) mempty <> prec (Level 5) (prettyAnn t1) </> op "≡" <+> prec (Level 5) (prettyAnn t2)))))
 
