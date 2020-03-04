@@ -102,7 +102,7 @@ instance Prob V (Print Inner) where
 
   t1 === t2 = prec (Level 4) (inContext Equate (group (align (flatAlt (space <> space) mempty <> prec (Level 5) (prettyAnn t1) </> op "≡" <+> prec (Level 5) (prettyAnn t2)))))
 
-instance Err (Print Inner) where
+instance Err V (Print Inner) where
   err s = annotate Error (pretty "error") <> pretty ':' <+> pretty s
 
 data Highlight a

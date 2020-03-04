@@ -134,14 +134,14 @@ instance Prob v (Term v v) where
   ex = E
   (===) = (:===:)
 
-instance Err (Term v v) where
+instance Err v (Term v v) where
   err = Err
 
 infixl 9 :$
 infixr 6 :->
 infixl 4 :===:
 
-interpret :: (Let v t, Lam v t, Type v t, Prob v t, Err t) => Term v v -> t
+interpret :: (Let v t, Lam v t, Type v t, Prob v t, Err v t) => Term v v -> t
 interpret = \case
   Var v       -> var v
   Let v b     -> let' (bimap interpret interpret v) (interpret . b)

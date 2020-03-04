@@ -126,17 +126,17 @@ deriving instance Prob v (m a) => Prob v (ReaderC r m a)
 deriving instance Prob v (m a) => Prob v (ReaderT r m a)
 
 
-class Err expr where
+class Err v expr | expr -> v where
   err :: String -> expr
 
-deriving instance Err t => Err (Identity t)
-deriving instance Err t => Err (Const t a)
+deriving instance Err v t => Err v (Identity t)
+deriving instance Err v t => Err v (Const t a)
 
-instance Err t => Err (r -> t) where
+instance Err v t => Err v (r -> t) where
   err = const . err
 
-deriving instance Err (m a) => Err (ReaderC r m a)
-deriving instance Err (m a) => Err (ReaderT r m a)
+deriving instance Err v (m a) => Err v (ReaderC r m a)
+deriving instance Err v (m a) => Err v (ReaderT r m a)
 
 
 class Def tm ty a def | def -> tm ty where
