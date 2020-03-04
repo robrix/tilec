@@ -1,2 +1,6 @@
 module Tile.Error
-() where
+( Error(..)
+) where
+
+newtype Error v
+  = FreeVariable v
