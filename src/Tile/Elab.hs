@@ -97,8 +97,8 @@ ctx |> v ::: t = insert v t ctx
 
 infixl 1 |>
 
-check :: Prob v t => (Elab v t t ::: Elab v t t -> Elab v t t) -> Elab v t t
-check f = Elab $ ask `ex` runElabC . \ v -> f (pure (var v) ::: Elab ask)
+check :: Prob v t => (Map v t -> t ::: t -> t) -> Elab v t t
+check f = Elab . ReaderC $ \ ty ctx -> ty `ex` \ res -> f ctx (var res ::: ty)
 
 
 runScript :: (a -> t) -> Script t a -> t
