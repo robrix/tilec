@@ -32,7 +32,7 @@ runElab :: Elab v t t ::: t -> t
 runElab (Elab m ::: t) = run (runReader empty (runReader t m))
 
 newtype Elab v t a = Elab { runElabC :: ReaderC t (ReaderC (Map v t) Identity) a }
-  deriving (Applicative, Functor, Monad)
+  deriving (Applicative, Functor)
 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
   var n = check (=== (pure (var n) ::: typeOf n))
