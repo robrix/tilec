@@ -38,7 +38,7 @@ instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
   var n = check $ \ ctx exp ->
     exp
     ===
-    (var n ::: fromMaybe (err ("free variable: " <> show n)) (ctx !? n))
+    (var n ::: typeOf ctx n)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
   let' (v ::: t) b = check $ \ ctx exp ->
