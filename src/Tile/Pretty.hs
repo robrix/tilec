@@ -188,9 +188,12 @@ instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) whe
 
   flatAlt = liftA2 flatAlt
 
-  parens   (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '(') <> run (1 + l) <> annotate (pure l) (pretty ')')
-  brackets (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '[') <> run (1 + l) <> annotate (pure l) (pretty ']')
-  braces   (Rainbow run) = Rainbow $ \ l -> annotate (pure l) (pretty '{') <> run (1 + l) <> annotate (pure l) (pretty '}')
+  parens   = nestRainbow (pretty '(') (pretty ')')
+  brackets = nestRainbow (pretty '[') (pretty ']')
+  braces   = nestRainbow (pretty '{') (pretty '}')
+
+nestRainbow :: (Doc (ann Int) doc, Applicative ann) => doc -> doc -> Rainbow doc -> Rainbow doc
+nestRainbow l r (Rainbow run) = Rainbow $ \ lv -> annotate (pure lv) l <> run (1 + lv) <> annotate (pure lv) r
 
 instance (PrecDoc (ann Int) doc, Applicative ann) => PrecDoc (ann Int) (Rainbow doc) where
   prec = fmap . prec
