@@ -1,0 +1,21 @@
+# syntax
+- fixity: "infixl 9 $$"
+- fixity: "infixr 6 >->"
+- fixity: "infixr 6 -->"
+- fixity: "infixr 6 ==>"
+- fixity: "infixr 6 `ex`"
+- fixity: "infixl 4 ==="
+
+# utils
+- fixity: "infix 5 :::"
+- fixity: "infix 1 :|-:"
+
+# elaboration
+- fixity: "infixl 1 |-"
+- fixity: "infixl 1 |>"
+
+# pretty-printing
+- fixity: "infixr 6 <+>"
+- fixity: "infixr 6 </>"
+
+- ignore: {name: Reduce duplication}
