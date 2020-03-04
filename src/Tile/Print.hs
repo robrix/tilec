@@ -76,27 +76,27 @@ deriving instance PrecDoc (Highlight Int) (Print Inner)
 instance Show (Print Inner) where
   showsPrec p = showsPrec p . toDoc
 
-instance Var Int (Print Inner) where
-  var a = inContext Var (Print (prettyVar a <$ tell (IntSet.singleton a)))
+instance Var V (Print Inner) where
+  var v = inContext Var (Print (vdoc v <$ tell (IntSet.singleton (vvar v))))
 
-instance Let Int (Print Inner) where
+instance Let V (Print Inner) where
   let' (tm ::: ty) b = inContext Let . bind b $ \ v b ->
     -- FIXME: bind variables on the lhs when tm is a lambda
     kw "let" <+> prettyBind v <+> group (align (prettyAnn (op "=" <+> tm ::: ty))) <+> kw "in" </> b
 
-instance Lam Int (Print Inner) where
+instance Lam V (Print Inner) where
   lam p b = prec (Level 6) . inContext Lam . bind b $ \ v b ->
     plicit braces id p (prettyBind v) <+> b
 
   f $$ a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
 
-instance Type Int (Print Inner) where
+instance Type V (Print Inner) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
   (p, t) >-> b = prec (Level 6) . inContext Pi . bind b $ \ v b ->
-    group (align (maybe (plicit braces (prec (Level 6)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b))
+    group (align (maybe (plicit braces (prec (Level 6)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . pure . vdoc) v </> op "→" <+> b))
 
-instance Prob Int (Print Inner) where
+instance Prob V (Print Inner) where
   ex t b = prec (Level 6) . inContext Exists . bind b $ \ v b ->
     group (align (pretty '∃' <+> group (align (reset (Level 0) (prettyAnn (prettyBind v ::: t)))) <+> op "." </> reset (Level 0) b))
 
@@ -167,8 +167,8 @@ kw = annotate Keyword . pretty
 op :: Doc (Highlight Int) doc => String -> doc
 op = annotate Op . pretty
 
-prettyBind :: Doc (Highlight Int) doc => Maybe Int -> doc
-prettyBind = maybe (pretty '_') prettyVar
+prettyBind :: Maybe V -> Print Inner
+prettyBind = maybe (pretty '_') (pure . vdoc)
 
 prettyVar :: Doc (Highlight Int) doc => Int -> doc
 prettyVar i = annotate Name (pretty (alphabet !! r) <> if q > 0 then pretty q else mempty) where
@@ -178,11 +178,12 @@ prettyVar i = annotate Name (pretty (alphabet !! r) <> if q > 0 then pretty q el
 prettyAnn :: PrecDoc (Highlight Int) doc => doc ::: doc -> doc
 prettyAnn (tm ::: ty) = group (prec (Level 6) tm </> group (align (op ":" <+> prec (Level 6) ty)))
 
-bind :: (Int -> Print a) -> (Maybe Int -> Print a -> Print b) -> Print b
+bind :: (V -> Print a) -> (Maybe V -> Print a -> Print b) -> Print b
 bind b f = Print $ do
   v <- fresh
-  (fvs, b') <- censor (IntSet.delete v) (listen (runPrint (b v)))
-  runPrint (f (v <$ guard (v `IntSet.member` fvs)) (pure b'))
+  let v' = V v (prettyVar v)
+  (fvs, b') <- censor (IntSet.delete v) (listen (runPrint (b v')))
+  runPrint (f (v' <$ guard (v `IntSet.member` fvs)) (pure b'))
 
 toDoc :: Print Inner -> PP.Doc (Highlight Int)
 toDoc (Print m) = rainbow (runPrec (snd (run (runWriter (evalFresh 0 (evalState Nothing (getAp m)))))) (Level 0))
