@@ -68,12 +68,12 @@ typeOf :: (Ord v, Show v, Err v t) => Map v t -> v -> t
 typeOf ctx n = fromMaybe (err ("free variable: " <> show n)) (ctx !? n)
 
 (|-) :: Map v t -> Elab v t t ::: t -> t
-ctx |- b ::: t = elab (ctx :|-: b ::: t)
+ctx |- (b ::: t) = elab (ctx :|-: b ::: t)
 
 infixl 1 |-
 
 (|>) :: Ord v => Map v t -> v ::: t -> Map v t
-ctx |> v ::: t = insert v t ctx
+ctx |> (v ::: t) = insert v t ctx
 
 infixl 1 |>
 
