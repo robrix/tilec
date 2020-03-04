@@ -72,8 +72,10 @@ instance (Ord v, Let v t, Prob v t, Type v t, Err v t) => Prob v (Elab v t) wher
     t1' <- letbind ((ctx |- t1 ::: type') ::: type')
     t2' <- letbind ((ctx |- t2 ::: type') ::: type')
     pure
-      (   ((ctx |- m1 ::: var t1') ::: var t1' === (ctx |- m2 ::: var t2') ::: var t2')
-      ::: (var t1' ::: type' === var t2' ::: type'))
+      (   (   (ctx |- m1 ::: var t1') ::: var t1'
+          === (ctx |- m2 ::: var t2') ::: var t2')
+      ::: (   var t1' ::: type'
+          === var t2' ::: type'))
 
 deriving instance Err v t => Err v (Elab v t)
 
