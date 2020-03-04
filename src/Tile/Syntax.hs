@@ -75,7 +75,7 @@ class Var v expr => Type v expr where
   type' :: expr
 
   (>->) :: (Plicit, expr) -> (v -> expr) -> expr
-  infixr 0 >->
+  infixr 3 >->
 
 deriving instance Type v t => Type v (Identity t)
 deriving instance Type v t => Type v (Const t a)
@@ -91,17 +91,17 @@ deriving instance Type v (m a) => Type v (ReaderT r m a)
 (-->) :: Type v expr => expr -> expr -> expr
 a --> b = (Ex, a) >-> const b
 
-infixr 1 -->
+infixr 3 -->
 
 (==>) :: Type v expr => expr -> (v -> expr) -> expr
 a ==> b = (Im, a) >-> b
 
-infixr 1 ==>
+infixr 3 ==>
 
 
 class Var v expr => Prob v expr where
   ex :: expr -> (v -> expr) -> expr
-  infixr 1 `ex`
+  infixr 3 `ex`
 
   (===) :: expr ::: expr -> expr ::: expr -> expr
   infixl 4 ===
