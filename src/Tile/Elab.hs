@@ -96,6 +96,12 @@ infixl 1 |>
 check :: Prob v t => (t ::: t -> Map v t -> t) -> Elab v t t
 check f = Elab $ \ ty ctx -> ty `ex` \ res -> f (var res ::: ty) ctx
 
+check' :: Prob v t => (Map v t -> Script t (t ::: t)) -> Elab v t t
+check' f = Elab $ \ ty ctx -> runScript id $ do
+  exp <- meta ty
+  act <- f ctx
+  pure $! var exp ::: ty === act
+
 
 runScript :: (a -> t) -> Script t a -> t
 runScript k (Script r) = r k
