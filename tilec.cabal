@@ -38,6 +38,7 @@ library
   exposed-modules:
     Tile.Context
     Tile.Elab
+    Tile.Error
     Tile.Library
     Tile.Plicit
     Tile.Pretty
