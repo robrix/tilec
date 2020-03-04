@@ -68,10 +68,8 @@ elab (Elab m ::: t) = Elab (local (const t) m)
 typeOf :: (Ord v, Show v, Err t) => v -> Elab v t t
 typeOf n = Elab (asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure)
 
-(|-) :: Ord v => v ::: Elab v t t -> Elab v t t -> Elab v t t
-(a ::: Elab t) |- Elab b = Elab $ do
-  t' <- t
-  local (insert a t') b
+(|-) :: Ord v => v ::: t -> Elab v t t -> Elab v t t
+(a ::: t) |- Elab b = Elab (local (insert a t) b)
 
 infixl 0 |-
 
