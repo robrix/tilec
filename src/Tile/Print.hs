@@ -76,7 +76,7 @@ instance Let Int (Print Inner) where
 
 instance Lam Int (Print Inner) where
   lam p b = prec (Level 6) . inContext Lam . bind b $ \ v b ->
-    plicit braces id p (prettyBind v) </> b
+    plicit braces id p (prettyBind v) <+> b
 
   f $$ a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
 
@@ -137,7 +137,7 @@ transition from to = exit from . enter to where
     Just Equate -> group
     _ -> id
   exit = \case
-    Just Lam -> group . align . (op "." <+>) . reset (Level 0)
+    Just Lam -> (op "." </>) . reset (Level 0)
     _ -> id
 
 inContext :: Ctx -> Print Inner -> Print Inner
