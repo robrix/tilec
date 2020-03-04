@@ -166,7 +166,7 @@ prettyVar i = annotate Name (pretty (alphabet !! r) <> if q > 0 then pretty q el
   alphabet = ['a'..'z']
 
 prettyAnn :: PrecDoc (Highlight Int) doc => doc ::: doc -> doc
-prettyAnn (tm ::: ty) = group (tm </> group (align (op ":" <+> ty)))
+prettyAnn (tm ::: ty) = group (prec (Level 6) tm </> group (align (op ":" <+> prec (Level 6) ty)))
 
 bind :: (Int -> Print a) -> (Maybe Int -> Print a -> Print b) -> Print b
 bind b f = Print $ do
