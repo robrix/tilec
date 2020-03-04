@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -14,6 +15,12 @@ module Tile.Syntax
 , Prob(..)
 , Err(..)
 , Def(..)
+  -- * Elaborator scripts
+, runScript
+, Script(..)
+, meta
+, intro
+, letbind
   -- * Re-exports
 , (:::)(..)
 , Plicit(..)
@@ -21,6 +28,7 @@ module Tile.Syntax
 ) where
 
 import Control.Carrier.Reader
+import Control.Monad (ap)
 import Control.Monad.Trans.Reader
 import Data.Functor.Const
 import Data.Functor.Identity
@@ -137,3 +145,26 @@ class Def tm ty a def | def -> tm ty where
 
 -- FIXME: modules
 -- FIXME: packages
+
+
+runScript :: (a -> t) -> Script t a -> t
+runScript k (Script r) = r k
+
+newtype Script t a = Script ((a -> t) -> t)
+  deriving (Functor)
+
+instance Applicative (Script t) where
+  pure = Script . flip ($)
+  (<*>) = ap
+
+instance Monad (Script t) where
+  m >>= f = Script (\ k -> runScript (runScript k . f) m)
+
+meta :: Prob v t => t -> Script t v
+meta = Script . ex
+
+intro :: Lam v t => Script t v
+intro = Script (lam Ex)
+
+letbind :: Let v t => t ::: t -> Script t v
+letbind = Script . let'

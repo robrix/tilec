@@ -1,11 +1,8 @@
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE UndecidableInstances #-}
 -- | Elaboration, implemented as a mash-up of:
 --
 -- * [An Algebraic Approach to Typechecking and Elaboration](https://bentnib.org/posts/2015-04-19-algebraic-approach-typechecking-and-elaboration.html), Bob Atkey
@@ -14,14 +11,8 @@
 module Tile.Elab
 ( elab
 , Elab(..)
-, runScript
-, Script(..)
-, meta
-, intro
-, letbind
 ) where
 
-import Control.Monad (ap)
 import Data.Map
 import Data.Maybe (fromMaybe)
 import Tile.Context
@@ -91,26 +82,3 @@ check f = Elab $ \ ty ctx -> runScript id $ do
   exp <- meta ty
   act <- f ctx
   pure $! var exp ::: ty === act
-
-
-runScript :: (a -> t) -> Script t a -> t
-runScript k (Script r) = r k
-
-newtype Script t a = Script ((a -> t) -> t)
-  deriving (Functor)
-
-instance Applicative (Script t) where
-  pure = Script . flip ($)
-  (<*>) = ap
-
-instance Monad (Script t) where
-  m >>= f = Script (\ k -> runScript (runScript k . f) m)
-
-meta :: Prob v t => t -> Script t v
-meta = Script . ex
-
-intro :: Lam v t => Script t v
-intro = Script (lam Ex)
-
-letbind :: Let v t => t ::: t -> Script t v
-letbind = Script . let'
