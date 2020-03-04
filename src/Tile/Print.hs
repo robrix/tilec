@@ -75,7 +75,7 @@ instance Let Int (Print Inner) where
     kw "let" <+> prettyBind v <+> group (align (prettyAnn (op "=" <+> tm ::: ty))) </> kw "in" <+> b
 
 instance Lam Int (Print Inner) where
-  lam p b = prec (Level 3) . inContext Lam . bind b $ \ v b ->
+  lam p b = prec (Level 6) . inContext Lam . bind b $ \ v b ->
     plicit braces id p (prettyBind v) </> b
 
   f $$ a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
@@ -83,14 +83,14 @@ instance Lam Int (Print Inner) where
 instance Type Int (Print Inner) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
-  (p, t) >-> b = prec (Level 3) . inContext Pi . bind b $ \ v b ->
-    group (align (maybe (plicit braces (prec (Level 3)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b))
+  (p, t) >-> b = prec (Level 6) . inContext Pi . bind b $ \ v b ->
+    group (align (maybe (plicit braces (prec (Level 6)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . prettyVar) v </> op "→" <+> b))
 
 instance Prob Int (Print Inner) where
-  ex t b = prec (Level 3) . inContext Exists . bind b $ \ v b ->
+  ex t b = prec (Level 6) . inContext Exists . bind b $ \ v b ->
     group (align (pretty '∃' <+> group (align (prettyAnn (prettyBind v ::: t))) <+> op "." </> b))
 
-  t1 === t2 = prec (Level 4) (inContext Equate (align (group (prec (Level 2) (prettyAnn t1)) </> op "≡" </> group (prec (Level 2) (prettyAnn t2)))))
+  t1 === t2 = prec (Level 4) (inContext Equate (align (group (prec (Level 5) (prettyAnn t1)) </> op "≡" </> group (prec (Level 5) (prettyAnn t2)))))
 
 instance Err (Print Inner) where
   err s = annotate Error (pretty "error") <> pretty ':' <+> pretty s
