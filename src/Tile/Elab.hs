@@ -26,10 +26,11 @@ import Control.Carrier.Reader
 import Control.Monad (ap)
 import Data.Functor.Identity
 import Data.Map
+import Tile.Context
 import Tile.Syntax
 
-runElab :: Elab v t t ::: t -> t
-runElab (Elab m ::: t) = run (runReader empty (runReader t m))
+runElab :: Map v t :|-: Elab v t t ::: t -> t
+runElab (ctx :|-: Elab m ::: t) = run (runReader ctx (runReader t m))
 
 newtype Elab v t a = Elab { runElabC :: ReaderC t (ReaderC (Map v t) Identity) a }
   deriving (Applicative, Functor)
