@@ -48,9 +48,9 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t 
     type' `ex` \ _B ->
     (var res ::: ty)
     ===
-    ( let' (runElab (ctx :|-: t ::: type')  ::: type') (\ t' ->
-      let' (runElab (ctx :|-: v ::: var t') ::: var t') (\ x ->
-        runElab ((ctx |> x ::: var t') :|-: b x ::: var _B)))
+    ( let' ((ctx |- t ::: type')  ::: type')  (\ t' ->
+      let' ((ctx |- v ::: var t') ::: var t') (\ x ->
+        ctx |> x ::: var t' |- b x ::: var _B))
     ::: var _B)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
@@ -60,7 +60,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     (var _A --> type') `ex` \ _B ->
     (var res ::: ty)
     ===
-    (lam p (\ x -> runElab ((ctx |> x ::: var _A) :|-: b x ::: var _B $$ var x)) ::: (p, var _A) >-> \ x -> var _B $$ var x)
+    (lam p (\ x -> ctx |> x ::: var _A |- b x ::: var _B $$ var x) ::: (p, var _A) >-> \ x -> var _B $$ var x)
 
   f $$ a = Elab . ReaderC $ \ ty ctx ->
     ty `ex` \ res ->
@@ -68,17 +68,17 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     type' `ex` \ _B ->
     (var res ::: ty)
     ===
-    (runElab (ctx :|-: f ::: var _A --> var _B) $$ runElab (ctx :|-: a ::: var _A) ::: var _B)
+    ((ctx |- f ::: var _A --> var _B) $$ (ctx |- a ::: var _A) ::: var _B)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
   type' = Elab . ReaderC $ \ _ _ -> type'
 
   (p, a) >-> b = Elab . ReaderC $ \ ty ctx ->
     ty `ex` \ res ->
-    let' (runElab (ctx :|-: a ::: type') ::: type') $ \ a' ->
+    let' ((ctx |- a ::: type') ::: type') $ \ a' ->
     (var res ::: ty)
     ===
-    ((p, var a') >-> (\ x -> runElab ((ctx |> x ::: var a') :|-: b x ::: type')) ::: type')
+    ((p, var a') >-> (\ x -> ctx |> x ::: var a' |- b x ::: type') ::: type')
 
 deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
 
