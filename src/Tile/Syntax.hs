@@ -127,13 +127,13 @@ deriving instance Prob v (m a) => Prob v (ReaderT r m a)
 
 
 class Err v expr | expr -> v where
-  err :: String -> expr
+  freeVariable :: v -> expr
 
 deriving instance Err v t => Err v (Identity t)
 deriving instance Err v t => Err v (Const t a)
 
 instance Err v t => Err v (r -> t) where
-  err = const . err
+  freeVariable = const . freeVariable
 
 deriving instance Err v (m a) => Err v (ReaderC r m a)
 deriving instance Err v (m a) => Err v (ReaderT r m a)

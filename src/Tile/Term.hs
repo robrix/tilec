@@ -12,6 +12,7 @@ import Data.Bifoldable
 import Data.Bifunctor
 import Data.Functor.Classes
 import Text.Show
+import Tile.Error
 import Tile.Syntax
 
 data Term v a
@@ -23,9 +24,9 @@ data Term v a
   | (Plicit, Term v a) :-> (v -> Term v a)
   | E (Term v a) (v -> Term v a)
   | (Term v a ::: Term v a) :===: (Term v a ::: Term v a)
-  | Err String
+  | Err (Error v)
 
-instance (Eq a, Num v) => Eq (Term v a) where
+instance (Eq a, Eq v, Num v) => Eq (Term v a) where
   (==) = eq 0 where
     eq n l r = case (l, r) of
       (Var v1, Var v2) -> v1 == v2
@@ -39,7 +40,7 @@ instance (Eq a, Num v) => Eq (Term v a) where
       (Err s1, Err s2) -> s1 == s2
       _ -> False
 
-instance (Ord a, Num v) => Ord (Term v a) where
+instance (Ord a, Ord v, Num v) => Ord (Term v a) where
   compare = cmp 0 where
     cmp n l r = case (l, r) of
       (Var v1, Var v2) -> v1 `compare` v2
@@ -71,7 +72,7 @@ instance Functor (Term v) where
       a :-> b     -> fmap go a :-> go . b
       E t b       -> E (go t) (go . b)
       t1 :===: t2 -> bimap go go t1 :===: bimap go go t2
-      Err s       -> Err s
+      Err e       -> Err e
 
 instance Num v => Foldable (Term v) where
   foldMap f = go 0 where
@@ -86,7 +87,7 @@ instance Num v => Foldable (Term v) where
       t1 :===: t2 -> bifoldMap (go n) (go n) t1 <> bifoldMap (go n) (go n) t2
       Err _       -> mempty
 
-instance (Num v, Show a) => Show (Term v a) where
+instance (Num v, Show v, Show a) => Show (Term v a) where
   showsPrec = go 0 where
     go n p = \case
       Var v -> showsUnaryWith showsPrec "Var" p v
@@ -114,7 +115,7 @@ instance Monad (Term v) where
     t :-> b     -> fmap (>>= f) t :-> (b >=> f)
     E t b       -> E (t >>= f) (b >=> f)
     t1 :===: t2 -> bimap (>>= f) (>>= f) t1 :===: bimap (>>= f) (>>= f) t2
-    Err s       -> Err s
+    Err e       -> Err e
 
 instance Var v (Term v v) where
   var = Var
@@ -135,7 +136,7 @@ instance Prob v (Term v v) where
   (===) = (:===:)
 
 instance Err v (Term v v) where
-  err = Err
+  freeVariable = Err . FreeVariable
 
 infixl 9 :$
 infixr 6 :->
@@ -151,4 +152,5 @@ interpret = \case
   t :-> b     -> fmap interpret t >-> interpret . b
   E t b       -> interpret t `ex` interpret . b
   t1 :===: t2 -> bimap interpret interpret t1 === bimap interpret interpret t2
-  Err s       -> err s
+  Err e       -> case e of
+    FreeVariable v -> freeVariable v

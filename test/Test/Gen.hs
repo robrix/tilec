@@ -12,7 +12,7 @@ module Test.Gen
 , pi_
 , ex_
 , eq_
-, err_
+, freeVariable_
 , term_
 , tag
 ) where
@@ -53,12 +53,12 @@ ex_ t = Gen.subtermM2 t (local succ t) (\ t b -> (t `ex` const b) <$ tag "ex")
 eq_ :: (MonadGen m, Prob v t, MonadWriter (Set LabelName) m) => m t -> m t
 eq_ t = Gen.subtermM2 t t (\ m1 t1 -> Gen.subtermM2 t t (\ m2 t2 -> ((m1 ::: t1) === (m2 ::: t2)) <$ tag "==="))
 
-err_ :: (Err v t, MonadGen m, MonadWriter (Set LabelName) m) => m t
-err_ = err <$> Gen.string (Range.linear 0 10) Gen.alphaNum <* tag "err"
+freeVariable_ :: (Err Int t, MonadGen m, MonadWriter (Set LabelName) m) => m t
+freeVariable_ = freeVariable <$> Gen.int (Range.linear (-1) (-10)) <* tag "err"
 
 term_ :: (Let Int t, Lam Int t, Type Int t, Prob Int t, Err Int t, MonadGen m, MonadReader Int m, MonadWriter (Set LabelName) m) => m t
 term_ = ask >>= \ i -> Gen.recursive (Gen.small . Gen.choice)
-  ([ var_ | i > 0 ] <> [ type_, err_ ])
+  ([ var_ | i > 0 ] <> [ type_, freeVariable_ ])
   ([ let_, lam_, app_, pi_, ex_, eq_ ] <*> [term_])
 
 

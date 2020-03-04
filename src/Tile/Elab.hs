@@ -23,10 +23,10 @@ elab (ctx :|-: Elab m ::: t) = m t ctx
 
 newtype Elab v t a = Elab { runElabC :: t -> Map v t -> a }
 
-instance (Ord v, Show v, Prob v t, Err v t) => Var v (Elab v t t) where
+instance (Ord v, Prob v t, Err v t) => Var v (Elab v t t) where
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
 
-instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err v t) => Let v (Elab v t t) where
+instance (Ord v, Let v t, Prob v t, Type v t, Err v t) => Let v (Elab v t t) where
   let' (v ::: t) b = check $ \ ctx -> do
     _B <- meta type'
     t' <- letbind ((ctx |- t ::: type')  ::: type')
@@ -35,7 +35,7 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err v t) => Let v (Elab v 
             ctx |> x ::: var t' |- b x ::: var _B)
       ::: var _B)
 
-instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err v t) => Lam v (Elab v t t) where
+instance (Ord v, Let v t, Lam v t, Prob v t, Type v t, Err v t) => Lam v (Elab v t t) where
   lam p b = check $ \ ctx -> do
     _A <- meta type'
     _B <- meta (var _A --> type')
@@ -50,7 +50,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err v t) => Lam v
       (   (ctx |- f ::: var _A --> var _B) $$ (ctx |- a ::: var _A)
       ::: var _B)
 
-instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err v t) => Type v (Elab v t t) where
+instance (Ord v, Let v t, Prob v t, Type v t, Err v t) => Type v (Elab v t t) where
   type' = check (const (pure (type' ::: type')))
 
   (p, a) >-> b = check $ \ ctx -> do
@@ -59,13 +59,13 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err v t) => Type v (Elab v
       (   (p, var a') >-> (\ x -> ctx |> x ::: var a' |- b x ::: type')
       ::: type')
 
-deriving instance (Ord v, Show v, Prob v t, Err v t) => Prob v (Elab v t t)
+deriving instance (Ord v, Prob v t, Err v t) => Prob v (Elab v t t)
 
 deriving instance Err v t => Err v (Elab v t t)
 
 
-typeOf :: (Ord v, Show v, Err v t) => Map v t -> v -> t
-typeOf ctx n = fromMaybe (err ("free variable: " <> show n)) (ctx !? n)
+typeOf :: (Ord v, Err v t) => Map v t -> v -> t
+typeOf ctx n = fromMaybe (freeVariable n) (ctx !? n)
 
 (|-) :: Map v t -> Elab v t t ::: t -> t
 ctx |- (b ::: t) = elab (ctx :|-: b ::: t)
