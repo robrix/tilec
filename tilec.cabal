@@ -36,6 +36,7 @@ common common
 library
   import: common
   exposed-modules:
+    Tile.Context
     Tile.Elab
     Tile.Library
     Tile.Plicit
