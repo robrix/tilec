@@ -90,7 +90,7 @@ instance Prob Int (Print Inner) where
   ex t b = prec (Level 6) . inContext Exists . bind b $ \ v b ->
     group (align (pretty '∃' <+> group (align (reset (Level 0) (prettyAnn (prettyBind v ::: t)))) <+> op "." </> reset (Level 0) b))
 
-  t1 === t2 = prec (Level 4) (inContext Equate (align (group (prec (Level 5) (prettyAnn t1)) </> op "≡" </> group (prec (Level 5) (prettyAnn t2)))))
+  t1 === t2 = prec (Level 4) (inContext Equate (group (align (flatAlt (space <> space) mempty <> prec (Level 5) (prettyAnn t1) </> op "≡" <+> prec (Level 5) (prettyAnn t2)))))
 
 instance Err (Print Inner) where
   err s = annotate Error (pretty "error") <> pretty ':' <+> pretty s
@@ -166,7 +166,7 @@ prettyVar i = annotate Name (pretty (alphabet !! r) <> if q > 0 then pretty q el
   alphabet = ['a'..'z']
 
 prettyAnn :: PrecDoc (Highlight Int) doc => doc ::: doc -> doc
-prettyAnn (tm ::: ty) = tm </> group (align (op ":" <+> ty))
+prettyAnn (tm ::: ty) = group (tm </> group (align (op ":" <+> ty)))
 
 bind :: (Int -> Print a) -> (Maybe Int -> Print a -> Print b) -> Print b
 bind b f = Print $ do
