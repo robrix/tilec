@@ -57,6 +57,11 @@ defaultStyle = \case
 
 type Inner = Prec (Rainbow (PP.Doc (Highlight Int)))
 
+data V = V
+  { vvar :: {-# UNPACK #-} !Int
+  , vdoc :: !Inner
+  }
+
 newtype Print a = Print { runPrint :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
