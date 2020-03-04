@@ -35,17 +35,15 @@ newtype Elab v t a = Elab { runElabC :: ReaderC t ((->) (Map v t)) a }
   deriving (Applicative, Functor)
 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
-  var n = Elab . ReaderC $ \ ty ctx ->
-    ty `ex` \ res ->
-    (var res ::: ty)
+  var n = check $ \ ctx exp ->
+    exp
     ===
     (var n ::: fromMaybe (err ("free variable: " <> show n)) (ctx !? n))
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
-  let' (v ::: t) b = Elab . ReaderC $ \ ty ctx ->
-    ty `ex` \ res ->
+  let' (v ::: t) b = check $ \ ctx exp ->
     type' `ex` \ _B ->
-    (var res ::: ty)
+    exp
     ===
     ( let' ((ctx |- t ::: type')  ::: type')  (\ t' ->
       let' ((ctx |- v ::: var t') ::: var t') (\ x ->
@@ -53,29 +51,26 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t 
     ::: var _B)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
-  lam p b = Elab . ReaderC $ \ ty ctx ->
-    ty `ex` \ res ->
+  lam p b = check $ \ ctx exp ->
     type' `ex` \ _A ->
     (var _A --> type') `ex` \ _B ->
-    (var res ::: ty)
+    exp
     ===
     (lam p (\ x -> ctx |> x ::: var _A |- b x ::: var _B $$ var x) ::: (p, var _A) >-> \ x -> var _B $$ var x)
 
-  f $$ a = Elab . ReaderC $ \ ty ctx ->
-    ty `ex` \ res ->
+  f $$ a = check $ \ ctx exp ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
-    (var res ::: ty)
+    exp
     ===
     ((ctx |- f ::: var _A --> var _B) $$ (ctx |- a ::: var _A) ::: var _B)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
   type' = Elab . ReaderC $ \ _ _ -> type'
 
-  (p, a) >-> b = Elab . ReaderC $ \ ty ctx ->
-    ty `ex` \ res ->
+  (p, a) >-> b = check $ \ ctx exp ->
     let' ((ctx |- a ::: type') ::: type') $ \ a' ->
-    (var res ::: ty)
+    exp
     ===
     ((p, var a') >-> (\ x -> ctx |> x ::: var a' |- b x ::: type') ::: type')
 
