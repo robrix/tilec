@@ -32,7 +32,6 @@ elab :: Map v t :|-: Elab v t t ::: t -> t
 elab (ctx :|-: Elab m ::: t) = runReader t m ctx
 
 newtype Elab v t a = Elab { runElabC :: ReaderC t ((->) (Map v t)) a }
-  deriving (Applicative, Functor)
 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
   var n = check $ \ ctx exp ->
