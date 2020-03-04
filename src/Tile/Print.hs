@@ -65,6 +65,7 @@ data V = V
 
 instance Eq V where (==) = (==) `on` vvar
 instance Ord V where compare = compare `on` vvar
+instance Show V where showsPrec p = showsPrec p . rainbow . (`runPrec` Level 0) . vdoc
 
 newtype Print a = Print { runPrint :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
