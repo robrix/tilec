@@ -52,9 +52,9 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     exp === (Elab (lam p (\ x -> runElabC (x ::: var _A |- elab (b x ::: var _B $$ var x)))) ::: pure ((p, var _A) >-> \ x -> var _B $$ var x))
 
   f $$ a = Elab . ReaderC $ \ ty ctx ->
+    ty `ex` \ res ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
-    ty `ex` \ res ->
     (var res ::: ty)
     ===
     (runElab (ctx :|-: f ::: var _A --> var _B) $$ runElab (ctx :|-: a ::: var _A) ::: var _B)
