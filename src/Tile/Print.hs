@@ -88,7 +88,7 @@ instance Type Int (Print Inner) where
 
 instance Prob Int (Print Inner) where
   ex t b = prec (Level 6) . inContext Exists . bind b $ \ v b ->
-    group (align (pretty '∃' <+> group (align (prettyAnn (prettyBind v ::: t))) <+> op "." </> reset (Level 0) b))
+    group (align (pretty '∃' <+> group (align (reset (Level 0) (prettyAnn (prettyBind v ::: t)))) <+> op "." </> reset (Level 0) b))
 
   t1 === t2 = prec (Level 4) (inContext Equate (align (group (prec (Level 5) (prettyAnn t1)) </> op "≡" </> group (prec (Level 5) (prettyAnn t2)))))
 
