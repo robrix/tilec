@@ -49,13 +49,12 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t 
     ::: var _B)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
-  lam p b = check $ \ exp ctx ->
-    type' `ex` \ _A ->
-    (var _A --> type') `ex` \ _B ->
-    exp
-    ===
-    (   lam p (\ x -> ctx |> x ::: var _A |- b x ::: var _B $$ var x)
-    ::: (p, var _A) >-> \ x -> var _B $$ var x)
+  lam p b = check' $ \ ctx -> do
+    _A <- meta type'
+    _B <- meta (var _A --> type')
+    pure
+      (   lam p (\ x -> ctx |> x ::: var _A |- b x ::: var _B $$ var x)
+      ::: (p, var _A) >-> \ x -> var _B $$ var x)
 
   f $$ a = check $ \ exp ctx ->
     type' `ex` \ _A ->
