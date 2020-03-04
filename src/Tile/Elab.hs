@@ -78,9 +78,14 @@ typeOf :: (Ord v, Show v, Err t) => v -> Elab v t t
 typeOf n = Elab (asks (!? n) >>= maybe (err ("free variable: " <> show n)) pure)
 
 (|-) :: Ord v => v ::: t -> Elab v t t -> Elab v t t
-(a ::: t) |- Elab b = Elab (local (insert a t) b)
+v |- Elab b = Elab (local (|> v) b)
 
 infixl 1 |-
+
+(|>) :: Ord v => Map v t -> v ::: t -> Map v t
+ctx |> v ::: t = insert v t ctx
+
+infixl 1 |>
 
 check :: Prob v t => (Elab v t t ::: Elab v t t -> Elab v t t) -> Elab v t t
 check f = Elab $ ask `ex` runElabC . \ v -> f (pure (var v) ::: Elab ask)
