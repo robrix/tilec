@@ -3,7 +3,6 @@
 module Tile.Type
 ( (:::)(..)
 , term_
-, type_
 ) where
 
 import Data.Bifoldable
@@ -30,6 +29,3 @@ infixl 1 :::
 
 term_ :: a ::: b -> a
 term_ (a ::: _) = a
-
-type_ :: a ::: b -> b
-type_ (_ ::: b) = b
