@@ -52,13 +52,12 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
       (   lam p (\ x -> ctx |> x ::: var _A |- b x ::: var _B $$ var x)
       ::: (p, var _A) >-> \ x -> var _B $$ var x)
 
-  f $$ a = check $ \ exp ctx ->
-    type' `ex` \ _A ->
-    type' `ex` \ _B ->
-    exp
-    ===
-    (   (ctx |- f ::: var _A --> var _B) $$ (ctx |- a ::: var _A)
-    ::: var _B)
+  f $$ a = check' $ \ ctx -> do
+    _A <- meta type'
+    _B <- meta type'
+    pure
+      (   (ctx |- f ::: var _A --> var _B) $$ (ctx |- a ::: var _A)
+      ::: var _B)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
   type' = Elab $ \ _ _ -> type'
