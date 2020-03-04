@@ -163,8 +163,8 @@ instance Monad (Script t) where
 meta :: Prob v t => t -> Script t v
 meta = Script . ex
 
-intro :: Lam v t => Script t v
-intro = Script (lam Ex)
+intro :: Lam v t => Plicit -> Script t v
+intro = Script . lam
 
 letbind :: Let v t => t ::: t -> Script t v
 letbind = Script . let'
