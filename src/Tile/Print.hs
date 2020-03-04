@@ -75,7 +75,7 @@ instance Let Int (Print Inner) where
     kw "let" <+> prettyBind v <+> group (align (prettyAnn (op "=" <+> tm ::: ty))) </> kw "in" <+> b
 
 instance Lam Int (Print Inner) where
-  lam p b = prec (Level 1) . inContext Lam . bind b $ \ v b ->
+  lam p b = prec (Level 3) . inContext Lam . bind b $ \ v b ->
     plicit braces id p (prettyBind v) </> b
 
   f $$ a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
