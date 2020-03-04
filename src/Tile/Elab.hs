@@ -33,10 +33,10 @@ elab (ctx :|-: Elab m ::: t) = m t ctx
 newtype Elab v t a = Elab { runElabC :: t -> Map v t -> a }
 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
-  var n = check' $ \ ctx -> pure (var n ::: typeOf ctx n)
+  var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
-  let' (v ::: t) b = check' $ \ ctx -> do
+  let' (v ::: t) b = check $ \ ctx -> do
     _B <- meta type'
     pure
       (   let' ((ctx |- t ::: type')  ::: type')  (\ t' ->
@@ -45,14 +45,14 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t 
       ::: var _B)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
-  lam p b = check' $ \ ctx -> do
+  lam p b = check $ \ ctx -> do
     _A <- meta type'
     _B <- meta (var _A --> type')
     pure
       (   lam p (\ x -> ctx |> x ::: var _A |- b x ::: var _B $$ var x)
       ::: (p, var _A) >-> \ x -> var _B $$ var x)
 
-  f $$ a = check' $ \ ctx -> do
+  f $$ a = check $ \ ctx -> do
     _A <- meta type'
     _B <- meta type'
     pure
@@ -62,7 +62,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
   type' = Elab $ \ _ _ -> type'
 
-  (p, a) >-> b = check' $ \ ctx -> pure
+  (p, a) >-> b = check $ \ ctx -> pure
     (   let' ((ctx |- a ::: type') ::: type') (\ a' ->
         (p, var a') >-> \ x -> ctx |> x ::: var a' |- b x ::: type')
     ::: type')
@@ -85,8 +85,8 @@ ctx |> v ::: t = insert v t ctx
 
 infixl 1 |>
 
-check' :: Prob v t => (Map v t -> Script t (t ::: t)) -> Elab v t t
-check' f = Elab $ \ ty ctx -> runScript id $ do
+check :: Prob v t => (Map v t -> Script t (t ::: t)) -> Elab v t t
+check f = Elab $ \ ty ctx -> runScript id $ do
   exp <- meta ty
   act <- f ctx
   pure $! var exp ::: ty === act
