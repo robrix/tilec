@@ -33,13 +33,13 @@ elab (ctx :|-: Elab m ::: t) = m t ctx
 newtype Elab v t a = Elab { runElabC :: t -> Map v t -> a }
 
 instance (Ord v, Show v, Prob v t, Err t) => Var v (Elab v t t) where
-  var n = check $ \ ctx exp ->
+  var n = check $ \ exp ctx ->
     exp
     ===
     (var n ::: typeOf ctx n)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t t) where
-  let' (v ::: t) b = check $ \ ctx exp ->
+  let' (v ::: t) b = check $ \ exp ctx ->
     type' `ex` \ _B ->
     exp
     ===
@@ -49,7 +49,7 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t 
     ::: var _B)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
-  lam p b = check $ \ ctx exp ->
+  lam p b = check $ \ exp ctx ->
     type' `ex` \ _A ->
     (var _A --> type') `ex` \ _B ->
     exp
@@ -57,7 +57,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     (   lam p (\ x -> ctx |> x ::: var _A |- b x ::: var _B $$ var x)
     ::: (p, var _A) >-> \ x -> var _B $$ var x)
 
-  f $$ a = check $ \ ctx exp ->
+  f $$ a = check $ \ exp ctx ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     exp
@@ -68,7 +68,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
   type' = Elab $ \ _ _ -> type'
 
-  (p, a) >-> b = check $ \ ctx exp ->
+  (p, a) >-> b = check $ \ exp ctx ->
     let' ((ctx |- a ::: type') ::: type') $ \ a' ->
     exp
     ===
@@ -93,8 +93,8 @@ ctx |> v ::: t = insert v t ctx
 
 infixl 1 |>
 
-check :: Prob v t => (Map v t -> t ::: t -> t) -> Elab v t t
-check f = Elab $ \ ty ctx -> ty `ex` \ res -> f ctx (var res ::: ty)
+check :: Prob v t => (t ::: t -> Map v t -> t) -> Elab v t t
+check f = Elab $ \ ty ctx -> ty `ex` \ res -> f (var res ::: ty) ctx
 
 
 runScript :: (a -> t) -> Script t a -> t
