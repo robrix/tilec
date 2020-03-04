@@ -60,7 +60,7 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     (runElab (ctx :|-: f ::: var _A --> var _B) $$ runElab (ctx :|-: a ::: var _A) ::: var _B)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
-  type' = pure type'
+  type' = Elab . ReaderC $ \ _ _ -> type'
 
   (p, a) >-> b = check $ \ exp ->
     let' (elab (a ::: type') ::: pure type') $ \ a' ->
