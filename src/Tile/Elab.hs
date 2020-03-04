@@ -45,9 +45,9 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Let v (Elab v t 
     type' `ex` \ _B ->
     exp
     ===
-    ( let' ((ctx |- t ::: type')  ::: type')  (\ t' ->
-      let' ((ctx |- v ::: var t') ::: var t') (\ x ->
-        ctx |> x ::: var t' |- b x ::: var _B))
+    (   let' ((ctx |- t ::: type')  ::: type')  (\ t' ->
+        let' ((ctx |- v ::: var t') ::: var t') (\ x ->
+          ctx |> x ::: var t' |- b x ::: var _B))
     ::: var _B)
 
 instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (Elab v t t) where
@@ -56,14 +56,16 @@ instance (Ord v, Show v, Let v t, Lam v t, Prob v t, Type v t, Err t) => Lam v (
     (var _A --> type') `ex` \ _B ->
     exp
     ===
-    (lam p (\ x -> ctx |> x ::: var _A |- b x ::: var _B $$ var x) ::: (p, var _A) >-> \ x -> var _B $$ var x)
+    (   lam p (\ x -> ctx |> x ::: var _A |- b x ::: var _B $$ var x)
+    ::: (p, var _A) >-> \ x -> var _B $$ var x)
 
   f $$ a = check $ \ ctx exp ->
     type' `ex` \ _A ->
     type' `ex` \ _B ->
     exp
     ===
-    ((ctx |- f ::: var _A --> var _B) $$ (ctx |- a ::: var _A) ::: var _B)
+    (   (ctx |- f ::: var _A --> var _B) $$ (ctx |- a ::: var _A)
+    ::: var _B)
 
 instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t t) where
   type' = Elab . ReaderC $ \ _ _ -> type'
@@ -72,7 +74,8 @@ instance (Ord v, Show v, Let v t, Prob v t, Type v t, Err t) => Type v (Elab v t
     let' ((ctx |- a ::: type') ::: type') $ \ a' ->
     exp
     ===
-    ((p, var a') >-> (\ x -> ctx |> x ::: var a' |- b x ::: type') ::: type')
+    (   (p, var a') >-> (\ x -> ctx |> x ::: var a' |- b x ::: type')
+    ::: type')
 
 deriving instance (Ord v, Show v, Prob v t, Err t) => Prob v (Elab v t t)
 
