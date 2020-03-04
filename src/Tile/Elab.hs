@@ -9,7 +9,8 @@
 -- * Typed Tagless Final Interpreters, Oleg Kiselyov
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module Tile.Elab
-( elab
+( (|-)
+, elab
 , Elab(..)
 ) where
 
@@ -17,6 +18,11 @@ import Data.Map
 import Data.Maybe (fromMaybe)
 import Tile.Context
 import Tile.Syntax
+
+(|-) :: Map v t -> Elab v t ::: t -> t
+ctx |- (b ::: t) = elab (ctx :|-: b ::: t)
+
+infixl 1 |-
 
 elab :: Map v t :|-: Elab v t ::: t -> t
 elab (ctx :|-: Elab m ::: t) = m t ctx
@@ -66,11 +72,6 @@ deriving instance Err v t => Err v (Elab v t)
 
 typeOf :: (Ord v, Err v t) => Map v t -> v -> t
 typeOf ctx n = fromMaybe (freeVariable n) (ctx !? n)
-
-(|-) :: Map v t -> Elab v t ::: t -> t
-ctx |- (b ::: t) = elab (ctx :|-: b ::: t)
-
-infixl 1 |-
 
 (|>) :: Ord v => Map v t -> v ::: t -> Map v t
 ctx |> (v ::: t) = insert v t ctx
