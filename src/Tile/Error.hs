@@ -4,3 +4,4 @@ module Tile.Error
 
 newtype Error v
   = FreeVariable v
+  deriving (Eq, Ord, Show)
