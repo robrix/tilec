@@ -8,7 +8,6 @@
 
 # utils
 - fixity: "infix 5 :::"
-- fixity: "infix 1 :|-:"
 
 # elaboration
 - fixity: "infixl 1 |-"
