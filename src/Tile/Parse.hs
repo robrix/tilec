@@ -42,6 +42,10 @@ instance Type v t => SExpr (Surface t) where
     "Type" -> Surface . Right $ \case
       [] -> Right type'
       _  -> Left "unexpected arguments to type'"
+    "->"   -> Surface . Right $ \case
+      []  -> Left "0 arguments given to ->"
+      [_] -> Left "1 argument given to ->"
+      ts  -> Right $ foldr1 (-->) ts
     other  -> Surface . Left $ "unknown atom: " <> show other
 
   list _ = Surface (Left "unimplemented: list")
