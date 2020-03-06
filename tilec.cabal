@@ -55,6 +55,7 @@ library
     , parsers
     , prettyprinter
     , prettyprinter-ansi-terminal
+    , semilattices
     , terminal-size
     , transformers
   hs-source-dirs: src

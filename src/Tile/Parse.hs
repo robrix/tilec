@@ -1,11 +1,20 @@
 module Tile.Parse
-( SExpr(..)
+( parse
+, SExpr(..)
 , sexpr_
 ) where
 
 import Control.Applicative (Alternative(..))
+import Control.Carrier.Parser.Church
+import Control.Carrier.Throw.Either
+import Control.Effect.Parser.Notice
+import Data.Semilattice.Lower
 import Text.Parser.Char
 import Text.Parser.Token
+
+parse :: SExpr t => String -> Either Notice t
+parse s = run (runThrow (runParserWithString lowerBound s sexpr_))
+
 
 class SExpr t where
   atom :: String -> t
