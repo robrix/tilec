@@ -2,6 +2,7 @@ module Tile.Parse
 ( parse
 , SExpr(..)
 , sexpr_
+, Surface(..)
 ) where
 
 import Control.Applicative (Alternative(..))
@@ -29,3 +30,6 @@ atom_ = atom <$> token (some1 alphaNum)
 
 list_ :: (TokenParsing m, SExpr t) => m t
 list_ = list <$> parens (many sexpr_)
+
+
+newtype Surface t = Surface { runSurface :: Either String t }
