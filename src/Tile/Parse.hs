@@ -33,3 +33,9 @@ list_ = list <$> parens (many sexpr_)
 
 
 newtype Surface t = Surface { runSurface :: Either String t }
+
+instance SExpr (Surface t) where
+  atom s = case toList s of
+    other  -> Surface . Left $ "unknown atom: " <> show other
+
+  list _ = Surface (Left "unimplemented: list")
