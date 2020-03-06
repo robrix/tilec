@@ -51,6 +51,7 @@ library
     , base ^>= 4.13
     , containers
     , fused-effects
+    , fused-effects-parser
     , prettyprinter
     , prettyprinter-ansi-terminal
     , terminal-size
