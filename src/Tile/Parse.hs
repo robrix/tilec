@@ -24,7 +24,7 @@ sexpr_ :: (TokenParsing m, SExpr t) => m t
 sexpr_ = list_ <|> atom_
 
 atom_ :: (TokenParsing m, SExpr t) => m t
-atom_ = atom <$> token (many alphaNum)
+atom_ = atom <$> token (some alphaNum)
 
 list_ :: (TokenParsing m, SExpr t) => m t
 list_ = list <$> parens (many sexpr_)
