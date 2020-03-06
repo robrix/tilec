@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Parse
 ( parse
@@ -34,11 +35,13 @@ list_ :: (TokenParsing m, SExpr t) => m t
 list_ = list <$> parens (many sexpr_)
 
 
-newtype Surface t = Surface { runSurface :: Either String t }
+newtype Surface t = Surface { runSurface :: Either String ([t] -> Either String t) }
 
 instance Type v t => SExpr (Surface t) where
   atom s = case toList s of
-    "Type" -> Surface $ Right type'
+    "Type" -> Surface . Right $ \case
+      [] -> Right type'
+      _  -> Left "unexpected arguments to type'"
     other  -> Surface . Left $ "unknown atom: " <> show other
 
   list _ = Surface (Left "unimplemented: list")
