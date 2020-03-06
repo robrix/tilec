@@ -1,3 +1,4 @@
+{-# LANGUAGE UndecidableInstances #-}
 module Tile.Parse
 ( parse
 , SExpr(..)
@@ -13,6 +14,7 @@ import Data.List.NonEmpty
 import Data.Semilattice.Lower
 import Text.Parser.Char
 import Text.Parser.Token
+import Tile.Syntax
 
 parse :: SExpr t => String -> Either Notice t
 parse s = run (runThrow (runParserWithString lowerBound s sexpr_))
@@ -34,8 +36,9 @@ list_ = list <$> parens (many sexpr_)
 
 newtype Surface t = Surface { runSurface :: Either String t }
 
-instance SExpr (Surface t) where
+instance Type v t => SExpr (Surface t) where
   atom s = case toList s of
+    "Type" -> Surface $ Right type'
     other  -> Surface . Left $ "unknown atom: " <> show other
 
   list _ = Surface (Left "unimplemented: list")
