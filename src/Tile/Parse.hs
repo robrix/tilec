@@ -11,8 +11,7 @@ import Control.Applicative (Alternative(..))
 import Control.Carrier.Parser.Church
 import Control.Carrier.Throw.Either
 import Control.Effect.Parser.Notice
-import Data.HashSet as HS
-import Data.List.NonEmpty as NE
+import Data.HashSet
 import Data.Semilattice.Lower
 import Text.Parser.Char
 import Text.Parser.Token
@@ -24,21 +23,21 @@ parse s = run (runThrow (runParserWithString lowerBound s sexpr_))
 
 
 class SExpr t where
-  atom :: NonEmpty Char -> t
+  atom :: String -> t
   list :: [t] -> t
 
 sexpr_ :: (Monad m, TokenParsing m, SExpr t) => m t
 sexpr_ = list_ <|> atom_
 
 atom_ :: (Monad m, TokenParsing m, SExpr t) => m t
-atom_ = atom . NE.fromList <$> ident (IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier)
+atom_ = atom <$> ident (IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier)
 
 list_ :: (Monad m, TokenParsing m, SExpr t) => m t
 list_ = list <$> parens (many sexpr_)
 
 
 reservedWords :: HashSet String
-reservedWords = HS.fromList
+reservedWords = fromList
   [ "Type"
   , "module"
   , "import"
@@ -48,7 +47,7 @@ reservedWords = HS.fromList
 newtype Surface t = Surface { runSurface :: Either String ([t] -> Either String t) }
 
 instance Type v t => SExpr (Surface t) where
-  atom s = case NE.toList s of
+  atom = \case
     "Type" -> Surface . Right $ \case
       [] -> Right type'
       _  -> Left "unexpected arguments to type'"
