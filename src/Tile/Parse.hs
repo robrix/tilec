@@ -23,7 +23,7 @@ parse s = run (runThrow (runParserWithString lowerBound s sexpr_))
 
 
 class SExpr t where
-  atom :: String -> t
+  identifier :: String -> t
   list :: [t] -> t
 
 sexpr_ :: (Monad m, TokenParsing m, SExpr t) => m t
@@ -33,7 +33,7 @@ atom_ :: (Monad m, TokenParsing m, SExpr t) => m t
 atom_ = identifier_
 
 identifier_ :: (Monad m, TokenParsing m, SExpr t) => m t
-identifier_ = atom <$> ident (IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier)
+identifier_ = identifier <$> ident (IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier)
 
 list_ :: (Monad m, TokenParsing m, SExpr t) => m t
 list_ = list <$> parens (many sexpr_)
@@ -50,7 +50,7 @@ reservedWords = fromList
 newtype Surface t = Surface { runSurface :: [t] -> Either String t }
 
 instance Type v t => SExpr (Surface t) where
-  atom = \case
+  identifier = \case
     "Type" -> Surface $ \case
       [] -> Right type'
       _  -> Left "unexpected arguments to Type"
