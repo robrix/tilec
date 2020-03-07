@@ -8,6 +8,7 @@ module Tile.Error
 ) where
 
 import Control.Carrier.Reader
+import Control.Monad.Trans.Reader
 import Data.Functor.Const
 import Data.Functor.Identity
 
@@ -21,3 +22,4 @@ instance FreeVariable v e => FreeVariable v (r -> e) where
   freeVariable = const . freeVariable
 
 deriving instance FreeVariable v (m a) => FreeVariable v (ReaderC r m a)
+deriving instance FreeVariable v (m a) => FreeVariable v (ReaderT r m a)
