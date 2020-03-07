@@ -11,7 +11,7 @@ import Control.Applicative (Alternative(..))
 import Control.Carrier.Parser.Church
 import Control.Carrier.Throw.Either
 import Control.Effect.Parser.Notice
-import Data.HashSet
+import Data.HashSet (HashSet, fromList)
 import Data.Semilattice.Lower
 import Text.Parser.Char
 import Text.Parser.Token
