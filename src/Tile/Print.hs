@@ -66,6 +66,7 @@ toDoc = rainbow . runPrec (Level 0)
 
 type Doc = Prec (Rainbow (PP.Doc (Highlight Int)))
 
+
 data V = V
   { vvar :: {-# UNPACK #-} !Int
   , vdoc :: !Doc
