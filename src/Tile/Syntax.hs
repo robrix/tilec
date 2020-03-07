@@ -59,6 +59,7 @@ instance Free v t => Free v (r -> t) where
   free = const . free
 
 deriving instance Free v (m a) => Free v (ReaderC r m a)
+deriving instance Free v (m a) => Free v (ReaderT r m a)
 
 
 class Var v expr => Let v expr where
