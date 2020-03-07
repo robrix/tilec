@@ -80,6 +80,12 @@ instance Let v t => Let v (r -> t) where
 deriving instance Let v (m a) => Let v (ReaderC r m a)
 deriving instance Let v (m a) => Let v (ReaderT r m a)
 
+instance (Err e t, Let v t) => Let v (Either e t) where
+  let' (v ::: t) b = do
+    v' <- v
+    t' <- t
+    pure (let' (v' ::: t') (either err id . b))
+
 
 class Var v expr => Lam v expr where
   lam :: Plicit -> (v -> expr) -> expr
