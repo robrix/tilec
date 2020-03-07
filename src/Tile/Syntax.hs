@@ -142,16 +142,16 @@ instance Prob v a m => Prob v a (ReaderT r m) where
 
 
 
-class Monad expr => Err e a expr | expr -> e a where
+class Err e a expr | expr -> e a where
   err :: e -> expr a
 
 deriving instance Err e a m => Err e a (IdentityT m)
 
 instance Err e a m => Err e a (ReaderC r m) where
-  err = lift . err
+  err = ReaderC . const . err
 
 instance Err e a m => Err e a (ReaderT r m) where
-  err = lift . err
+  err = ReaderT . const . err
 
 
 
