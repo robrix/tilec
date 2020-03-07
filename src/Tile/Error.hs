@@ -15,3 +15,6 @@ class FreeVariable v e | e -> v where
 
 deriving instance FreeVariable v e => FreeVariable v (Identity e)
 deriving instance FreeVariable v e => FreeVariable v (Const e a)
+
+instance FreeVariable v e => FreeVariable v (r -> e) where
+  freeVariable = const . freeVariable
