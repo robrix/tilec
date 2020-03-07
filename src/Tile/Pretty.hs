@@ -23,6 +23,7 @@ module Tile.Pretty
 , PrecDoc(..)
 , rainbow
 , Rainbow(..)
+, runPrec
 , Prec(..)
 ) where
 
@@ -200,7 +201,10 @@ instance (PrecDoc (ann Int) doc, Applicative ann) => PrecDoc (ann Int) (Rainbow 
   reset = fmap . reset
 
 
-newtype Prec a = Prec { runPrec :: Level -> a }
+runPrec :: Level -> Prec a -> a
+runPrec l (Prec run) = run l
+
+newtype Prec a = Prec (Level -> a)
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
 instance Doc ann doc => Doc ann (Prec doc) where

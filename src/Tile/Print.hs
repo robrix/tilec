@@ -68,7 +68,7 @@ data V = V
 
 instance Eq V where (==) = (==) `on` vvar
 instance Ord V where compare = compare `on` vvar
-instance Show V where showsPrec p = showsPrec p . rainbow . (`runPrec` Level 0) . vdoc
+instance Show V where showsPrec p = showsPrec p . rainbow . runPrec (Level 0) . vdoc
 
 
 runPrint :: PrintC a -> a
@@ -199,4 +199,4 @@ bind b f = PrintC $ do
   runPrintC (f (v' <$ guard (v `IntSet.member` fvs)) (pure b'))
 
 toDoc :: PrintC Inner -> PP.Doc (Highlight Int)
-toDoc m = rainbow (runPrec (runPrint m) (Level 0))
+toDoc m = rainbow (runPrec (Level 0) (runPrint m))
