@@ -8,7 +8,6 @@ module Tile.Parse
 import           Control.Applicative (Alternative(..))
 import           Control.Carrier.Parser.Church
 import           Control.Carrier.Reader
-import           Control.Carrier.Throw.Either
 import           Control.Effect.Parser.Notice
 import           Data.HashSet (HashSet, fromList)
 import qualified Data.Map as Map
@@ -19,7 +18,7 @@ import           Text.Parser.Token.Highlight
 import           Tile.Syntax
 
 parse :: forall v t . (Free v t, Type v t) => String -> Either Notice t
-parse s = run (runThrow (runReader (mempty @(Map.Map String v)) (runParserWithString lowerBound s expr_)))
+parse s = runReader (mempty @(Map.Map String v)) (runParserWithString lowerBound s expr_)
 
 
 expr_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Free v t, Type v t) => m t
