@@ -29,3 +29,6 @@ deriving instance FreeVariable v (m a) => FreeVariable v (ReaderT r m a)
 newtype Error v
   = FreeVariable v
   deriving (Eq, Ord, Show)
+
+instance FreeVariable v (Error v) where
+  freeVariable = FreeVariable
