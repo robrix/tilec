@@ -44,17 +44,17 @@ reservedWords = fromList
   ]
 
 
-newtype Surface t = Surface { runSurface :: Either String ([t] -> Either String t) }
+newtype Surface t = Surface { runSurface :: [t] -> Either String t }
 
 instance Type v t => SExpr (Surface t) where
   atom = \case
-    "Type" -> Surface . Right $ \case
+    "Type" -> Surface $ \case
       [] -> Right type'
       _  -> Left "unexpected arguments to Type"
-    "->"   -> Surface . Right $ \case
+    "->"   -> Surface $ \case
       []  -> Left "0 arguments given to ->"
       [_] -> Left "1 argument given to ->"
       ts  -> Right $ foldr1 (-->) ts
-    other  -> Surface . Left $ "unknown atom: " <> show other
+    other  -> Surface $ \ _ -> Left $ "unknown atom: " <> show other
 
-  list _ = Surface (Left "unimplemented: list")
+  list _ = Surface (const (Left "unimplemented: list"))
