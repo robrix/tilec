@@ -2,5 +2,10 @@ packages: .
 
 source-repository-package
   type: git
+  location: https://github.com/fused-effects/fused-effects.git
+  tag: 24be5b4dc0a969aa5e67dd3f49b4612a2c3688bc
+
+source-repository-package
+  type: git
   location: https://github.com/fused-effects/fused-effects-parser.git
-  tag: 3650d5b829331c72ecd81ad4d728fe0ed2c0281b
+  tag: 8c3793d86afcfa63641f3baae4d96999878b703d
