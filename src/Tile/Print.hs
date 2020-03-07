@@ -10,6 +10,7 @@ module Tile.Print
 ( prettyPrint
 , prettyPrintWith
 , defaultStyle
+, runPrint
 , PrintC(..)
 , Highlight(..)
 ) where
@@ -69,6 +70,9 @@ instance Eq V where (==) = (==) `on` vvar
 instance Ord V where compare = compare `on` vvar
 instance Show V where showsPrec p = showsPrec p . rainbow . (`runPrec` Level 0) . vdoc
 
+
+runPrint :: PrintC a -> a
+runPrint = snd . run . runWriter . evalFresh 0 . evalState Nothing . getAp . runPrintC
 
 newtype PrintC a = PrintC { runPrintC :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
@@ -195,4 +199,4 @@ bind b f = PrintC $ do
   runPrintC (f (v' <$ guard (v `IntSet.member` fvs)) (pure b'))
 
 toDoc :: PrintC Inner -> PP.Doc (Highlight Int)
-toDoc (PrintC m) = rainbow (runPrec (snd (run (runWriter (evalFresh 0 (evalState Nothing (getAp m)))))) (Level 0))
+toDoc m = rainbow (runPrec (runPrint m) (Level 0))
