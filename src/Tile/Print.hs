@@ -62,9 +62,10 @@ defaultStyle = \case
 
 
 toDoc :: Doc -> PP.Doc (Highlight Int)
-toDoc = rainbow . runPrec (Level 0)
+toDoc (Doc doc) = rainbow (runPrec (Level 0) doc)
 
-type Doc = Prec (Rainbow (PP.Doc (Highlight Int)))
+newtype Doc = Doc (Prec (Rainbow (PP.Doc (Highlight Int))))
+  deriving (P.Doc (Highlight Int), Monoid, P.PrecDoc (Highlight Int), Semigroup)
 
 
 data V = V
