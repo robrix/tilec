@@ -51,7 +51,7 @@ deriving instance Algebra sig m => Parsing (Parse v m)
 deriving instance Algebra sig m => CharParsing (Parse v m)
 deriving instance Algebra sig m => TokenParsing (Parse v m)
 
-instance Var v a m => Var v a (Parse v m) where
+instance (Monad m, Var v a m) => Var v a (Parse v m) where
   var = Parse . lift . var
 
 expr_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Free v a m, Type v a m) => m a

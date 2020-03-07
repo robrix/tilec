@@ -30,22 +30,21 @@ module Tile.Syntax
 
 import Control.Carrier.Reader
 import Control.Monad (ap)
-import Control.Monad.Trans.Class
 import Control.Monad.Trans.Identity
 import Control.Monad.Trans.Reader hiding (runReader)
 import Tile.Plicit
 import Tile.Type
 
-class Monad expr => Var v a expr | expr -> v a where
+class Var v a expr | expr -> v a where
   var :: v -> expr a
 
 deriving instance Var v a m => Var v a (IdentityT m)
 
 instance Var v a m => Var v a (ReaderC r m) where
-  var = lift . var
+  var = ReaderC . const . var
 
 instance Var v a m => Var v a (ReaderT r m) where
-  var = lift . var
+  var = ReaderT . const . var
 
 
 class Var v a expr => Free v a expr where
@@ -54,10 +53,10 @@ class Var v a expr => Free v a expr where
 deriving instance Free v a m => Free v a (IdentityT m)
 
 instance Free v a m => Free v a (ReaderC r m) where
-  free = lift . free
+  free = ReaderC . const . free
 
 instance Free v a m => Free v a (ReaderT r m) where
-  free = lift . free
+  free = ReaderT . const . free
 
 
 class Var v a expr => Let v a expr where
@@ -100,12 +99,12 @@ class Var v a expr => Type v a expr where
 deriving instance Type v a m => Type v a (IdentityT m)
 
 instance Type v a m => Type v a (ReaderC r m) where
-  type' = lift type'
+  type' = ReaderC (const type')
 
   t >-> b = ReaderC $ \ r -> fmap (runReader r) t >-> runReader r . b
 
 instance Type v a m => Type v a (ReaderT r m) where
-  type' = lift type'
+  type' = ReaderT (const type')
 
   t >-> b = ReaderT $ \ r -> fmap (`runReaderT` r) t >-> (`runReaderT` r) . b
 
