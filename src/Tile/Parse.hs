@@ -20,10 +20,10 @@ import           Text.Parser.Token
 import           Text.Parser.Token.Highlight
 import           Tile.Syntax
 
-parse :: forall v t . (Free v t, Type v t) => String -> Either Notice t
-parse s = runReader (mempty @(Map.Map String v)) (runParserWithString lowerBound s expr_)
+parse :: forall v t . String -> Parse v t -> Either Notice t
+parse s = runReader (mempty @(Map.Map String v)) . runParserWithString lowerBound s . runParse
 
-newtype Parse v t = Parse (ParserC (ReaderC (Map.Map String v) (Either Notice)) t)
+newtype Parse v t = Parse { runParse :: ParserC (ReaderC Path (ReaderC Lines (ReaderC (Map.Map String v) (Either Notice)))) t }
 
 instance Var v t => Var v (Parse v t) where
   var = Parse . pure . var
