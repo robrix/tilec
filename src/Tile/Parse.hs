@@ -29,16 +29,17 @@ instance Var v t => Var v (Parse v t) where
   var = Parse . pure . var
 
 
-expr_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Free v t, Type v t) => m t
+expr_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Free v (m t), Type v t) => m t
 expr_ = type_ <|> var_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
 
-var_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Free v t) => m t
+var_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Free v (m t)) => m t
 var_ = do
   v <- identifier_
-  asks (maybe (free v) var . Map.lookup v)
+  v' <- asks (Map.lookup v)
+  maybe (free v) var v'
 
 type_ :: (Monad m, TokenParsing m, Type v t) => m t
 type_ = type' <$ reserve identifierStyle "Type"
