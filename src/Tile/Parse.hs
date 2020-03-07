@@ -50,7 +50,7 @@ instance Type v t => SExpr (Surface t) where
   atom = \case
     "Type" -> Surface . Right $ \case
       [] -> Right type'
-      _  -> Left "unexpected arguments to type'"
+      _  -> Left "unexpected arguments to Type"
     "->"   -> Surface . Right $ \case
       []  -> Left "0 arguments given to ->"
       [_] -> Left "1 argument given to ->"
