@@ -31,7 +31,6 @@ module Tile.Syntax
 import Control.Carrier.Reader
 import Control.Monad (ap)
 import Control.Monad.Trans.Reader
-import Data.Functor.Const
 import Data.Functor.Identity
 import Tile.Plicit
 import Tile.Type
@@ -40,7 +39,6 @@ class Var v expr | expr -> v where
   var :: v -> expr
 
 deriving instance Var v t => Var v (Identity t)
-deriving instance Var v t => Var v (Const t a)
 
 instance Var v t => Var v (r -> t) where
   var = const . var
@@ -53,7 +51,6 @@ class Var v expr => Free v expr where
   free :: String -> expr
 
 deriving instance Free v t => Free v (Identity t)
-deriving instance Free v t => Free v (Const t a)
 
 instance Free v t => Free v (r -> t) where
   free = const . free
@@ -66,7 +63,6 @@ class Var v expr => Let v expr where
   let' :: expr ::: expr -> (v -> expr) -> expr
 
 deriving instance Let v t => Let v (Identity t)
-deriving instance Let v t => Let v (Const t a)
 
 instance Let v t => Let v (r -> t) where
   let' (v ::: t) b r = let' (v r ::: t r) (($ r) . b)
@@ -82,7 +78,6 @@ class Var v expr => Lam v expr where
   infixl 9 $$
 
 deriving instance Lam v t => Lam v (Identity t)
-deriving instance Lam v t => Lam v (Const t a)
 
 instance Lam v t => Lam v (r -> t) where
   lam p b r = lam p (($ r) . b)
@@ -100,7 +95,6 @@ class Var v expr => Type v expr where
   infixr 6 >->
 
 deriving instance Type v t => Type v (Identity t)
-deriving instance Type v t => Type v (Const t a)
 
 instance Type v t => Type v (r -> t) where
   type' = const type'
@@ -129,7 +123,6 @@ class Var v expr => Prob v expr where
   infixl 4 ===
 
 deriving instance Prob v t => Prob v (Identity t)
-deriving instance Prob v t => Prob v (Const t a)
 
 instance Prob v t => Prob v (r -> t) where
   ex t b r = ex (t r) (($ r) . b)
@@ -144,7 +137,6 @@ class Err e expr | expr -> e where
   err :: e -> expr
 
 deriving instance Err e t => Err e (Identity t)
-deriving instance Err e t => Err e (Const t a)
 
 instance Err e t => Err e (r -> t) where
   err = const . err
