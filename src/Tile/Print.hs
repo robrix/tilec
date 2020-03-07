@@ -35,7 +35,7 @@ prettyPrint :: MonadIO m => PrintC Inner -> m ()
 prettyPrint = prettyPrintWith defaultStyle
 
 prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> PrintC Inner -> m ()
-prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc
+prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc . runPrint
 
 defaultStyle :: Highlight Int -> ANSI.AnsiStyle
 defaultStyle = \case
@@ -81,7 +81,7 @@ deriving instance Doc     (Highlight Int) (PrintC Inner)
 deriving instance PrecDoc (Highlight Int) (PrintC Inner)
 
 instance Show (PrintC Inner) where
-  showsPrec p = showsPrec p . toDoc
+  showsPrec p = showsPrec p . toDoc . runPrint
 
 instance Var V Inner PrintC where
   var v = inContext Var (PrintC (vdoc v <$ tell (IntSet.singleton (vvar v))))
@@ -198,5 +198,5 @@ bind b f = PrintC $ do
   (fvs, b') <- censor (IntSet.delete v) (listen (runPrintC (b v')))
   runPrintC (f (v' <$ guard (v `IntSet.member` fvs)) (pure b'))
 
-toDoc :: PrintC Inner -> PP.Doc (Highlight Int)
-toDoc = rainbow . runPrec (Level 0) . runPrint
+toDoc :: Inner -> PP.Doc (Highlight Int)
+toDoc = rainbow . runPrec (Level 0)
