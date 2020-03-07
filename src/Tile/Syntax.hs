@@ -104,11 +104,6 @@ instance Lam v t => Lam v (r -> t) where
 deriving instance Lam v (m a) => Lam v (ReaderC r m a)
 deriving instance Lam v (m a) => Lam v (ReaderT r m a)
 
-instance (Err e t, Lam v t) => Lam v (Either e t) where
-  lam p b = Right (lam p (either err id . b))
-
-  f $$ a = ($$) <$> f <*> a
-
 
 class Var v expr => Type v expr where
   type' :: expr
