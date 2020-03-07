@@ -22,7 +22,7 @@ ctx |- (Elab m ::: t) = m t ctx
 
 infixl 1 |-
 
-newtype Elab v t = Elab { runElabC :: t -> Map v t -> t }
+newtype Elab v t = Elab (t -> Map v t -> t)
 
 instance (Ord v, Prob v t, Err v t) => Var v (Elab v t) where
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
