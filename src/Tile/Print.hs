@@ -199,4 +199,4 @@ bind b f = PrintC $ do
   runPrintC (f (v' <$ guard (v `IntSet.member` fvs)) (pure b'))
 
 toDoc :: PrintC Inner -> PP.Doc (Highlight Int)
-toDoc m = rainbow (runPrec (Level 0) (runPrint m))
+toDoc = rainbow . runPrec (Level 0) . runPrint
