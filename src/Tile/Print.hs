@@ -13,7 +13,7 @@ module Tile.Print
 , prettyPrintWith
 , defaultStyle
 , runPrint
-, PrintC(..)
+, PrintC(PrintC)
 , Highlight(..)
 ) where
 
