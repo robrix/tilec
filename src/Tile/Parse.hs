@@ -1,5 +1,6 @@
 module Tile.Parse
 ( parse
+, expr_
 ) where
 
 import Control.Applicative (Alternative(..))
@@ -14,8 +15,11 @@ import Text.Parser.Token.Highlight
 import Tile.Syntax
 
 parse :: Type v t => String -> Either Notice t
-parse s = run (runThrow (runParserWithString lowerBound s type_))
+parse s = run (runThrow (runParserWithString lowerBound s expr_))
 
+
+expr_ :: (Monad m, TokenParsing m, Type v t) => m t
+expr_ = type_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
