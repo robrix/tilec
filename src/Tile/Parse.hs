@@ -5,6 +5,7 @@
 {-# LANGUAGE TypeApplications #-}
 module Tile.Parse
 ( parse
+, parseString
 , Parse(..)
 , expr_
 ) where
@@ -28,6 +29,9 @@ parse :: forall v t . Path -> String -> Parse v t -> Either Notice t
 parse path s p = runParser (const (const . Right)) failure failure (Input lowerBound s) (runParse p) (mempty @(Map.Map String v)) where
   failure = const . Left . errToNotice path lines
   lines = linesFromString s
+
+parseString :: String -> Parse v t -> Either Notice t
+parseString = parse (Path "(interactive)")
 
 newtype Parse v t = Parse { runParse :: ParserC ((->) (Map.Map String v)) t }
   deriving (Alternative, Applicative, CharParsing, Functor, Monad, Parsing, TokenParsing)
