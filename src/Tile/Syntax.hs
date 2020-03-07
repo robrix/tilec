@@ -64,6 +64,9 @@ instance Free v t => Free v (r -> t) where
 deriving instance Free v (m a) => Free v (ReaderC r m a)
 deriving instance Free v (m a) => Free v (ReaderT r m a)
 
+instance Free v t => Free v (Either e t) where
+  free = pure . free
+
 
 class Var v expr => Let v expr where
   let' :: expr ::: expr -> (v -> expr) -> expr
