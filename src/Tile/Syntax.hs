@@ -55,6 +55,9 @@ class Free v expr | expr -> v where
 deriving instance Free v t => Free v (Identity t)
 deriving instance Free v t => Free v (Const t a)
 
+instance Free v t => Free v (r -> t) where
+  free = const . free
+
 
 class Var v expr => Let v expr where
   let' :: expr ::: expr -> (v -> expr) -> expr
