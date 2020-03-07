@@ -60,6 +60,10 @@ defaultStyle = \case
     [ANSI.color, ANSI.colorDull]
   len = length colours
 
+
+toDoc :: Doc -> PP.Doc (Highlight Int)
+toDoc = rainbow . runPrec (Level 0)
+
 type Doc = Prec (Rainbow (PP.Doc (Highlight Int)))
 
 data V = V
@@ -198,6 +202,3 @@ bind b f = PrintC $ do
   let v' = V v (prettyVar v)
   (fvs, b') <- censor (IntSet.delete v) (listen (runPrintC (b v')))
   runPrintC (f (v' <$ guard (v `IntSet.member` fvs)) (pure b'))
-
-toDoc :: Doc -> PP.Doc (Highlight Int)
-toDoc = rainbow . runPrec (Level 0)
