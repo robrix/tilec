@@ -33,10 +33,10 @@ sexpr_ :: (Monad m, TokenParsing m, SExpr t) => m t
 sexpr_ = list_ <|> atom_
 
 atom_ :: (Monad m, TokenParsing m, SExpr t) => m t
-atom_ = identifier_ <|> type_
+atom_ = identifier <$> identifier_ <|> type_
 
-identifier_ :: (Monad m, TokenParsing m, SExpr t) => m t
-identifier_ = identifier <$> ident identifierStyle
+identifier_ :: (Monad m, TokenParsing m) => m String
+identifier_ = ident identifierStyle
 
 type_ :: (Monad m, TokenParsing m, SExpr t) => m t
 type_ = Tile.Parse.type' <$ reserve identifierStyle "Type"
