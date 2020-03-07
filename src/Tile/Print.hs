@@ -78,34 +78,34 @@ deriving instance PrecDoc (Highlight Int) (Print Inner)
 instance Show (Print Inner) where
   showsPrec p = showsPrec p . toDoc
 
-instance Var V (Print Inner) where
+instance Var V Inner Print where
   var v = inContext Var (Print (vdoc v <$ tell (IntSet.singleton (vvar v))))
 
-instance Let V (Print Inner) where
+instance Let V Inner Print where
   let' (tm ::: ty) b = inContext Let . bind b $ \ v b ->
     -- FIXME: bind variables on the lhs when tm is a lambda
     kw "let" <+> prettyBind v <+> group (align (prettyAnn (op "=" <+> tm ::: ty))) <+> kw "in" </> b
 
-instance Lam V (Print Inner) where
+instance Lam V Inner Print where
   lam p b = prec (Level 6) . inContext Lam . bind b $ \ v b ->
     plicit braces id p (prettyBind v) <+> b
 
   f $$ a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
 
-instance Type V (Print Inner) where
+instance Type V Inner Print where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
   (p, t) >-> b = prec (Level 6) . inContext Pi . bind b $ \ v b ->
     group (align (maybe (plicit braces (prec (Level 7)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . pure . vdoc) v </> op "→" <+> b))
 
-instance Prob V (Print Inner) where
+instance Prob V Inner Print where
   ex t b = prec (Level 6) . inContext Exists . bind (b . toMeta) $ \ v b ->
     group (align (op "∃" <+> group (align (reset (Level 0) (prettyAnn (prettyBind (toMeta <$> v) ::: t)))) <+> op "." </> reset (Level 0) b)) where
     toMeta v = v { vdoc = annotate MetaVar (pretty '?' <> vdoc v) }
 
   t1 === t2 = prec (Level 4) (inContext Equate (group (align (flatAlt (space <> space) mempty <> prec (Level 5) (prettyAnn t1) </> op "≡" <+> prec (Level 5) (prettyAnn t2)))))
 
-instance Err (Print Inner) (Print Inner) where
+instance Err (Print Inner) Inner Print where
   err = id
 
 instance FreeVariable V (Print Inner) where

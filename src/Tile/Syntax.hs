@@ -30,119 +30,129 @@ module Tile.Syntax
 
 import Control.Carrier.Reader
 import Control.Monad (ap)
-import Control.Monad.Trans.Reader
-import Data.Functor.Identity
+import Control.Monad.Trans.Class
+import Control.Monad.Trans.Identity
+import Control.Monad.Trans.Reader hiding (runReader)
 import Tile.Plicit
 import Tile.Type
 
-class Var v expr | expr -> v where
-  var :: v -> expr
+class Monad expr => Var v a expr | expr -> v a where
+  var :: v -> expr a
 
-deriving instance Var v t => Var v (Identity t)
+deriving instance Var v a m => Var v a (IdentityT m)
 
-instance Var v t => Var v (r -> t) where
-  var = const . var
+instance Var v a m => Var v a (ReaderC r m) where
+  var = lift . var
 
-deriving instance Var v (m a) => Var v (ReaderC r m a)
-deriving instance Var v (m a) => Var v (ReaderT r m a)
-
-
-class Var v expr => Free v expr where
-  free :: String -> expr
-
-deriving instance Free v t => Free v (Identity t)
-
-instance Free v t => Free v (r -> t) where
-  free = const . free
-
-deriving instance Free v (m a) => Free v (ReaderC r m a)
-deriving instance Free v (m a) => Free v (ReaderT r m a)
+instance Var v a m => Var v a (ReaderT r m) where
+  var = lift . var
 
 
-class Var v expr => Let v expr where
-  let' :: expr ::: expr -> (v -> expr) -> expr
+class Var v a expr => Free v a expr where
+  free :: String -> expr a
 
-deriving instance Let v t => Let v (Identity t)
+deriving instance Free v a m => Free v a (IdentityT m)
 
-instance Let v t => Let v (r -> t) where
-  let' (v ::: t) b r = let' (v r ::: t r) (($ r) . b)
+instance Free v a m => Free v a (ReaderC r m) where
+  free = lift . free
 
-deriving instance Let v (m a) => Let v (ReaderC r m a)
-deriving instance Let v (m a) => Let v (ReaderT r m a)
+instance Free v a m => Free v a (ReaderT r m) where
+  free = lift . free
 
 
-class Var v expr => Lam v expr where
-  lam :: Plicit -> (v -> expr) -> expr
+class Var v a expr => Let v a expr where
+  let' :: expr a ::: expr a -> (v -> expr a) -> expr a
 
-  ($$) :: expr -> expr -> expr
+deriving instance Let v a m => Let v a (IdentityT m)
+
+instance Let v a m => Let v a (ReaderC r m) where
+  let' (v ::: t) b = ReaderC $ \ r -> let' (runReader r v ::: runReader r t) (runReader r . b)
+
+instance Let v a m => Let v a (ReaderT r m) where
+  let' (v ::: t) b = ReaderT $ \ r -> let' (runReaderT v r ::: runReaderT t r) ((`runReaderT` r) . b)
+
+
+class Var v a expr => Lam v a expr where
+  lam :: Plicit -> (v -> expr a) -> expr a
+
+  ($$) :: expr a -> expr a -> expr a
   infixl 9 $$
 
-deriving instance Lam v t => Lam v (Identity t)
+deriving instance Lam v a m => Lam v a (IdentityT m)
 
-instance Lam v t => Lam v (r -> t) where
-  lam p b r = lam p (($ r) . b)
+instance Lam v a m => Lam v a (ReaderC r m) where
+  lam p b = ReaderC $ \ r -> lam p (runReader r . b)
 
-  (f $$ a) r = f r $$ a r
+  f $$ a = ReaderC $ \ r -> runReader r f $$ runReader r a
 
-deriving instance Lam v (m a) => Lam v (ReaderC r m a)
-deriving instance Lam v (m a) => Lam v (ReaderT r m a)
+instance Lam v a m => Lam v a (ReaderT r m) where
+  lam p b = ReaderT $ \ r -> lam p ((`runReaderT` r) . b)
+
+  f $$ a = ReaderT $ \ r -> runReaderT f r $$ runReaderT a r
 
 
-class Var v expr => Type v expr where
-  type' :: expr
+class Var v a expr => Type v a expr where
+  type' :: expr a
 
-  (>->) :: (Plicit, expr) -> (v -> expr) -> expr
+  (>->) :: (Plicit, expr a) -> (v -> expr a) -> expr a
   infixr 6 >->
 
-deriving instance Type v t => Type v (Identity t)
+deriving instance Type v a m => Type v a (IdentityT m)
 
-instance Type v t => Type v (r -> t) where
-  type' = const type'
+instance Type v a m => Type v a (ReaderC r m) where
+  type' = lift type'
 
-  (t >-> b) r = fmap ($ r) t >-> ($ r) . b
+  t >-> b = ReaderC $ \ r -> fmap (runReader r) t >-> runReader r . b
 
-deriving instance Type v (m a) => Type v (ReaderC r m a)
-deriving instance Type v (m a) => Type v (ReaderT r m a)
+instance Type v a m => Type v a (ReaderT r m) where
+  type' = lift type'
 
-(-->) :: Type v expr => expr -> expr -> expr
+  t >-> b = ReaderT $ \ r -> fmap (`runReaderT` r) t >-> (`runReaderT` r) . b
+
+(-->) :: Type v a expr => expr a -> expr a -> expr a
 a --> b = (Ex, a) >-> const b
 
 infixr 6 -->
 
-(==>) :: Type v expr => expr -> (v -> expr) -> expr
+(==>) :: Type v a expr => expr a -> (v -> expr a) -> expr a
 a ==> b = (Im, a) >-> b
 
 infixr 6 ==>
 
 
-class Var v expr => Prob v expr where
-  ex :: expr -> (v -> expr) -> expr
+class Var v a expr => Prob v a expr where
+  ex :: expr a -> (v -> expr a) -> expr a
   infixr 6 `ex`
 
-  (===) :: expr ::: expr -> expr ::: expr -> expr
+  (===) :: expr a ::: expr a -> expr a ::: expr a -> expr a
   infixl 4 ===
 
-deriving instance Prob v t => Prob v (Identity t)
+deriving instance Prob v a m => Prob v a (IdentityT m)
 
-instance Prob v t => Prob v (r -> t) where
-  ex t b r = ex (t r) (($ r) . b)
+instance Prob v a m => Prob v a (ReaderC r m) where
+  ex t b = ReaderC $ \ r -> ex (runReader r t) (runReader r . b)
 
-  ((tm1 ::: ty1) === (tm2 ::: ty2)) r = (tm1 r ::: ty1 r) === (tm2 r ::: ty2 r)
+  (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderC $ \ r -> (runReader r tm1 ::: runReader r ty1) === (runReader r tm2 ::: runReader r ty2)
 
-deriving instance Prob v (m a) => Prob v (ReaderC r m a)
-deriving instance Prob v (m a) => Prob v (ReaderT r m a)
+instance Prob v a m => Prob v a (ReaderT r m) where
+  ex t b = ReaderT $ \ r -> ex (runReaderT t r) ((`runReaderT` r) . b)
+
+  (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderT $ \ r -> (runReaderT tm1 r ::: runReaderT ty1 r) === (runReaderT tm2 r ::: runReaderT ty2 r)
 
 
-class Err e expr | expr -> e where
-  err :: e -> expr
 
-deriving instance Err e t => Err e (Identity t)
 
-instance Err e t => Err e (r -> t) where
-  err = const . err
+class Monad expr => Err e a expr | expr -> e a where
+  err :: e -> expr a
 
-deriving instance Err e (m a) => Err e (ReaderC r m a)
-deriving instance Err e (m a) => Err e (ReaderT r m a)
+deriving instance Err e a m => Err e a (IdentityT m)
+
+instance Err e a m => Err e a (ReaderC r m) where
+  err = lift . err
+
+instance Err e a m => Err e a (ReaderT r m) where
+  err = lift . err
+
 
 
 class Def tm ty a def | def -> tm ty where
@@ -153,24 +163,24 @@ class Def tm ty a def | def -> tm ty where
 -- FIXME: packages
 
 
-runScript :: (a -> t) -> Script t a -> t
+runScript :: (b -> m a) -> Script a m b -> m a
 runScript k (Script r) = r k
 
-newtype Script t a = Script ((a -> t) -> t)
+newtype Script a m b = Script ((b -> m a) -> m a)
   deriving (Functor)
 
-instance Applicative (Script t) where
+instance Applicative (Script a m) where
   pure = Script . flip ($)
   (<*>) = ap
 
-instance Monad (Script t) where
+instance Monad (Script a m) where
   m >>= f = Script (\ k -> runScript (runScript k . f) m)
 
-meta :: Prob v t => t -> Script t v
+meta :: Prob v a m => m a -> Script a m v
 meta = Script . ex
 
-intro :: Lam v t => Plicit -> Script t v
+intro :: Lam v a m => Plicit -> Script a m v
 intro = Script . lam
 
-letbind :: Let v t => t ::: t -> Script t v
+letbind :: Let v a m => m a ::: m a -> Script a m v
 letbind = Script . let'

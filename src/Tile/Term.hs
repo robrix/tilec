@@ -116,32 +116,32 @@ instance Monad (Term e v) where
     t1 :===: t2 -> bimap (>>= f) (>>= f) t1 :===: bimap (>>= f) (>>= f) t2
     Err e       -> Err e
 
-instance Var v (Term e v v) where
+instance Var v v (Term e v) where
   var = Var
 
-instance Let v (Term e v v) where
+instance Let v v (Term e v) where
   let' = Let
 
-instance Lam v (Term e v v) where
+instance Lam v v (Term e v) where
   lam = Lam
   ($$) = (:$)
 
-instance Type v (Term e v v) where
+instance Type v v (Term e v) where
   type' = Type
   (>->) = (:->)
 
-instance Prob v (Term e v v) where
+instance Prob v v (Term e v) where
   ex = E
   (===) = (:===:)
 
-instance Err e (Term e v v) where
+instance Err e v (Term e v) where
   err = Err
 
 infixl 9 :$
 infixr 6 :->
 infixl 4 :===:
 
-interpret :: (Let v t, Lam v t, Type v t, Prob v t, Err e t) => Term e v v -> t
+interpret :: (Let v a m, Lam v a m, Type v a m, Prob v a m, Err e a m) => Term e v v -> m a
 interpret = \case
   Var v       -> var v
   Let v b     -> let' (bimap interpret interpret v) (interpret . b)
