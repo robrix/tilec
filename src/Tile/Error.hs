@@ -5,6 +5,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Error
 ( FreeVariable(..)
+, Error(..)
 ) where
 
 import Control.Carrier.Reader
@@ -23,3 +24,8 @@ instance FreeVariable v e => FreeVariable v (r -> e) where
 
 deriving instance FreeVariable v (m a) => FreeVariable v (ReaderC r m a)
 deriving instance FreeVariable v (m a) => FreeVariable v (ReaderT r m a)
+
+
+newtype Error v
+  = FreeVariable v
+  deriving (Eq, Ord, Show)
