@@ -49,7 +49,7 @@ deriving instance Var v (m a) => Var v (ReaderC r m a)
 deriving instance Var v (m a) => Var v (ReaderT r m a)
 
 
-class Free v expr | expr -> v where
+class Var v expr => Free v expr where
   free :: v -> expr
 
 deriving instance Free v t => Free v (Identity t)
