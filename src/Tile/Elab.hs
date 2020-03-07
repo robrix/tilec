@@ -76,7 +76,7 @@ instance (Ord v, Let v a m, Prob v a m, Type v a m, FreeVariable v e, Err e a m)
       (   var t' `ex` (\ x -> ctx |> x ::: var t' |- b x ::: var _B)
       ::: var _B)
 
-  m1 ::: t1 === m2 ::: t2 = check $ \ ctx -> do
+  (m1 ::: t1) === (m2 ::: t2) = check $ \ ctx -> do
     t1' <- letbind ((ctx |- t1 ::: type') ::: type')
     t2' <- letbind ((ctx |- t2 ::: type') ::: type')
     pure
