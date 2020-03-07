@@ -39,10 +39,10 @@ let_ t = Gen.subtermM3 t t (local succ t) (\ v t b -> let' (v ::: t) (const b) <
 lam_ :: (MonadGen m, MonadReader Int m, Lam v t, MonadWriter (Set LabelName) m) => m t -> m t
 lam_ t = Gen.subtermM (local succ t) (\ b -> lam <$> genPlicit <*> pure (const b) <* tag "lam")
 
-app_ :: (Lam Int t, MonadGen m, MonadWriter (Set LabelName) m) => m t -> m t
+app_ :: (Lam v t, MonadGen m, MonadWriter (Set LabelName) m) => m t -> m t
 app_ t = Gen.subtermM2 t t (\ f a -> f $$ a <$ tag "$$")
 
-type_ :: (Type Int t, MonadWriter (Set LabelName) m) => m t
+type_ :: (Type v t, MonadWriter (Set LabelName) m) => m t
 type_ = type' <$ tag "type"
 
 pi_ :: (MonadGen m, MonadReader Int m, Type v t, MonadWriter (Set LabelName) m) => m t -> m t
