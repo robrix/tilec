@@ -17,6 +17,7 @@ module Tile.Print
 , Highlight(..)
 ) where
 
+import           Control.Algebra
 import           Control.Applicative ((<**>))
 import           Control.Carrier.Fresh.Strict
 import           Control.Carrier.State.Strict
@@ -84,6 +85,9 @@ runPrint = fmap snd . runWriter . evalFresh 0 . evalState Nothing . getAp . runP
 
 newtype PrintC m a = PrintC { runPrintC :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet m))) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
+
+instance Algebra sig m => Algebra sig (PrintC m) where
+  alg ctx hdl = PrintC . alg ctx (runPrintC . hdl) . R . R . R
 
 deriving instance Monad m => P.Doc     (Highlight Int) (PrintC m Doc)
 deriving instance Monad m => P.PrecDoc (Highlight Int) (PrintC m Doc)
