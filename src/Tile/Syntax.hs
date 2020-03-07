@@ -30,15 +30,12 @@ module Tile.Syntax
 
 import Control.Carrier.Reader
 import Control.Monad (ap)
-import Control.Monad.Trans.Identity
 import Control.Monad.Trans.Reader hiding (runReader)
 import Tile.Plicit
 import Tile.Type
 
 class Var v a expr | expr -> v a where
   var :: v -> expr a
-
-deriving instance Var v a m => Var v a (IdentityT m)
 
 instance Var v a m => Var v a (ReaderC r m) where
   var = ReaderC . const . var
@@ -50,8 +47,6 @@ instance Var v a m => Var v a (ReaderT r m) where
 class Var v a expr => Free v a expr where
   free :: String -> expr a
 
-deriving instance Free v a m => Free v a (IdentityT m)
-
 instance Free v a m => Free v a (ReaderC r m) where
   free = ReaderC . const . free
 
@@ -61,8 +56,6 @@ instance Free v a m => Free v a (ReaderT r m) where
 
 class Var v a expr => Let v a expr where
   let' :: expr a ::: expr a -> (v -> expr a) -> expr a
-
-deriving instance Let v a m => Let v a (IdentityT m)
 
 instance Let v a m => Let v a (ReaderC r m) where
   let' (v ::: t) b = ReaderC $ \ r -> let' (runReader r v ::: runReader r t) (runReader r . b)
@@ -76,8 +69,6 @@ class Var v a expr => Lam v a expr where
 
   ($$) :: expr a -> expr a -> expr a
   infixl 9 $$
-
-deriving instance Lam v a m => Lam v a (IdentityT m)
 
 instance Lam v a m => Lam v a (ReaderC r m) where
   lam p b = ReaderC $ \ r -> lam p (runReader r . b)
@@ -95,8 +86,6 @@ class Var v a expr => Type v a expr where
 
   (>->) :: (Plicit, expr a) -> (v -> expr a) -> expr a
   infixr 6 >->
-
-deriving instance Type v a m => Type v a (IdentityT m)
 
 instance Type v a m => Type v a (ReaderC r m) where
   type' = ReaderC (const type')
@@ -126,8 +115,6 @@ class Var v a expr => Prob v a expr where
   (===) :: expr a ::: expr a -> expr a ::: expr a -> expr a
   infixl 4 ===
 
-deriving instance Prob v a m => Prob v a (IdentityT m)
-
 instance Prob v a m => Prob v a (ReaderC r m) where
   ex t b = ReaderC $ \ r -> ex (runReader r t) (runReader r . b)
 
@@ -143,8 +130,6 @@ instance Prob v a m => Prob v a (ReaderT r m) where
 
 class Err e a expr | expr -> e a where
   err :: e -> expr a
-
-deriving instance Err e a m => Err e a (IdentityT m)
 
 instance Err e a m => Err e a (ReaderC r m) where
   err = ReaderC . const . err
