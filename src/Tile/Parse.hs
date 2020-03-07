@@ -11,10 +11,12 @@ import Control.Applicative (Alternative(..))
 import Control.Carrier.Parser.Church
 import Control.Carrier.Throw.Either
 import Control.Effect.Parser.Notice
-import Data.List.NonEmpty
+import Data.HashSet as HS
+import Data.List.NonEmpty as NE
 import Data.Semilattice.Lower
 import Text.Parser.Char
 import Text.Parser.Token
+import Text.Parser.Token.Highlight
 import Tile.Syntax
 
 parse :: SExpr t => String -> Either Notice t
@@ -25,20 +27,28 @@ class SExpr t where
   atom :: NonEmpty Char -> t
   list :: [t] -> t
 
-sexpr_ :: (TokenParsing m, SExpr t) => m t
+sexpr_ :: (Monad m, TokenParsing m, SExpr t) => m t
 sexpr_ = list_ <|> atom_
 
-atom_ :: (TokenParsing m, SExpr t) => m t
-atom_ = atom <$> token (some1 alphaNum)
+atom_ :: (Monad m, TokenParsing m, SExpr t) => m t
+atom_ = atom . NE.fromList <$> ident (IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier)
 
-list_ :: (TokenParsing m, SExpr t) => m t
+list_ :: (Monad m, TokenParsing m, SExpr t) => m t
 list_ = list <$> parens (many sexpr_)
+
+
+reservedWords :: HashSet String
+reservedWords = HS.fromList
+  [ "Type"
+  , "module"
+  , "import"
+  ]
 
 
 newtype Surface t = Surface { runSurface :: Either String ([t] -> Either String t) }
 
 instance Type v t => SExpr (Surface t) where
-  atom s = case toList s of
+  atom s = case NE.toList s of
     "Type" -> Surface . Right $ \case
       [] -> Right type'
       _  -> Left "unexpected arguments to type'"

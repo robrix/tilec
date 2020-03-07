@@ -58,6 +58,7 @@ library
     , semilattices
     , terminal-size
     , transformers
+    , unordered-containers
   hs-source-dirs: src
 
 test-suite test
