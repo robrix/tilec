@@ -176,6 +176,9 @@ rainbow = (`runRainbow` 0)
 newtype Rainbow doc = Rainbow { runRainbow :: Int -> doc }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
+instance Show doc => Show (Rainbow doc) where
+  showsPrec p = showsPrec p . rainbow
+
 instance (Doc (ann Int) doc, Applicative ann) => Doc (ann Int) (Rainbow doc) where
   pretty = pure . pretty
 
