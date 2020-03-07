@@ -10,6 +10,7 @@ import Hedgehog as H
 import Test.Gen as Gen
 import Test.Tasty
 import Test.Tasty.Hedgehog
+import Tile.Error
 import Tile.Term
 
 tests :: TestTree
@@ -28,5 +29,5 @@ forAllLabelled gen = do
   (t, labels) <- forAll (runWriterT gen)
   t <$ for_ labels label
 
-term :: ReaderT Int (WriterT (Set LabelName) Gen) (Term Int Int)
+term :: ReaderT Int (WriterT (Set LabelName) Gen) (Term (Error Int) Int Int)
 term = term_

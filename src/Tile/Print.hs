@@ -26,6 +26,7 @@ import qualified Data.IntSet as IntSet
 import           Data.Monoid (Ap(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
+import           Tile.Error
 import           Tile.Pretty
 import           Tile.Syntax
 
@@ -104,7 +105,10 @@ instance Prob V (Print Inner) where
 
   t1 === t2 = prec (Level 4) (inContext Equate (group (align (flatAlt (space <> space) mempty <> prec (Level 5) (prettyAnn t1) </> op "≡" <+> prec (Level 5) (prettyAnn t2)))))
 
-instance Err V (Print Inner) where
+instance Err (Print Inner) (Print Inner) where
+  err = id
+
+instance FreeVariable V (Print Inner) where
   freeVariable v = annotate Error (pretty "error") <> pretty ':' <+> pure (vdoc v)
 
 data Highlight a

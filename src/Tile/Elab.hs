@@ -3,6 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 -- | Elaboration, implemented as a mash-up of:
 --
 -- * [An Algebraic Approach to Typechecking and Elaboration](https://bentnib.org/posts/2015-04-19-algebraic-approach-typechecking-and-elaboration.html), Bob Atkey
@@ -15,6 +16,7 @@ module Tile.Elab
 
 import Data.Map
 import Data.Maybe (fromMaybe)
+import Tile.Error
 import Tile.Syntax
 
 (|-) :: Map v t -> Elab v t ::: t -> t
@@ -24,10 +26,10 @@ infixl 1 |-
 
 newtype Elab v t = Elab (t -> Map v t -> t)
 
-instance (Ord v, Prob v t, Err v t) => Var v (Elab v t) where
+instance (Ord v, Prob v t, FreeVariable v e, Err e t) => Var v (Elab v t) where
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
 
-instance (Ord v, Let v t, Prob v t, Type v t, Err v t) => Let v (Elab v t) where
+instance (Ord v, Let v t, Prob v t, Type v t, FreeVariable v e, Err e t) => Let v (Elab v t) where
   let' (v ::: t) b = check $ \ ctx -> do
     _B <- meta type'
     t' <- letbind ((ctx |- t ::: type')  ::: type')
@@ -36,7 +38,7 @@ instance (Ord v, Let v t, Prob v t, Type v t, Err v t) => Let v (Elab v t) where
             ctx |> x ::: var t' |- b x ::: var _B)
       ::: var _B)
 
-instance (Ord v, Let v t, Lam v t, Prob v t, Type v t, Err v t) => Lam v (Elab v t) where
+instance (Ord v, Let v t, Lam v t, Prob v t, Type v t, FreeVariable v e, Err e t) => Lam v (Elab v t) where
   lam p b = check $ \ ctx -> do
     _A <- meta type'
     _B <- meta (var _A --> type')
@@ -51,7 +53,7 @@ instance (Ord v, Let v t, Lam v t, Prob v t, Type v t, Err v t) => Lam v (Elab v
       (   (ctx |- f ::: var _A --> var _B) $$ (ctx |- a ::: var _A)
       ::: var _B)
 
-instance (Ord v, Let v t, Prob v t, Type v t, Err v t) => Type v (Elab v t) where
+instance (Ord v, Let v t, Prob v t, Type v t, FreeVariable v e, Err e t) => Type v (Elab v t) where
   type' = check (const (pure (type' ::: type')))
 
   (p, a) >-> b = check $ \ ctx -> do
@@ -60,7 +62,7 @@ instance (Ord v, Let v t, Prob v t, Type v t, Err v t) => Type v (Elab v t) wher
       (   (p, var a') >-> (\ x -> ctx |> x ::: var a' |- b x ::: type')
       ::: type')
 
-instance (Ord v, Let v t, Prob v t, Type v t, Err v t) => Prob v (Elab v t) where
+instance (Ord v, Let v t, Prob v t, Type v t, FreeVariable v e, Err e t) => Prob v (Elab v t) where
   t `ex` b = check $ \ ctx -> do
     _B <- meta type'
     t' <- letbind ((ctx |- t ::: type') ::: type')
@@ -77,11 +79,11 @@ instance (Ord v, Let v t, Prob v t, Type v t, Err v t) => Prob v (Elab v t) wher
       ::: (   var t1' ::: type'
           === var t2' ::: type'))
 
-deriving instance Err v t => Err v (Elab v t)
+deriving instance Err e t => Err e (Elab v t)
 
 
-typeOf :: (Ord v, Err v t) => Map v t -> v -> t
-typeOf ctx n = fromMaybe (freeVariable n) (ctx !? n)
+typeOf :: (Ord v, FreeVariable v e, Err e t) => Map v t -> v -> t
+typeOf ctx n = fromMaybe (err (freeVariable n)) (ctx !? n)
 
 (|>) :: Ord v => Map v t -> v ::: t -> Map v t
 ctx |> (v ::: t) = insert v t ctx

@@ -146,17 +146,17 @@ deriving instance Prob v (m a) => Prob v (ReaderC r m a)
 deriving instance Prob v (m a) => Prob v (ReaderT r m a)
 
 
-class Err v expr | expr -> v where
-  freeVariable :: v -> expr
+class Err e expr | expr -> e where
+  err :: e -> expr
 
-deriving instance Err v t => Err v (Identity t)
-deriving instance Err v t => Err v (Const t a)
+deriving instance Err e t => Err e (Identity t)
+deriving instance Err e t => Err e (Const t a)
 
-instance Err v t => Err v (r -> t) where
-  freeVariable = const . freeVariable
+instance Err e t => Err e (r -> t) where
+  err = const . err
 
-deriving instance Err v (m a) => Err v (ReaderC r m a)
-deriving instance Err v (m a) => Err v (ReaderT r m a)
+deriving instance Err e (m a) => Err e (ReaderC r m a)
+deriving instance Err e (m a) => Err e (ReaderT r m a)
 
 
 class Def tm ty a def | def -> tm ty where
