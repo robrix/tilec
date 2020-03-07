@@ -25,9 +25,11 @@ import           Text.Parser.Token.Highlight
 import           Tile.Syntax
 
 parse :: forall v t . String -> Parse v t -> Either Notice t
-parse s = runReader (mempty @(Map.Map String v)) . runParserWithString lowerBound s . runParse
+parse s p = runParser (const (const . Right)) failure failure (Input lowerBound s) (runParse p) (mempty @(Map.Map String v)) where
+  failure = const . Left . errToNotice (Path "(interactive)") lines
+  lines = linesFromString s
 
-newtype Parse v t = Parse { runParse :: ParserC (ReaderC Path (ReaderC Lines (ReaderC (Map.Map String v) (Either Notice)))) t }
+newtype Parse v t = Parse { runParse :: ParserC ((->) (Map.Map String v)) t }
   deriving (Alternative, Applicative, CharParsing, Functor, Monad, Parsing, TokenParsing)
 
 instance Var v t => Var v (Parse v t) where
