@@ -16,7 +16,7 @@ import Data.Semilattice.Lower
 import Text.Parser.Char
 import Text.Parser.Token
 import Text.Parser.Token.Highlight
-import Tile.Syntax
+import Tile.Syntax as Syn
 
 parse :: SExpr t => String -> Either Notice t
 parse s = run (runThrow (runParserWithString lowerBound s sexpr_))
@@ -55,7 +55,7 @@ newtype Surface t = Surface { runSurface :: [t] -> Either String t }
 instance Type v t => SExpr (Surface t) where
   identifier = \case
     "Type" -> Surface $ \case
-      [] -> Right type'
+      [] -> Right Syn.type'
       _  -> Left "unexpected arguments to Type"
     "->"   -> Surface $ \case
       []  -> Left "0 arguments given to ->"
