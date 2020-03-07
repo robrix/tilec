@@ -91,7 +91,7 @@ deriving instance P.Doc     (Highlight Int) (PrintC Doc)
 deriving instance P.PrecDoc (Highlight Int) (PrintC Doc)
 
 instance Show (PrintC Doc) where
-  showsPrec p = showsPrec p . toDoc . runPrint
+  showsPrec p = showsPrec p . runPrint
 
 instance Var V Doc PrintC where
   var v = inContext Var (PrintC (vdoc v <$ tell (IntSet.singleton (vvar v))))
