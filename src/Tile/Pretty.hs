@@ -28,7 +28,6 @@ module Tile.Pretty
 ) where
 
 import           Control.Applicative (liftA2)
-import           Control.Arrow ((&&&), (***))
 import           Control.Monad.IO.Class
 import           Data.Monoid (Ap(..))
 import qualified Data.Text.Prettyprint.Doc as PP
@@ -76,19 +75,6 @@ instance Doc ann (PP.Doc ann) where
   group = PP.group
 
   flatAlt = PP.flatAlt
-
-instance (Doc ann a, Doc ann b) => Doc ann (a, b) where
-  pretty = pretty &&& pretty
-
-  hardline = (hardline, hardline)
-
-  annotate a = annotate a *** annotate a
-
-  align = align *** align
-
-  group = group *** group
-
-  flatAlt d = flatAlt (fst d) *** flatAlt (snd d)
 
 instance (Applicative f, Doc ann a) => Doc ann (Ap f a) where
   pretty = pure . pretty
