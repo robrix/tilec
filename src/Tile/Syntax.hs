@@ -52,6 +52,8 @@ deriving instance Var v (m a) => Var v (ReaderT r m a)
 class Free v expr | expr -> v where
   free :: v -> expr
 
+deriving instance Free v t => Free v (Identity t)
+
 
 class Var v expr => Let v expr where
   let' :: expr ::: expr -> (v -> expr) -> expr
