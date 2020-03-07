@@ -24,6 +24,9 @@ parse s = run (runThrow (runParserWithString lowerBound s sexpr_))
 
 class SExpr t where
   identifier :: String -> t
+
+  type' :: t
+
   list :: [t] -> t
 
 sexpr_ :: (Monad m, TokenParsing m, SExpr t) => m t
@@ -62,5 +65,9 @@ instance Type v t => SExpr (Surface t) where
       [_] -> Left "1 argument given to ->"
       ts  -> Right $ foldr1 (-->) ts
     other  -> Surface $ \ _ -> Left $ "unknown atom: " <> show other
+
+  type' = Surface $ \case
+    [] -> Right Syn.type'
+    _  -> Left "unexpected arguments to Type"
 
   list _ = Surface (const (Left "unimplemented: list"))
