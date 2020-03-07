@@ -69,6 +69,9 @@ toDoc (Doc doc) = rainbow (runPrec (Level 0) doc)
 newtype Doc = Doc (Prec (Rainbow (PP.Doc (Highlight Int))))
   deriving newtype (P.Doc (Highlight Int), Monoid, P.PrecDoc (Highlight Int), Semigroup, Show)
 
+instance FreeVariable V Doc where
+  freeVariable v = annotate Error (pretty "error") <> pretty ':' <+> vdoc v
+
 
 data V = V
   { vvar :: {-# UNPACK #-} !Int
@@ -124,9 +127,6 @@ instance Algebra sig m => Prob V Doc (PrintC m) where
 
 instance Algebra sig m => Err Doc Doc (PrintC m) where
   err = pure
-
-instance FreeVariable V Doc where
-  freeVariable v = annotate Error (pretty "error") <> pretty ':' <+> vdoc v
 
 data Highlight a
   = Name
