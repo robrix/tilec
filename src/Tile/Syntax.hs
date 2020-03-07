@@ -48,9 +48,6 @@ instance Var v t => Var v (r -> t) where
 deriving instance Var v (m a) => Var v (ReaderC r m a)
 deriving instance Var v (m a) => Var v (ReaderT r m a)
 
-instance Var v t => Var v (Either e t) where
-  var = pure . var
-
 
 class Var v expr => Free v expr where
   free :: String -> expr
