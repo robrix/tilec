@@ -24,9 +24,9 @@ import           Text.Parser.Token
 import           Text.Parser.Token.Highlight
 import           Tile.Syntax
 
-parse :: forall v t . String -> Parse v t -> Either Notice t
-parse s p = runParser (const (const . Right)) failure failure (Input lowerBound s) (runParse p) (mempty @(Map.Map String v)) where
-  failure = const . Left . errToNotice (Path "(interactive)") lines
+parse :: forall v t . Path -> String -> Parse v t -> Either Notice t
+parse path s p = runParser (const (const . Right)) failure failure (Input lowerBound s) (runParse p) (mempty @(Map.Map String v)) where
+  failure = const . Left . errToNotice path lines
   lines = linesFromString s
 
 newtype Parse v t = Parse { runParse :: ParserC ((->) (Map.Map String v)) t }
