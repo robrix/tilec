@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
@@ -16,6 +17,7 @@ import           Data.HashSet (HashSet, fromList)
 import qualified Data.Map as Map
 import           Data.Semilattice.Lower
 import           Text.Parser.Char
+import           Text.Parser.Combinators
 import           Text.Parser.Token
 import           Text.Parser.Token.Highlight
 import           Tile.Syntax
@@ -24,6 +26,7 @@ parse :: forall v t . String -> Parse v t -> Either Notice t
 parse s = runReader (mempty @(Map.Map String v)) . runParserWithString lowerBound s . runParse
 
 newtype Parse v t = Parse { runParse :: ParserC (ReaderC Path (ReaderC Lines (ReaderC (Map.Map String v) (Either Notice)))) t }
+  deriving (Alternative, Applicative, CharParsing, Functor, Monad, Parsing, TokenParsing)
 
 instance Var v t => Var v (Parse v t) where
   var = Parse . pure . var
