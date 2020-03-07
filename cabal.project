@@ -3,4 +3,4 @@ packages: .
 source-repository-package
   type: git
   location: https://github.com/fused-effects/fused-effects-parser.git
-  tag: 6bcee2892a55817cbf6c817a604af586295fc3c6
+  tag: 3650d5b829331c72ecd81ad4d728fe0ed2c0281b

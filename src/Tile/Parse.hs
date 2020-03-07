@@ -12,7 +12,9 @@ module Tile.Parse
 import           Control.Applicative (Alternative(..))
 import           Control.Carrier.Parser.Church
 import           Control.Carrier.Reader
+import           Control.Effect.Parser.Lines
 import           Control.Effect.Parser.Notice
+import           Control.Effect.Parser.Path
 import           Data.HashSet (HashSet, fromList)
 import qualified Data.Map as Map
 import           Data.Semilattice.Lower
