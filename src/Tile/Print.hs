@@ -69,7 +69,7 @@ data V = V
 
 instance Eq V where (==) = (==) `on` vvar
 instance Ord V where compare = compare `on` vvar
-instance Show V where showsPrec p = showsPrec p . rainbow . runPrec (Level 0) . vdoc
+instance Show V where showsPrec p = showsPrec p . toDoc . vdoc
 
 
 runPrint :: PrintC a -> a
