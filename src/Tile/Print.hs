@@ -10,7 +10,7 @@ module Tile.Print
 ( prettyPrint
 , prettyPrintWith
 , defaultStyle
-, Print(..)
+, PrintC(..)
 , Highlight(..)
 ) where
 
@@ -30,10 +30,10 @@ import           Tile.Error
 import           Tile.Pretty
 import           Tile.Syntax
 
-prettyPrint :: MonadIO m => Print Inner -> m ()
+prettyPrint :: MonadIO m => PrintC Inner -> m ()
 prettyPrint = prettyPrintWith defaultStyle
 
-prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> Print Inner -> m ()
+prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> PrintC Inner -> m ()
 prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc
 
 defaultStyle :: Highlight Int -> ANSI.AnsiStyle
@@ -69,46 +69,46 @@ instance Eq V where (==) = (==) `on` vvar
 instance Ord V where compare = compare `on` vvar
 instance Show V where showsPrec p = showsPrec p . rainbow . (`runPrec` Level 0) . vdoc
 
-newtype Print a = Print { runPrint :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) a }
+newtype PrintC a = PrintC { runPrint :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
-deriving instance Doc     (Highlight Int) (Print Inner)
-deriving instance PrecDoc (Highlight Int) (Print Inner)
+deriving instance Doc     (Highlight Int) (PrintC Inner)
+deriving instance PrecDoc (Highlight Int) (PrintC Inner)
 
-instance Show (Print Inner) where
+instance Show (PrintC Inner) where
   showsPrec p = showsPrec p . toDoc
 
-instance Var V Inner Print where
-  var v = inContext Var (Print (vdoc v <$ tell (IntSet.singleton (vvar v))))
+instance Var V Inner PrintC where
+  var v = inContext Var (PrintC (vdoc v <$ tell (IntSet.singleton (vvar v))))
 
-instance Let V Inner Print where
+instance Let V Inner PrintC where
   let' (tm ::: ty) b = inContext Let . bind b $ \ v b ->
     -- FIXME: bind variables on the lhs when tm is a lambda
     kw "let" <+> prettyBind v <+> group (align (prettyAnn (op "=" <+> tm ::: ty))) <+> kw "in" </> b
 
-instance Lam V Inner Print where
+instance Lam V Inner PrintC where
   lam p b = prec (Level 6) . inContext Lam . bind b $ \ v b ->
     plicit braces id p (prettyBind v) <+> b
 
   f $$ a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
 
-instance Type V Inner Print where
+instance Type V Inner PrintC where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
   (p, t) >-> b = prec (Level 6) . inContext Pi . bind b $ \ v b ->
     group (align (maybe (plicit braces (prec (Level 7)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . pure . vdoc) v </> op "→" <+> b))
 
-instance Prob V Inner Print where
+instance Prob V Inner PrintC where
   ex t b = prec (Level 6) . inContext Exists . bind (b . toMeta) $ \ v b ->
     group (align (op "∃" <+> group (align (reset (Level 0) (prettyAnn (prettyBind (toMeta <$> v) ::: t)))) <+> op "." </> reset (Level 0) b)) where
     toMeta v = v { vdoc = annotate MetaVar (pretty '?' <> vdoc v) }
 
   t1 === t2 = prec (Level 4) (inContext Equate (group (align (flatAlt (space <> space) mempty <> prec (Level 5) (prettyAnn t1) </> op "≡" <+> prec (Level 5) (prettyAnn t2)))))
 
-instance Err (Print Inner) Inner Print where
+instance Err (PrintC Inner) Inner PrintC where
   err = id
 
-instance FreeVariable V (Print Inner) where
+instance FreeVariable V (PrintC Inner) where
   freeVariable v = annotate Error (pretty "error") <> pretty ':' <+> pure (vdoc v)
 
 data Highlight a
@@ -144,7 +144,7 @@ data Ctx
   | Equate
   deriving (Eq, Ord, Show)
 
-transition :: Maybe Ctx -> Maybe Ctx -> Print Inner -> Print Inner
+transition :: Maybe Ctx -> Maybe Ctx -> PrintC Inner -> PrintC Inner
 transition from to = exit from . enter to where
   enter = \case
     Just Let    -> group . align
@@ -158,15 +158,15 @@ transition from to = exit from . enter to where
     Just Lam -> (op "." </>) . reset (Level 0)
     _ -> id
 
-inContext :: Ctx -> Print Inner -> Print Inner
+inContext :: Ctx -> PrintC Inner -> PrintC Inner
 inContext ctx m = do
-  ctx' <- Print get
+  ctx' <- PrintC get
   if ctx' == Just ctx then
     m
   else do
-    Print (put (Just ctx))
+    PrintC (put (Just ctx))
     a <- transition ctx' (Just ctx) m
-    a <$ Print (put ctx')
+    a <$ PrintC (put ctx')
 
 
 kw :: Doc (Highlight Int) doc => String -> doc
@@ -175,7 +175,7 @@ kw = annotate Keyword . pretty
 op :: Doc (Highlight Int) doc => String -> doc
 op = annotate Op . pretty
 
-prettyBind :: Maybe V -> Print Inner
+prettyBind :: Maybe V -> PrintC Inner
 prettyBind = maybe (pretty '_') (pure . vdoc)
 
 prettyVar :: Doc (Highlight Int) doc => Int -> doc
@@ -186,12 +186,12 @@ prettyVar i = annotate Name (pretty (alphabet !! r) <> if q > 0 then pretty q el
 prettyAnn :: PrecDoc (Highlight Int) doc => doc ::: doc -> doc
 prettyAnn (tm ::: ty) = group (prec (Level 6) tm </> group (align (op ":" <+> prec (Level 6) ty)))
 
-bind :: (V -> Print a) -> (Maybe V -> Print a -> Print b) -> Print b
-bind b f = Print $ do
+bind :: (V -> PrintC a) -> (Maybe V -> PrintC a -> PrintC b) -> PrintC b
+bind b f = PrintC $ do
   v <- fresh
   let v' = V v (prettyVar v)
   (fvs, b') <- censor (IntSet.delete v) (listen (runPrint (b v')))
   runPrint (f (v' <$ guard (v `IntSet.member` fvs)) (pure b'))
 
-toDoc :: Print Inner -> PP.Doc (Highlight Int)
-toDoc (Print m) = rainbow (runPrec (snd (run (runWriter (evalFresh 0 (evalState Nothing (getAp m)))))) (Level 0))
+toDoc :: PrintC Inner -> PP.Doc (Highlight Int)
+toDoc (PrintC m) = rainbow (runPrec (snd (run (runWriter (evalFresh 0 (evalState Nothing (getAp m)))))) (Level 0))
