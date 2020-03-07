@@ -69,7 +69,7 @@ instance Eq V where (==) = (==) `on` vvar
 instance Ord V where compare = compare `on` vvar
 instance Show V where showsPrec p = showsPrec p . rainbow . (`runPrec` Level 0) . vdoc
 
-newtype PrintC a = PrintC { runPrint :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) a }
+newtype PrintC a = PrintC { runPrintC :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
 deriving instance Doc     (Highlight Int) (PrintC Inner)
@@ -190,8 +190,8 @@ bind :: (V -> PrintC a) -> (Maybe V -> PrintC a -> PrintC b) -> PrintC b
 bind b f = PrintC $ do
   v <- fresh
   let v' = V v (prettyVar v)
-  (fvs, b') <- censor (IntSet.delete v) (listen (runPrint (b v')))
-  runPrint (f (v' <$ guard (v `IntSet.member` fvs)) (pure b'))
+  (fvs, b') <- censor (IntSet.delete v) (listen (runPrintC (b v')))
+  runPrintC (f (v' <$ guard (v `IntSet.member` fvs)) (pure b'))
 
 toDoc :: PrintC Inner -> PP.Doc (Highlight Int)
 toDoc (PrintC m) = rainbow (runPrec (snd (run (runWriter (evalFresh 0 (evalState Nothing (getAp m)))))) (Level 0))
