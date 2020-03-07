@@ -6,6 +6,7 @@
 module Tile.Parse
 ( parse
 , parseString
+, parseFile
 , Parse(..)
 , expr_
 ) where
@@ -16,6 +17,7 @@ import           Control.Carrier.Reader
 import           Control.Effect.Parser.Lines
 import           Control.Effect.Parser.Notice
 import           Control.Effect.Parser.Path
+import           Control.Monad.IO.Class
 import           Data.HashSet (HashSet, fromList)
 import qualified Data.Map as Map
 import           Data.Semilattice.Lower
@@ -32,6 +34,11 @@ parse path s p = runParser (const (const . Right)) failure failure (Input lowerB
 
 parseString :: String -> Parse v t -> Either Notice t
 parseString = parse (Path "(interactive)")
+
+parseFile :: MonadIO m => Path -> Parse v t -> m (Either Notice t)
+parseFile path p = do
+  s <- liftIO (readFile (getPath path))
+  pure (parse path s p)
 
 newtype Parse v t = Parse { runParse :: ParserC ((->) (Map.Map String v)) t }
   deriving (Alternative, Applicative, CharParsing, Functor, Monad, Parsing, TokenParsing)
