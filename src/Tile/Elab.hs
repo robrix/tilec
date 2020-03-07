@@ -11,9 +11,10 @@
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module Tile.Elab
 ( (|-)
-, ElabC(..)
+, ElabC(ElabC)
 ) where
 
+import Control.Algebra
 import Control.Carrier.Reader
 import Data.Map
 import Data.Maybe (fromMaybe)
@@ -25,8 +26,11 @@ ctx |- (ElabC m ::: t) = runReader ctx (runReader t m)
 
 infixl 1 |-
 
-newtype ElabC v a m b = ElabC (ReaderC (m a) (ReaderC (Map v (m a)) m) b)
+newtype ElabC v a m b = ElabC { runElabC :: ReaderC (m a) (ReaderC (Map v (m a)) m) b }
   deriving (Applicative, Functor, Monad)
+
+instance Algebra sig m => Algebra sig (ElabC v a m) where
+  alg ctx hdl = ElabC . alg ctx (runElabC . hdl) . R . R
 
 instance (Ord v, Prob v a m, FreeVariable v e, Err e a m) => Var v a (ElabC v a m) where
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
