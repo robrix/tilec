@@ -122,11 +122,11 @@ instance Algebra sig m => Prob V Doc (PrintC m) where
 
   t1 === t2 = prec (Level 4) (inContext Equate (group (align (flatAlt (space <> space) mempty <> prec (Level 5) (prettyAnn t1) </> op "≡" <+> prec (Level 5) (prettyAnn t2)))))
 
-instance Algebra sig m => Err (PrintC m Doc) Doc (PrintC m) where
-  err = id
+instance Algebra sig m => Err Doc Doc (PrintC m) where
+  err = pure
 
-instance Algebra sig m => FreeVariable V (PrintC m Doc) where
-  freeVariable v = annotate Error (pretty "error") <> pretty ':' <+> pure (vdoc v)
+instance FreeVariable V Doc where
+  freeVariable v = annotate Error (pretty "error") <> pretty ':' <+> vdoc v
 
 data Highlight a
   = Name
