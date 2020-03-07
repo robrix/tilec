@@ -207,6 +207,9 @@ runPrec l (Prec run) = run l
 newtype Prec a = Prec (Level -> a)
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
+instance Show a => Show (Prec a) where
+  showsPrec p = showsPrec p . runPrec (Level p)
+
 instance Doc ann doc => Doc ann (Prec doc) where
   pretty = pure . pretty
 
