@@ -1,2 +1,7 @@
+{-# LANGUAGE FunctionalDependencies #-}
 module Tile.Error
-() where
+( FreeVariable(..)
+) where
+
+class FreeVariable v e | e -> v where
+  freeVariable :: v -> e
