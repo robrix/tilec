@@ -50,7 +50,7 @@ deriving instance Var v (m a) => Var v (ReaderT r m a)
 
 
 class Var v expr => Free v expr where
-  free :: v -> expr
+  free :: String -> expr
 
 deriving instance Free v t => Free v (Identity t)
 deriving instance Free v t => Free v (Const t a)
