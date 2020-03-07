@@ -78,7 +78,7 @@ data V = V
 
 instance Eq V where (==) = (==) `on` vvar
 instance Ord V where compare = compare `on` vvar
-instance Show V where showsPrec p = showsPrec p . toDoc . vdoc
+instance Show V where showsPrec p = showsPrec p . vdoc
 
 
 runPrint :: PrintC a -> a
