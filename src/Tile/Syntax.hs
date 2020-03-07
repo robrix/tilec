@@ -7,6 +7,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Syntax
 ( Var(..)
+, Free(..)
 , Let(..)
 , Lam(..)
 , Type(..)
@@ -46,6 +47,10 @@ instance Var v t => Var v (r -> t) where
 
 deriving instance Var v (m a) => Var v (ReaderC r m a)
 deriving instance Var v (m a) => Var v (ReaderT r m a)
+
+
+class Free v expr | expr -> v where
+  free :: v -> expr
 
 
 class Var v expr => Let v expr where
