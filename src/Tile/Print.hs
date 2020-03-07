@@ -80,7 +80,7 @@ instance Show V where showsPrec p = showsPrec p . vdoc
 
 
 runPrint :: PrintC a -> a
-runPrint = snd . run . runWriter . evalFresh 0 . evalState Nothing . getAp . runPrintC
+runPrint = run . fmap snd . runWriter . evalFresh 0 . evalState Nothing . getAp . runPrintC
 
 newtype PrintC a = PrintC { runPrintC :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
