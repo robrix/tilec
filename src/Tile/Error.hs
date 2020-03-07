@@ -1,0 +1,2 @@
+module Tile.Error
+() where
