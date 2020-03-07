@@ -33,10 +33,13 @@ atom_ :: (Monad m, TokenParsing m, SExpr t) => m t
 atom_ = identifier_
 
 identifier_ :: (Monad m, TokenParsing m, SExpr t) => m t
-identifier_ = identifier <$> ident (IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier)
+identifier_ = identifier <$> ident identifierStyle
 
 list_ :: (Monad m, TokenParsing m, SExpr t) => m t
 list_ = list <$> parens (many sexpr_)
+
+identifierStyle :: CharParsing m => IdentifierStyle m
+identifierStyle = IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier
 
 
 reservedWords :: HashSet String
