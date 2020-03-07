@@ -68,7 +68,7 @@ newtype Doc = Doc (Prec (Rainbow (PP.Doc (Highlight Int))))
   deriving (P.Doc (Highlight Int), Monoid, P.PrecDoc (Highlight Int), Semigroup)
 
 instance Show Doc where
-  showsPrec p (Doc doc) = showsPrec p (rainbow (runPrec (Level p) doc))
+  showsPrec p (Doc doc) = showsPrec p doc
 
 
 data V = V
