@@ -30,7 +30,10 @@ sexpr_ :: (Monad m, TokenParsing m, SExpr t) => m t
 sexpr_ = list_ <|> atom_
 
 atom_ :: (Monad m, TokenParsing m, SExpr t) => m t
-atom_ = atom <$> ident (IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier)
+atom_ = identifier_
+
+identifier_ :: (Monad m, TokenParsing m, SExpr t) => m t
+identifier_ = atom <$> ident (IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier)
 
 list_ :: (Monad m, TokenParsing m, SExpr t) => m t
 list_ = list <$> parens (many sexpr_)
