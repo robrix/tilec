@@ -1,3 +1,4 @@
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -22,15 +23,18 @@ import Tile.Error
 import Tile.Syntax
 
 (|-) :: Map v (m a) -> ElabC v a m b ::: m a -> m b
-ctx |- (ElabC m ::: t) = runReader ctx (runReader t m)
+ctx |- (m ::: t) = runElab t ctx m
 
 infixl 1 |-
 
-newtype ElabC v a m b = ElabC { runElabC :: ReaderC (m a) (ReaderC (Map v (m a)) m) b }
-  deriving (Applicative, Functor, Monad)
+runElab :: m a -> Map v (m a) -> ElabC v a m b -> m b
+runElab ty ctx (ElabC run) = run ty ctx
+
+newtype ElabC v a m b = ElabC (m a -> Map v (m a) -> m b)
+  deriving (Applicative, Functor, Monad) via ReaderC (m a) (ReaderC (Map v (m a)) m)
 
 instance Algebra sig m => Algebra sig (ElabC v a m) where
-  alg ctx hdl = ElabC . alg ctx (runElabC . hdl) . R . R
+  alg ctx hdl op = ElabC $ \ ty env -> alg ctx (runElab ty env . hdl) op
 
 instance (Ord v, Prob v a m, FreeVariable v e, Err e a m) => Var v a (ElabC v a m) where
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
@@ -85,7 +89,7 @@ instance (Ord v, Let v a m, Prob v a m, Type v a m, FreeVariable v e, Err e a m)
       ::: (   var t1' ::: type'
           === var t2' ::: type'))
 
-deriving instance Err e a m => Err e a (ElabC v a m)
+deriving via (ReaderC (m a) (ReaderC (Map v (m a)) m)) instance Err e a m => Err e a (ElabC v a m)
 
 
 typeOf :: (Ord v, FreeVariable v e, Err e a m) => Map v (m a) -> v -> m a
@@ -97,7 +101,7 @@ ctx |> (v ::: t) = insert v t ctx
 infixl 1 |>
 
 check :: Prob v a m => (Map v (m a) -> Script a m (m a ::: m a)) -> ElabC v a m a
-check f = ElabC . ReaderC $ \ ty -> ReaderC $ \ ctx -> runScript id $ do
+check f = ElabC $ \ ty ctx -> runScript id $ do
   exp <- meta ty
   act <- f ctx
   pure $! var exp ::: ty === act
