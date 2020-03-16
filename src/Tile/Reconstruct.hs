@@ -10,6 +10,7 @@ module Tile.Reconstruct
 import Tile.Syntax
 
 newtype Reconstruct a t b = Reconstruct { runReconstruct :: t b }
+  deriving (Applicative, Functor, Monad)
 
 deriving instance Var v a t => Var v a (Reconstruct a t)
 deriving instance Let v a t => Let v a (Reconstruct a t)
