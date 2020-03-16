@@ -4,6 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Parse
 ( parse
@@ -13,9 +14,11 @@ module Tile.Parse
 , expr_
 ) where
 
-import           Control.Applicative (Alternative(..))
+import           Control.Algebra
 import           Control.Carrier.Parser.Church
 import           Control.Carrier.Reader
+import           Control.Effect.Cut
+import           Control.Effect.NonDet
 import           Control.Effect.Parser.Lines
 import           Control.Effect.Parser.Notice
 import           Control.Effect.Parser.Path
@@ -45,7 +48,7 @@ parseFile path p = do
   parse path s p
 
 newtype Parse v m a = Parse { runParse :: ParserC (ReaderC (Map.Map String v) m) a }
-  deriving (Alternative, Applicative, Functor, Monad)
+  deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String v) :+: sig), Alternative, Applicative, Functor, Monad)
 
 deriving instance Algebra sig m => Parsing (Parse v m)
 deriving instance Algebra sig m => CharParsing (Parse v m)
