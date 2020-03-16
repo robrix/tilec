@@ -35,7 +35,7 @@ import           Text.Parser.Token.Highlight
 import           Tile.Syntax
 
 parse :: forall v m a sig . Has (Throw Notice) sig m => Path -> String -> ParseC v m a -> m a
-parse path s = runReader (mempty @(Map.Map String v)) . runParser (const pure) failure failure (Input lowerBound s) . runParse where
+parse path s = runReader (mempty @(Map.Map String v)) . runParser (const pure) failure failure (Input lowerBound s) . runParseC where
   failure = throwError . errToNotice path lines
   lines = linesFromString s
 
@@ -47,7 +47,7 @@ parseFile path p = do
   s <- liftIO (readFile (getPath path))
   parse path s p
 
-newtype ParseC v m a = ParseC { runParse :: ParserC (ReaderC (Map.Map String v) m) a }
+newtype ParseC v m a = ParseC { runParseC :: ParserC (ReaderC (Map.Map String v) m) a }
   deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String v) :+: sig), Alternative, Applicative, Functor, Monad)
 
 deriving instance Algebra sig m => Parsing (ParseC v m)
