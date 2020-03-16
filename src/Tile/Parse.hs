@@ -74,6 +74,7 @@ instance (Monad m, Var v a m) => Var v a (ParseC v m) where
 
 instance (Suspending a m, Lam v a m) => Lam v a (ParseC v m) where
   lam p f = ParseC $ ParserC $ \ leaf nil fail input ->
+    -- we can’t hide the context resulting from the parser produced by f in a, so we’ll hide it in m instead
     resume leaf nil fail $ lam p (runParser sleaf snil sfail input . runParseC . f)
 
   f $$ a = ParseC $ ParserC $ \ leaf nil fail input ->
