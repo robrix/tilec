@@ -50,6 +50,9 @@ parseFile path p = do
 newtype ParseC v m a = ParseC { runParseC :: ParserC (ReaderC (Map.Map String v) m) a }
   deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String v) :+: sig), Alternative, Applicative, Functor, Monad)
 
+instance MonadTrans (ParseC v) where
+  lift = ParseC . lift . lift
+
 deriving instance Algebra sig m => Parsing      (ParseC v m)
 deriving instance Algebra sig m => CharParsing  (ParseC v m)
 deriving instance Algebra sig m => TokenParsing (ParseC v m)
