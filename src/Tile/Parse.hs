@@ -61,13 +61,13 @@ class Monad m => Suspending a m | m -> a where
   sleaf :: Input -> a -> m a
   snil  :: Parser.Err -> m a
   sfail :: Parser.Err -> m a
-  resume :: (Input -> a -> m b) -> (Parser.Err -> m b) -> (Parser.Err -> m b) -> m b
+  resume :: (Input -> a -> m b) -> (Parser.Err -> m b) -> (Parser.Err -> m b) -> m a -> m b
 
 instance Suspending a m => Suspending a (ReaderC r m) where
   sleaf i = lift . sleaf i
   snil    = lift . snil
   sfail   = lift . sfail
-  resume leaf nil fail = ReaderC $ \ r -> resume (\ i -> runReader r . leaf i) (runReader r . nil) (runReader r . fail)
+  resume leaf nil fail m = ReaderC $ \ r -> resume (\ i -> runReader r . leaf i) (runReader r . nil) (runReader r . fail) (runReader r m)
 
 instance (Monad m, Var v a m) => Var v a (ParseC v m) where
   var = lift . var
