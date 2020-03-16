@@ -31,7 +31,7 @@ import Control.Monad (ap)
 import Tile.Plicit
 import Tile.Type
 
-class Var v a expr | expr -> v a where
+class Monad expr => Var v a expr | expr -> v a where
   var :: v -> expr a
 
 instance Var v a m => Var v a (ReaderC r m) where
