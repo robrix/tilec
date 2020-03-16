@@ -72,6 +72,13 @@ instance Suspending a m => Suspending a (ReaderC r m) where
 instance (Monad m, Var v a m) => Var v a (ParseC v m) where
   var = lift . var
 
+instance (Suspending a m, Lam v a m) => Lam v a (ParseC v m) where
+  lam p f = ParseC $ ParserC $ \ leaf nil fail input ->
+    resume leaf nil fail $ lam p (runParser sleaf snil sfail input . runParseC . f)
+
+  f $$ a = ParseC $ ParserC $ \ leaf nil fail input ->
+    resume leaf nil fail $ runParser sleaf snil sfail input (runParseC f) $$ runParser sleaf snil sfail input (runParseC a)
+
 expr_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Free v a m, Type v a m) => m a
 expr_ = type_ <|> var_
 
