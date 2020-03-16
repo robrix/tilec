@@ -79,10 +79,10 @@ suspend = runParser sleaf snil sfail
 instance (Suspending a m, Lam v a m) => Lam v a (ParseC v m) where
   lam p f = ParseC $ ParserC $ \ leaf nil fail input ->
     -- we can’t hide the context resulting from the parser produced by f in a, so we’ll hide it in m instead
-    resume leaf nil fail $ lam p (runParser sleaf snil sfail input . runParseC . f)
+    resume leaf nil fail $ lam p (suspend input . runParseC . f)
 
   f $$ a = ParseC $ ParserC $ \ leaf nil fail input ->
-    resume leaf nil fail $ runParser sleaf snil sfail input (runParseC f) $$ runParser sleaf snil sfail input (runParseC a)
+    resume leaf nil fail $ suspend input (runParseC f) $$ suspend input (runParseC a)
 
 expr_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Free v a m, Type v a m) => m a
 expr_ = type_ <|> var_
