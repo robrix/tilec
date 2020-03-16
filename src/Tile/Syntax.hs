@@ -48,6 +48,9 @@ class Var v a expr => Free v a expr where
 instance Free v a m => Free v a (ReaderC r m) where
   free = ReaderC . const . free
 
+instance Free v a m => Free v a (StateC s m) where
+  free v = StateC $ \ k s -> free v >>= k s
+
 
 class Var v a expr => Let v a expr where
   let' :: expr a ::: expr a -> (v -> expr a) -> expr a
