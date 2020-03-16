@@ -90,7 +90,7 @@ newtype PrintC m a = PrintC { runPrintC :: Ap (StateC (Maybe Ctx) (FreshC (Write
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
 
 instance Algebra sig m => Algebra sig (PrintC m) where
-  alg ctx hdl = PrintC . alg ctx (runPrintC . hdl) . R . R . R
+  alg hdl sig = PrintC . alg (runPrintC . hdl) (R (R (R sig)))
 
 deriving instance Monad m => P.Doc     (Highlight Int) (PrintC m Doc)
 deriving instance Monad m => P.PrecDoc (Highlight Int) (PrintC m Doc)
