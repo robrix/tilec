@@ -9,7 +9,7 @@ module Tile.Reconstruct
 
 import Tile.Syntax
 
-newtype Reconstruct t a = Reconstruct { runReconstruct :: a }
+newtype Reconstruct a t b = Reconstruct { runReconstruct :: t b }
 
-deriving instance Var v t => Var v (Reconstruct t t)
-deriving instance Let v t => Let v (Reconstruct t t)
+deriving instance Var v a t => Var v a (Reconstruct a t)
+deriving instance Let v a t => Let v a (Reconstruct a t)
