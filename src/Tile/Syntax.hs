@@ -28,7 +28,6 @@ module Tile.Syntax
 
 import Control.Carrier.Reader
 import Control.Monad (ap)
-import Control.Monad.Trans.Reader hiding (runReader)
 import Tile.Plicit
 import Tile.Type
 
@@ -38,9 +37,6 @@ class Var v a expr | expr -> v a where
 instance Var v a m => Var v a (ReaderC r m) where
   var = ReaderC . const . var
 
-instance Var v a m => Var v a (ReaderT r m) where
-  var = ReaderT . const . var
-
 
 class Var v a expr => Free v a expr where
   free :: String -> expr a
@@ -48,18 +44,12 @@ class Var v a expr => Free v a expr where
 instance Free v a m => Free v a (ReaderC r m) where
   free = ReaderC . const . free
 
-instance Free v a m => Free v a (ReaderT r m) where
-  free = ReaderT . const . free
-
 
 class Var v a expr => Let v a expr where
   let' :: expr a ::: expr a -> (v -> expr a) -> expr a
 
 instance Let v a m => Let v a (ReaderC r m) where
   let' (v ::: t) b = ReaderC $ \ r -> let' (runReader r v ::: runReader r t) (runReader r . b)
-
-instance Let v a m => Let v a (ReaderT r m) where
-  let' (v ::: t) b = ReaderT $ \ r -> let' (runReaderT v r ::: runReaderT t r) ((`runReaderT` r) . b)
 
 
 class Var v a expr => Lam v a expr where
@@ -73,11 +63,6 @@ instance Lam v a m => Lam v a (ReaderC r m) where
 
   f $$ a = ReaderC $ \ r -> runReader r f $$ runReader r a
 
-instance Lam v a m => Lam v a (ReaderT r m) where
-  lam p b = ReaderT $ \ r -> lam p ((`runReaderT` r) . b)
-
-  f $$ a = ReaderT $ \ r -> runReaderT f r $$ runReaderT a r
-
 
 class Var v a expr => Type v a expr where
   type' :: expr a
@@ -89,11 +74,6 @@ instance Type v a m => Type v a (ReaderC r m) where
   type' = ReaderC (const type')
 
   t >-> b = ReaderC $ \ r -> fmap (runReader r) t >-> runReader r . b
-
-instance Type v a m => Type v a (ReaderT r m) where
-  type' = ReaderT (const type')
-
-  t >-> b = ReaderT $ \ r -> fmap (`runReaderT` r) t >-> (`runReaderT` r) . b
 
 (-->) :: Type v a expr => expr a -> expr a -> expr a
 a --> b = (Ex, a) >-> const b
@@ -118,23 +98,12 @@ instance Prob v a m => Prob v a (ReaderC r m) where
 
   (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderC $ \ r -> (runReader r tm1 ::: runReader r ty1) === (runReader r tm2 ::: runReader r ty2)
 
-instance Prob v a m => Prob v a (ReaderT r m) where
-  ex t b = ReaderT $ \ r -> ex (runReaderT t r) ((`runReaderT` r) . b)
-
-  (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderT $ \ r -> (runReaderT tm1 r ::: runReaderT ty1 r) === (runReaderT tm2 r ::: runReaderT ty2 r)
-
-
-
 
 class Err e a expr | expr -> e a where
   err :: e -> expr a
 
 instance Err e a m => Err e a (ReaderC r m) where
   err = ReaderC . const . err
-
-instance Err e a m => Err e a (ReaderT r m) where
-  err = ReaderT . const . err
-
 
 
 class Def tm ty a def | def -> tm ty where
