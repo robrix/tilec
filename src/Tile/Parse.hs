@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
@@ -15,7 +15,7 @@ module Tile.Parse
 ) where
 
 import           Control.Algebra
-import           Control.Carrier.Parser.Church
+import           Control.Carrier.Parser.Church as Parser
 import           Control.Carrier.Reader
 import           Control.Effect.Cut
 import           Control.Effect.NonDet
@@ -56,6 +56,18 @@ instance MonadTrans (ParseC v) where
 deriving instance Parsing      (ParseC v m)
 deriving instance CharParsing  (ParseC v m)
 deriving instance TokenParsing (ParseC v m)
+
+class Monad m => Suspending a m | m -> a where
+  sleaf :: Input -> a -> m a
+  snil  :: Parser.Err -> m a
+  sfail :: Parser.Err -> m a
+  resume :: (Input -> a -> m b) -> (Parser.Err -> m b) -> (Parser.Err -> m b) -> m b
+
+instance Suspending a m => Suspending a (ReaderC r m) where
+  sleaf i = lift . sleaf i
+  snil    = lift . snil
+  sfail   = lift . sfail
+  resume leaf nil fail = ReaderC $ \ r -> resume (\ i -> runReader r . leaf i) (runReader r . nil) (runReader r . fail)
 
 instance (Monad m, Var v a m) => Var v a (ParseC v m) where
   var = lift . var
