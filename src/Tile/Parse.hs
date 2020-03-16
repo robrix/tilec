@@ -53,9 +53,9 @@ newtype ParseC v m a = ParseC { runParseC :: ParserC (ReaderC (Map.Map String v)
 instance MonadTrans (ParseC v) where
   lift = ParseC . lift . lift
 
-deriving instance Algebra sig m => Parsing      (ParseC v m)
-deriving instance Algebra sig m => CharParsing  (ParseC v m)
-deriving instance Algebra sig m => TokenParsing (ParseC v m)
+deriving instance Parsing      (ParseC v m)
+deriving instance CharParsing  (ParseC v m)
+deriving instance TokenParsing (ParseC v m)
 
 instance (Monad m, Var v a m) => Var v a (ParseC v m) where
   var = lift . var
