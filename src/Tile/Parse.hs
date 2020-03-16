@@ -72,6 +72,9 @@ instance Suspending a m => Suspending a (ReaderC r m) where
 instance Var v a m => Var v a (ParseC v m) where
   var = lift . var
 
+instance Free v a m => Free v a (ParseC v m) where
+  free = lift . free
+
 suspend :: Suspending a m => Input -> ParserC m a -> m a
 suspend = runParser sleaf snil sfail
 {-# INLINE suspend #-}
