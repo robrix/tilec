@@ -27,6 +27,7 @@ module Tile.Syntax
 ) where
 
 import Control.Carrier.Reader
+import Control.Carrier.State.Church
 import Control.Monad (ap)
 import Tile.Plicit
 import Tile.Type
@@ -36,6 +37,9 @@ class Monad expr => Var v a expr | expr -> v a where
 
 instance Var v a m => Var v a (ReaderC r m) where
   var = ReaderC . const . var
+
+instance Var v a m => Var v a (StateC s m) where
+  var v = StateC $ \ k s -> var v >>= k s
 
 
 class Var v a expr => Free v a expr where
