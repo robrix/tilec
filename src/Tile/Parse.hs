@@ -10,7 +10,7 @@ module Tile.Parse
 ( parse
 , parseString
 , parseFile
-, Parse(..)
+, ParseC(..)
 , expr_
 ) where
 
@@ -34,28 +34,28 @@ import           Text.Parser.Token
 import           Text.Parser.Token.Highlight
 import           Tile.Syntax
 
-parse :: forall v m a sig . Has (Throw Notice) sig m => Path -> String -> Parse v m a -> m a
+parse :: forall v m a sig . Has (Throw Notice) sig m => Path -> String -> ParseC v m a -> m a
 parse path s = runReader (mempty @(Map.Map String v)) . runParser (const pure) failure failure (Input lowerBound s) . runParse where
   failure = throwError . errToNotice path lines
   lines = linesFromString s
 
-parseString :: Has (Throw Notice) sig m => String -> Parse v m a -> m a
+parseString :: Has (Throw Notice) sig m => String -> ParseC v m a -> m a
 parseString = parse (Path "(interactive)")
 
-parseFile :: (Has (Throw Notice) sig m, MonadIO m) => Path -> Parse v m a -> m a
+parseFile :: (Has (Throw Notice) sig m, MonadIO m) => Path -> ParseC v m a -> m a
 parseFile path p = do
   s <- liftIO (readFile (getPath path))
   parse path s p
 
-newtype Parse v m a = Parse { runParse :: ParserC (ReaderC (Map.Map String v) m) a }
+newtype ParseC v m a = ParseC { runParse :: ParserC (ReaderC (Map.Map String v) m) a }
   deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String v) :+: sig), Alternative, Applicative, Functor, Monad)
 
-deriving instance Algebra sig m => Parsing (Parse v m)
-deriving instance Algebra sig m => CharParsing (Parse v m)
-deriving instance Algebra sig m => TokenParsing (Parse v m)
+deriving instance Algebra sig m => Parsing (ParseC v m)
+deriving instance Algebra sig m => CharParsing (ParseC v m)
+deriving instance Algebra sig m => TokenParsing (ParseC v m)
 
-instance (Monad m, Var v a m) => Var v a (Parse v m) where
-  var = Parse . lift . var
+instance (Monad m, Var v a m) => Var v a (ParseC v m) where
+  var = ParseC . lift . var
 
 expr_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Free v a m, Type v a m) => m a
 expr_ = type_ <|> var_
