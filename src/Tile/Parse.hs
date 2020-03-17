@@ -1,8 +1,7 @@
+{-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Parse
@@ -34,7 +33,7 @@ import           Text.Parser.Token.Highlight
 import           Tile.Syntax
 
 parse :: forall v m a sig . Has (Throw Notice) sig m => Path -> String -> ParseC v m a -> m a
-parse path s = runReader (mempty @(Map.Map String v)) . runParser (const pure) failure failure (Input lowerBound s) . runParseC where
+parse path s = runReader mempty . runParser (const pure) failure failure (Input lowerBound s) . runParseC where
   failure = throwError . errToNotice path lines
   lines = linesFromString s
 
