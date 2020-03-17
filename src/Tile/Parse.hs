@@ -2,7 +2,6 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -48,14 +47,10 @@ parseFile path p = do
   parse path s p
 
 newtype ParseC v m a = ParseC { runParseC :: ParserC (ReaderC (Map.Map String v) m) a }
-  deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String v) :+: sig), Alternative, Applicative, Functor, Monad)
+  deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String v) :+: sig), Alternative, Applicative, CharParsing, Functor, Monad, Parsing, TokenParsing)
 
 instance MonadTrans (ParseC v) where
   lift = ParseC . lift . lift
-
-deriving instance Parsing      (ParseC v m)
-deriving instance CharParsing  (ParseC v m)
-deriving instance TokenParsing (ParseC v m)
 
 class Monad m => Suspending a m | m -> a where
   sleaf :: Input -> a -> m a
