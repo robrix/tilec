@@ -24,6 +24,7 @@ import           Control.Carrier.State.Strict
 import           Control.Carrier.Writer.Strict
 import           Control.Monad (guard, (<=<))
 import           Control.Monad.IO.Class
+import           Control.Monad.Trans.Class
 import           Data.Function (on)
 import qualified Data.IntSet as IntSet
 import           Data.Monoid (Ap(..))
@@ -88,6 +89,10 @@ runPrint = fmap snd . runWriter . evalFresh 0 . evalState Nothing . getAp . runP
 
 newtype PrintC m a = PrintC { runPrintC :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet m))) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
+
+instance MonadTrans PrintC where
+  lift = PrintC . Ap . lift . lift . lift
+
 
 instance Algebra sig m => Algebra sig (PrintC m) where
   alg hdl sig = PrintC . alg (runPrintC . hdl) (R (R (R sig)))
