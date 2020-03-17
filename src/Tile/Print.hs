@@ -19,9 +19,9 @@ module Tile.Print
 
 import           Control.Algebra
 import           Control.Applicative ((<**>))
-import           Control.Carrier.Fresh.Strict
-import           Control.Carrier.State.Strict
-import           Control.Carrier.Writer.Strict
+import           Control.Carrier.Fresh.Church
+import           Control.Carrier.State.Church
+import           Control.Carrier.Writer.Church
 import           Control.Monad (guard, (<=<))
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
@@ -84,8 +84,8 @@ instance Ord V where compare = compare `on` vvar
 instance Show V where showsPrec p = showsPrec p . vdoc
 
 
-runPrint :: Functor m => PrintC m a -> m a
-runPrint = fmap snd . runWriter . evalFresh 0 . evalState Nothing . getAp . runPrintC
+runPrint :: Applicative m => PrintC m a -> m a
+runPrint = runWriter (const pure) . evalFresh 0 . evalState Nothing . getAp . runPrintC
 
 newtype PrintC m a = PrintC { runPrintC :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet m))) a }
   deriving (Applicative, Functor, Monad, Monoid, Semigroup)
@@ -97,10 +97,10 @@ instance MonadTrans PrintC where
 instance Algebra sig m => Algebra sig (PrintC m) where
   alg hdl sig = PrintC . alg (runPrintC . hdl) (R (R (R sig)))
 
-deriving instance Monad m => P.Doc     (Highlight Int) (PrintC m Doc)
-deriving instance Monad m => P.PrecDoc (Highlight Int) (PrintC m Doc)
+deriving instance P.Doc     (Highlight Int) (PrintC m Doc)
+deriving instance P.PrecDoc (Highlight Int) (PrintC m Doc)
 
-instance (Functor m, Show (m Doc)) => Show (PrintC m Doc) where
+instance (Applicative m, Show (m Doc)) => Show (PrintC m Doc) where
   showsPrec p = showsPrec p . runPrint
 
 instance Algebra sig m => Var V Doc (PrintC m) where
@@ -166,7 +166,7 @@ data Ctx
   | Equate
   deriving (Eq, Ord, Show)
 
-transition :: Monad m => Maybe Ctx -> Maybe Ctx -> PrintC m Doc -> PrintC m Doc
+transition :: Maybe Ctx -> Maybe Ctx -> PrintC m Doc -> PrintC m Doc
 transition from to = exit from . enter to where
   enter = \case
     Just Let    -> group . align
@@ -197,7 +197,7 @@ kw = annotate Keyword . pretty
 op :: P.Doc (Highlight Int) doc => String -> doc
 op = annotate Op . pretty
 
-prettyBind :: Monad m => Maybe V -> PrintC m Doc
+prettyBind :: Maybe V -> PrintC m Doc
 prettyBind = maybe (pretty '_') (pure . vdoc)
 
 prettyVar :: P.Doc (Highlight Int) doc => Int -> doc
