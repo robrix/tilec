@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
@@ -5,7 +6,8 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Syntax
-( Var(..)
+( Permutable
+, Var(..)
 , varA
 , Free(..)
 , Let(..)
@@ -32,8 +34,11 @@ module Tile.Syntax
 import Control.Carrier.Reader
 import Control.Carrier.State.Church
 import Control.Monad (ap)
+import Data.Distributive
 import Tile.Plicit
 import Tile.Type
+
+type Permutable f = (Applicative f, Distributive f)
 
 class Var v a expr | expr -> v a where
   var :: v -> expr a
