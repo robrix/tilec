@@ -39,77 +39,77 @@ import Tile.Type
 
 type Permutable f = (Applicative f, Distributive f)
 
-class Var v a expr | expr -> v a where
-  var :: v -> expr a
+class Var v expr | expr -> v where
+  var :: v -> expr
 
-instance Var v a m => Var v a (ReaderC r m) where
+instance Var v (m a) => Var v (ReaderC r m a) where
   var = ReaderC . const . var
 
-varA :: (Applicative m, Functor i, Var v a expr) => i v -> m (i (expr a))
+varA :: (Applicative m, Functor i, Var v expr) => i v -> m (i expr)
 varA = pure . fmap var
 
 
-class Var v a expr => Let v a expr where
-  let' :: expr a ::: expr a -> (v -> expr a) -> expr a
+class Var v expr => Let v expr where
+  let' :: expr ::: expr -> (v -> expr) -> expr
 
-instance Let v a m => Let v a (ReaderC r m) where
+instance Let v (m a) => Let v (ReaderC r m a) where
   let' (v ::: t) b = ReaderC $ \ r -> let' (runReader r v ::: runReader r t) (runReader r . b)
 
 
-class Var v a expr => Lam v a expr where
-  lam :: Plicit -> (v -> expr a) -> expr a
+class Var v expr => Lam v expr where
+  lam :: Plicit -> (v -> expr) -> expr
 
-  ($$) :: expr a -> expr a -> expr a
+  ($$) :: expr -> expr -> expr
   infixl 9 $$
 
-instance Lam v a m => Lam v a (ReaderC r m) where
+instance Lam v (m a) => Lam v (ReaderC r m a) where
   lam p b = ReaderC $ \ r -> lam p (runReader r . b)
 
   f $$ a = ReaderC $ \ r -> runReader r f $$ runReader r a
 
-lamA :: (Applicative m, Lam v a expr, Permutable i) => Plicit -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) (expr a)) -> (m :.: i) (expr a)
+lamA :: (Applicative m, Lam v expr, Permutable i) => Plicit -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) (expr)) -> (m :.: i) (expr)
 lamA p f = lam p <$> mapC (fmap getC) (f (C (pure id)))
 
 
-class Var v a expr => Type v a expr where
-  type' :: expr a
+class Var v expr => Type v expr where
+  type' :: expr
 
-  (>->) :: (Plicit, expr a) -> (v -> expr a) -> expr a
+  (>->) :: (Plicit, expr) -> (v -> expr) -> expr
   infixr 6 >->
 
-instance Type v a m => Type v a (ReaderC r m) where
+instance Type v (m a) => Type v (ReaderC r m a) where
   type' = ReaderC (const type')
 
   t >-> b = ReaderC $ \ r -> fmap (runReader r) t >-> runReader r . b
 
-(-->) :: Type v a expr => expr a -> expr a -> expr a
+(-->) :: Type v expr => expr -> expr -> expr
 a --> b = (Ex, a) >-> const b
 
 infixr 6 -->
 
-(==>) :: Type v a expr => expr a -> (v -> expr a) -> expr a
+(==>) :: Type v expr => expr -> (v -> expr) -> expr
 a ==> b = (Im, a) >-> b
 
 infixr 6 ==>
 
 
-class Var v a expr => Prob v a expr where
-  ex :: expr a -> (v -> expr a) -> expr a
+class Var v expr => Prob v expr where
+  ex :: expr -> (v -> expr) -> expr
   infixr 6 `ex`
 
-  (===) :: expr a ::: expr a -> expr a ::: expr a -> expr a
+  (===) :: expr ::: expr -> expr ::: expr -> expr
   infixl 4 ===
 
-instance Prob v a m => Prob v a (ReaderC r m) where
+instance Prob v (m a) => Prob v (ReaderC r m a) where
   ex t b = ReaderC $ \ r -> ex (runReader r t) (runReader r . b)
 
   (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderC $ \ r -> (runReader r tm1 ::: runReader r ty1) === (runReader r tm2 ::: runReader r ty2)
 
 
-class Err e a expr | expr -> e a where
-  err :: e -> expr a
+class Err e expr | expr -> e where
+  err :: e -> expr
 
-instance Err e a m => Err e a (ReaderC r m) where
+instance Err e (m a) => Err e (ReaderC r m a) where
   err = ReaderC . const . err
 
 
@@ -134,11 +134,11 @@ instance Applicative (Script a m) where
 instance Monad (Script a m) where
   m >>= f = Script (\ k -> runScript (runScript k . f) m)
 
-meta :: Prob v a m => m a -> Script a m v
+meta :: Prob v (m a) => m a -> Script a m v
 meta = Script . ex
 
-intro :: Lam v a m => Plicit -> Script a m v
+intro :: Lam v (m a) => Plicit -> Script a m v
 intro = Script . lam
 
-letbind :: Let v a m => m a ::: m a -> Script a m v
+letbind :: Let v (m a) => m a ::: m a -> Script a m v
 letbind = Script . let'

@@ -8,5 +8,5 @@ module Tile.Reconstruct
 
 import Tile.Syntax
 
-newtype Reconstruct a t b = Reconstruct { runReconstruct :: t b }
-  deriving (Applicative, Functor, Monad, Var v a, Lam v a, Let v a, Type v a, Prob v a, Err e a)
+newtype Reconstruct a m b = Reconstruct { runReconstruct :: m b }
+  deriving (Applicative, Functor, Monad, Var v, Lam v, Let v, Type v, Prob v, Err e)

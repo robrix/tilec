@@ -35,10 +35,10 @@ newtype ElabC v a m b = ElabC (m a -> Map v (m a) -> m b)
 instance Algebra sig m => Algebra sig (ElabC v a m) where
   alg hdl sig ctx = ElabC $ \ ty env -> alg (runElab ty env . hdl) sig ctx
 
-instance (Ord v, Prob v a m, FreeVariable v e, Err e a m) => Var v a (ElabC v a m) where
+instance (Ord v, Prob v (m a), FreeVariable v e, Err e (m a)) => Var v (ElabC v a m a) where
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
 
-instance (Ord v, Let v a m, Prob v a m, Type v a m, FreeVariable v e, Err e a m) => Let v a (ElabC v a m) where
+instance (Ord v, Let v (m a), Prob v (m a), Type v (m a), FreeVariable v e, Err e (m a)) => Let v (ElabC v a m a) where
   let' (v ::: t) b = check $ \ ctx -> do
     _B <- meta type'
     t' <- letbind ((ctx |- t ::: type')  ::: type')
@@ -47,7 +47,7 @@ instance (Ord v, Let v a m, Prob v a m, Type v a m, FreeVariable v e, Err e a m)
             ctx |> x ::: var t' |- b x ::: var _B)
       ::: var _B)
 
-instance (Ord v, Let v a m, Lam v a m, Prob v a m, Type v a m, FreeVariable v e, Err e a m) => Lam v a (ElabC v a m) where
+instance (Ord v, Let v (m a), Lam v (m a), Prob v (m a), Type v (m a), FreeVariable v e, Err e (m a)) => Lam v (ElabC v a m a) where
   lam p b = check $ \ ctx -> do
     _A <- meta type'
     _B <- meta (var _A --> type')
@@ -62,7 +62,7 @@ instance (Ord v, Let v a m, Lam v a m, Prob v a m, Type v a m, FreeVariable v e,
       (   (ctx |- f ::: var _A --> var _B) $$ (ctx |- a ::: var _A)
       ::: var _B)
 
-instance (Ord v, Let v a m, Prob v a m, Type v a m, FreeVariable v e, Err e a m) => Type v a (ElabC v a m) where
+instance (Ord v, Let v (m a), Prob v (m a), Type v (m a), FreeVariable v e, Err e (m a)) => Type v (ElabC v a m a) where
   type' = check (const (pure (type' ::: type')))
 
   (p, a) >-> b = check $ \ ctx -> do
@@ -71,7 +71,7 @@ instance (Ord v, Let v a m, Prob v a m, Type v a m, FreeVariable v e, Err e a m)
       (   (p, var a') >-> (\ x -> ctx |> x ::: var a' |- b x ::: type')
       ::: type')
 
-instance (Ord v, Let v a m, Prob v a m, Type v a m, FreeVariable v e, Err e a m) => Prob v a (ElabC v a m) where
+instance (Ord v, Let v (m a), Prob v (m a), Type v (m a), FreeVariable v e, Err e (m a)) => Prob v (ElabC v a m a) where
   t `ex` b = check $ \ ctx -> do
     _B <- meta type'
     t' <- letbind ((ctx |- t ::: type') ::: type')
@@ -88,10 +88,10 @@ instance (Ord v, Let v a m, Prob v a m, Type v a m, FreeVariable v e, Err e a m)
       ::: (   var t1' ::: type'
           === var t2' ::: type'))
 
-deriving via (ReaderC (m a) (ReaderC (Map v (m a)) m)) instance Err e a m => Err e a (ElabC v a m)
+deriving via (ReaderC (m a) (ReaderC (Map v (m a)) m) a) instance Err e (m a) => Err e (ElabC v a m a)
 
 
-typeOf :: (Ord v, FreeVariable v e, Err e a m) => Map v (m a) -> v -> m a
+typeOf :: (Ord v, FreeVariable v e, Err e (m a)) => Map v (m a) -> v -> m a
 typeOf ctx n = fromMaybe (err (freeVariable n)) (ctx !? n)
 
 (|>) :: Ord v => Map v t -> v ::: t -> Map v t
@@ -99,7 +99,7 @@ ctx |> (v ::: t) = insert v t ctx
 
 infixl 1 |>
 
-check :: Prob v a m => (Map v (m a) -> Script a m (m a ::: m a)) -> ElabC v a m a
+check :: Prob v (m a) => (Map v (m a) -> Script a m (m a ::: m a)) -> ElabC v a m a
 check f = ElabC $ \ ty ctx -> runScript id $ do
   exp <- meta ty
   act <- f ctx

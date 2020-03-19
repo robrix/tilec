@@ -104,34 +104,34 @@ deriving instance P.PrecDoc (Highlight Int) (PrintC m Doc)
 instance (Applicative m, Show (m Doc)) => Show (PrintC m Doc) where
   showsPrec p = showsPrec p . runPrint
 
-instance Algebra sig m => Var V Doc (PrintC m) where
+instance Algebra sig m => Var V (PrintC m Doc) where
   var v = inContext Var (PrintC (vdoc v <$ tell (IntSet.singleton (vvar v))))
 
-instance Algebra sig m => Let V Doc (PrintC m) where
+instance Algebra sig m => Let V (PrintC m Doc) where
   let' (tm ::: ty) b = inContext Let . bind b $ \ v b ->
     -- FIXME: bind variables on the lhs when tm is a lambda
     kw "let" <+> prettyBind v <+> group (align (prettyAnn (op "=" <+> tm ::: ty))) <+> kw "in" </> b
 
-instance Algebra sig m => Lam V Doc (PrintC m) where
+instance Algebra sig m => Lam V (PrintC m Doc) where
   lam p b = prec (Level 6) . inContext Lam . bind b $ \ v b ->
     plicit braces id p (prettyBind v) <+> b
 
   f $$ a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
 
-instance Algebra sig m => Type V Doc (PrintC m) where
+instance Algebra sig m => Type V (PrintC m Doc) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
   (p, t) >-> b = prec (Level 6) . inContext Pi . bind b $ \ v b ->
     group (align (maybe (plicit braces (prec (Level 7)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . pure . vdoc) v </> op "→" <+> b))
 
-instance Algebra sig m => Prob V Doc (PrintC m) where
+instance Algebra sig m => Prob V (PrintC m Doc) where
   ex t b = prec (Level 6) . inContext Exists . bind (b . toMeta) $ \ v b ->
     group (align (op "∃" <+> group (align (reset (Level 0) (prettyAnn (prettyBind (toMeta <$> v) ::: t)))) <+> op "." </> reset (Level 0) b)) where
     toMeta v = v { vdoc = annotate MetaVar (pretty '?' <> vdoc v) }
 
   t1 === t2 = prec (Level 4) (inContext Equate (group (align (flatAlt (space <> space) mempty <> prec (Level 5) (prettyAnn t1) </> op "≡" <+> prec (Level 5) (prettyAnn t2)))))
 
-instance Algebra sig m => Err Doc Doc (PrintC m) where
+instance Algebra sig m => Err Doc (PrintC m Doc) where
   err = pure
 
 data Highlight a

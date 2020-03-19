@@ -48,7 +48,7 @@ parseFile path p = do
   parse path s p
 
 
-env :: Lam v a t => Map.Map String (i v) -> EnvC i v m (t a) -> m (t a)
+env :: Lam v t => Map.Map String (i v) -> EnvC i v m t -> m t
 env = runEnv
 
 runEnv :: Map.Map String (i v) -> EnvC i v m a -> m a
@@ -128,25 +128,25 @@ instance TokenParsing m => TokenParsing (EnvC i v m) where
   {-# INLINE token #-}
 
 
-expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr) => (m :.: i) (expr a)
+expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Type v expr) => (m :.: i) expr
 expr_ = type_ <|> var_ <|> lam_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
 
-var_ :: (Functor i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Var v a expr) => (m :.: i) (expr a)
+var_ :: (Functor i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Var v expr) => (m :.: i) expr
 var_ = C $ do
   v <- identifier_
   v' <- asks (Map.lookup v)
   maybe (unexpected "free variable") varA v'
 
-lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr) => (m :.: i) (expr a)
+lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Type v expr) => (m :.: i) expr
 lam_ = C $ token (char '\\') *> do
   i <- identifier_
   void (token (char '.'))
   getC (lamA Ex (\ v -> C (asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env (getC expr_))))
 
-type_ :: (Monad m, Applicative i, TokenParsing m, Type v a expr) => (m :.: i) (expr a)
+type_ :: (Monad m, Applicative i, TokenParsing m, Type v expr) => (m :.: i) expr
 type_ = C $ pure type' <$ reserve identifierStyle "Type"
 
 identifierStyle :: CharParsing m => IdentifierStyle m
