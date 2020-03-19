@@ -30,6 +30,7 @@ import           Text.Parser.Char
 import           Text.Parser.Combinators
 import           Text.Parser.Token
 import           Text.Parser.Token.Highlight
+import           Tile.Functor.Compose
 import           Tile.Syntax
 
 parse :: forall v m a sig . Has (Throw Notice) sig m => Path -> String -> ParseC v m a -> m a
@@ -81,20 +82,20 @@ instance (Suspending a m, Lam v a m) => Lam v a (ParseC v m) where
   f $$ a = ParseC $ ParserC $ \ leaf nil fail input ->
     resume leaf nil fail $ suspend input (runParseC f) $$ suspend input (runParseC a)
 
-expr_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Type v a expr, MonadFail m) => m (expr a)
+expr_ :: (Applicative i, Has (Reader (Map.Map String v)) sig m, TokenParsing m, Type v a expr, MonadFail m) => (m :.: i) (expr a)
 expr_ = type_ <|> var_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
 
-var_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Var v a expr, MonadFail m) => m (expr a)
-var_ = do
+var_ :: (Applicative i, Has (Reader (Map.Map String v)) sig m, TokenParsing m, Var v a expr, MonadFail m) => (m :.: i) (expr a)
+var_ = C $ do
   v <- identifier_
   v' <- asks (Map.lookup v)
-  maybe (fail "free variable") (pure . var) v'
+  maybe (fail "free variable") (varA . pure) v'
 
-type_ :: (Monad m, TokenParsing m, Type v a expr) => m (expr a)
-type_ = type' <$ reserve identifierStyle "Type"
+type_ :: (Monad m, Applicative i, TokenParsing m, Type v a expr) => (m :.: i) (expr a)
+type_ = C $ pure type' <$ reserve identifierStyle "Type"
 
 identifierStyle :: CharParsing m => IdentifierStyle m
 identifierStyle = IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier
