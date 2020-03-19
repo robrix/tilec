@@ -10,6 +10,8 @@ module Tile.Parse
 , parseString
 , parseFile
 , ParseC(..)
+, runEnv
+, EnvC(..)
 , expr_
 ) where
 
