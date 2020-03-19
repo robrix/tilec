@@ -48,10 +48,6 @@ parseFile path p = do
   s <- liftIO (readFile (getPath path))
   parse path s p
 
-newtype EnvC i v m a = EnvC { runEnvC :: ReaderC (Map.Map String (i v)) m a }
-  deriving (Algebra (Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, Functor, Monad, MonadPlus, MonadTrans)
-
-
 newtype ParseC i v m a = ParseC { runParseC :: ParserC (ReaderC (Map.Map String (i v)) m) a }
   deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, CharParsing, Functor, Monad, MonadPlus, Parsing, TokenParsing)
 
@@ -87,6 +83,11 @@ instance (Suspending a m, Lam v a m) => Lam v a (ParseC i v m) where
 
   f $$ a = ParseC $ ParserC $ \ leaf nil fail input ->
     resume leaf nil fail $ suspend input (runParseC f) $$ suspend input (runParseC a)
+
+
+newtype EnvC i v m a = EnvC { runEnvC :: ReaderC (Map.Map String (i v)) m a }
+  deriving (Algebra (Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, Functor, Monad, MonadPlus, MonadTrans)
+
 
 expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m, MonadPlus m) => (m :.: i) (expr a)
 expr_ = type_ <|> var_ <|> lam_
