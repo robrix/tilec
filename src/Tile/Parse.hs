@@ -57,33 +57,6 @@ newtype ParseC i v m a = ParseC { runParseC :: ParserC m a }
 
 deriving instance Algebra sig m => MonadFail (ParseC i v m)
 
-class Monad m => Suspending a m | m -> a where
-  sleaf :: Input -> a -> m a
-  snil  :: Parser.Err -> m a
-  sfail :: Parser.Err -> m a
-  resume :: (Input -> a -> m b) -> (Parser.Err -> m b) -> (Parser.Err -> m b) -> m a -> m b
-
-instance Suspending a m => Suspending a (ReaderC r m) where
-  sleaf i = lift . sleaf i
-  snil    = lift . snil
-  sfail   = lift . sfail
-  resume leaf nil fail m = ReaderC $ \ r -> resume (\ i -> runReader r . leaf i) (runReader r . nil) (runReader r . fail) (runReader r m)
-
-instance (Monad m, Var v a m) => Var v a (ParseC i v m) where
-  var = lift . var
-
-suspend :: Suspending a m => Input -> ParserC m a -> m a
-suspend = runParser sleaf snil sfail
-{-# INLINE suspend #-}
-
-instance (Suspending a m, Lam v a m) => Lam v a (ParseC i v m) where
-  lam p f = ParseC $ ParserC $ \ leaf nil fail input ->
-    -- we can’t hide the context resulting from the parser produced by f in a, so we’ll hide it in m instead
-    resume leaf nil fail $ lam p (suspend input . runParseC . f)
-
-  f $$ a = ParseC $ ParserC $ \ leaf nil fail input ->
-    resume leaf nil fail $ suspend input (runParseC f) $$ suspend input (runParseC a)
-
 
 env :: Lam v a t => Map.Map String (i v) -> EnvC i v m (t a) -> m (t a)
 env = runEnv
