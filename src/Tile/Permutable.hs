@@ -11,6 +11,7 @@ import Control.Applicative (liftA2)
 newtype (f :.: g) a = C { getC :: f (g a) }
   deriving (Functor)
 
+
 class Lam repr where
   lamPure :: (repr a -> repr b) -> repr (a -> b)
   appPure :: repr (a -> b) -> (repr a -> repr b)
