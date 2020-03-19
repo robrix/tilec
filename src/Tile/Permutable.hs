@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 module Tile.Permutable
@@ -7,6 +8,7 @@ module Tile.Permutable
 , ($$)
 , var
 , weaken
+, Extends(..)
 ) where
 
 import Control.Applicative (liftA2)
@@ -48,3 +50,7 @@ var = C . pure
 
 weaken :: (Applicative m, Applicative i, Applicative j) => (m :.: i) (repr a) -> (m :.: i :.: j) (repr a)
 weaken = C . fmap (C . fmap pure) . getC
+
+
+class (Applicative m, Applicative n) => Extends m n where
+  weakens :: m a -> n a
