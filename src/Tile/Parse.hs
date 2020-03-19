@@ -110,6 +110,10 @@ instance Parsing m => Parsing (EnvC i v m) where
   notFollowedBy = liftEnvC1 notFollowedBy
   {-# INLINE notFollowedBy #-}
 
+instance CharParsing m => CharParsing (EnvC i v m) where
+  satisfy = liftEnvC0 . satisfy
+  {-# INLINE satisfy #-}
+
 
 expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m, MonadPlus m) => (m :.: i) (expr a)
 expr_ = type_ <|> var_ <|> lam_
