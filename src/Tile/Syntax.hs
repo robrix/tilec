@@ -121,24 +121,24 @@ class Def tm ty a def | def -> tm ty where
 -- FIXME: packages
 
 
-runScript :: (b -> m a) -> Script a m b -> m a
+runScript :: (a -> t) -> Script t a -> t
 runScript k (Script r) = r k
 
-newtype Script a m b = Script ((b -> m a) -> m a)
+newtype Script t a = Script ((a -> t) -> t)
   deriving (Functor)
 
-instance Applicative (Script a m) where
+instance Applicative (Script t) where
   pure = Script . flip ($)
   (<*>) = ap
 
-instance Monad (Script a m) where
+instance Monad (Script t) where
   m >>= f = Script (\ k -> runScript (runScript k . f) m)
 
-meta :: Prob v (m a) => m a -> Script a m v
+meta :: Prob v t => t -> Script t v
 meta = Script . ex
 
-intro :: Lam v (m a) => Plicit -> Script a m v
+intro :: Lam v t => Plicit -> Script t v
 intro = Script . lam
 
-letbind :: Let v (m a) => m a ::: m a -> Script a m v
+letbind :: Let v t => t ::: t -> Script t v
 letbind = Script . let'

@@ -99,7 +99,7 @@ ctx |> (v ::: t) = insert v t ctx
 
 infixl 1 |>
 
-check :: Prob v (m a) => (Map v (m a) -> Script a m (m a ::: m a)) -> ElabC v a m a
+check :: Prob v (m a) => (Map v (m a) -> Script (m a) (m a ::: m a)) -> ElabC v a m a
 check f = ElabC $ \ ty ctx -> runScript id $ do
   exp <- meta ty
   act <- f ctx
