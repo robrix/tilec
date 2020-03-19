@@ -45,7 +45,6 @@ module Tile.Permutable
 import Control.Applicative (liftA2)
 import Data.Distributive
 import Data.Functor.Identity
-import Data.Monoid (Ap(..))
 import Tile.Functor.Compose
 
 type Permutable f = (Applicative f, Distributive f)
@@ -84,9 +83,6 @@ infixl 9 $$
 
 lam :: (Applicative m, Lam v repr, Permutable i) => (forall j . Permutable j => (i :.: j) (v a) -> (m :.: i :.: j) (repr b)) -> (m :.: i) (repr (a -> b))
 lam f = lamPure <$> mapC (fmap getC) (f (C (pure id)))
-
-instance Var v repr => Var v (Ap repr) where
-  varPure = Ap . varPure
 
 
 var :: (Applicative m, Functor i, Var v repr) => i (v a) -> (m :.: i) (repr a)
