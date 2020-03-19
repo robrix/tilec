@@ -48,21 +48,21 @@ liftC = C . fmap pure
 
 class Boolean repr where
   liftBool :: Bool -> repr Bool
-  iff :: repr Bool -> repr a -> repr a -> repr a
+  if' :: repr Bool -> repr a -> repr a -> repr a
 
 false, true :: Boolean repr => repr Bool
 false = liftBool False
 true  = liftBool True
 
 (|||), (&&&) :: Boolean repr => repr Bool -> repr Bool -> repr Bool
-a ||| b = iff a true b
-a &&& b = iff a b false
+a ||| b = if' a true b
+a &&& b = if' a b false
 
 infixr 2 |||
 infixr 3 &&&
 
 not' :: Boolean repr => repr Bool -> repr Bool
-not' x = iff x false true
+not' x = if' x false true
 
 
 class Lam repr where
