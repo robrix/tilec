@@ -33,6 +33,7 @@ module Tile.Permutable
 , Extends(..)
 , trace
 , CPSA(..)
+, runCPSA
 ) where
 
 import Control.Applicative (liftA2)
@@ -170,3 +171,6 @@ instance Applicative m => Applicative (CPSA w m) where
 
   CPSA f <*> CPSA a = CPSA $ \ k -> f (\ f' -> assocL (a (assocLR . k . (assocR (liftC f') <*>) . assocRL)))
   {-# INLINE (<*>) #-}
+
+runCPSA :: Functor m => CPSA a m a -> m a
+runCPSA = strengthen . (`getCPSA` id)
