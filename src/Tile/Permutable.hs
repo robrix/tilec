@@ -5,6 +5,7 @@
 {-# LANGUAGE TypeOperators #-}
 module Tile.Permutable
 ( (:.:)(..)
+, liftC
 , Lam(..)
 , ($$)
 , var
@@ -34,6 +35,9 @@ instance (Applicative f, Applicative g) => Applicative (f :.: g) where
 
   C a <* C b = C (liftA2 (<*) a b)
   {-# INLINE (<*) #-}
+
+liftC :: (Functor m, Applicative i) => m a -> (m :.: i) a
+liftC = C . fmap pure
 
 
 class Lam repr where
