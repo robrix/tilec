@@ -82,17 +82,17 @@ instance (Suspending a m, Lam v a m) => Lam v a (ParseC v m) where
   f $$ a = ParseC $ ParserC $ \ leaf nil fail input ->
     resume leaf nil fail $ suspend input (runParseC f) $$ suspend input (runParseC a)
 
-expr_ :: (Applicative i, Has (Reader (Map.Map String v)) sig m, TokenParsing m, Type v a expr, MonadFail m) => (m :.: i) (expr a)
+expr_ :: (Applicative i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Type v a expr, MonadFail m) => (m :.: i) (expr a)
 expr_ = type_ <|> var_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
 
-var_ :: (Applicative i, Has (Reader (Map.Map String v)) sig m, TokenParsing m, Var v a expr, MonadFail m) => (m :.: i) (expr a)
+var_ :: (Functor i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Var v a expr, MonadFail m) => (m :.: i) (expr a)
 var_ = C $ do
   v <- identifier_
   v' <- asks (Map.lookup v)
-  maybe (fail "free variable") (varA . pure) v'
+  maybe (fail "free variable") varA v'
 
 type_ :: (Monad m, Applicative i, TokenParsing m, Type v a expr) => (m :.: i) (expr a)
 type_ = C $ pure type' <$ reserve identifierStyle "Type"
