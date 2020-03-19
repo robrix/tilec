@@ -49,9 +49,9 @@ infixl 9 $$
 var :: Applicative m => i (repr a) -> (m :.: i) (repr a)
 var = C . pure
 
+
 weaken :: (Applicative m, Applicative i, Applicative j) => (m :.: i) (repr a) -> (m :.: i :.: j) (repr a)
 weaken = weakens
-
 
 class (Applicative m, Applicative n) => Extends m n where
   weakens :: m a -> n a
