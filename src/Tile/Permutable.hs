@@ -29,6 +29,7 @@ module Tile.Permutable
 , var
 , vr
 , weaken
+, strengthen
 , Extends(..)
 , trace
 , CPSA(..)
@@ -37,6 +38,7 @@ module Tile.Permutable
 import Control.Applicative (liftA2)
 import Data.Coerce
 import Data.Distributive
+import Data.Functor.Identity
 
 newtype (f :.: g) a = C { getC :: f (g a) }
   deriving (Functor)
@@ -129,6 +131,9 @@ vr = weakens . var @m
 
 weaken :: (Applicative m, Applicative i, Applicative j) => (m :.: i) (repr a) -> (m :.: i :.: j) (repr a)
 weaken = weakens
+
+strengthen :: Functor m => (m :.: Identity) a -> m a
+strengthen = fmap runIdentity . getC
 
 class (Applicative m, Applicative n) => Extends m n where
   weakens :: m a -> n a
