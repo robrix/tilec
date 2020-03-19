@@ -5,6 +5,7 @@ module Tile.Permutable
 ( (:.:)(..)
 , Lam(..)
 , ($$)
+, var
 , weaken
 ) where
 
@@ -41,6 +42,9 @@ class Lam repr where
 
 infixl 9 $$
 
+
+var :: Applicative m => i (repr a) -> (m :.: i) (repr a)
+var = C . pure
 
 weaken :: (Applicative m, Applicative i, Applicative j) => (m :.: i) (repr a) -> (m :.: i :.: j) (repr a)
 weaken = C . fmap (C . fmap pure) . getC
