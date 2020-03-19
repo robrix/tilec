@@ -81,7 +81,7 @@ lam :: (Applicative m, Lam repr, Permutable i) => (forall j . Permutable j => (i
 lam f = lamPure <$> mapC (fmap getC) (f (C (pure id)))
 
 
-var :: Applicative m => i (repr a) -> (m :.: i) (repr a)
+var :: Applicative m => i a -> (m :.: i) a
 var = C . pure
 
 vr :: forall m i j repr a . (Applicative m, Extends (m :.: i) (m :.: j)) => i (repr a) -> (m :.: j) (repr a)
