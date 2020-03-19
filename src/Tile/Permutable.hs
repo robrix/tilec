@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -64,8 +65,7 @@ liftC :: (Functor m, Applicative i) => m a -> (m :.: i) a
 liftC = C . fmap pure
 
 
-class (Applicative f, Distributive f) => Permutable f
-instance (Applicative f, Distributive f) => Permutable f
+type Permutable f = (Applicative f, Distributive f)
 
 
 class Boolean repr where
