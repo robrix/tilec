@@ -7,6 +7,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Syntax
 ( Permutable
+, Syntax
 , Var(..)
 , varA
 , Let(..)
@@ -38,6 +39,8 @@ import Tile.Plicit
 import Tile.Type
 
 type Permutable f = (Applicative f, Distributive f)
+
+type Syntax v expr = (Let v expr, Lam v expr, Type v expr)
 
 class Var v expr | expr -> v where
   var :: v -> expr
