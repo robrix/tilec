@@ -40,7 +40,7 @@ prettyPrint :: MonadIO m => PrintC m Doc -> m ()
 prettyPrint = prettyPrintWith defaultStyle
 
 prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> PrintC m Doc -> m ()
-prettyPrintWith style  = putDoc . PP.reAnnotate style . toDoc <=< runPrint
+prettyPrintWith style  = putDoc . PP.reAnnotate style . getDoc <=< runPrint
 
 defaultStyle :: Highlight Int -> ANSI.AnsiStyle
 defaultStyle = \case
@@ -65,8 +65,8 @@ defaultStyle = \case
   len = length colours
 
 
-toDoc :: Doc -> PP.Doc (Highlight Int)
-toDoc (Doc doc) = rainbow (runPrec (Level 0) doc)
+getDoc :: Doc -> PP.Doc (Highlight Int)
+getDoc (Doc doc) = rainbow (runPrec (Level 0) doc)
 
 newtype Doc = Doc (Prec (Rainbow (PP.Doc (Highlight Int))))
   deriving newtype (P.Doc (Highlight Int), Monoid, P.PrecDoc (Highlight Int), Semigroup, Show)
