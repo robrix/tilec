@@ -36,6 +36,7 @@ module Tile.Permutable
 , runCPSA
 , runCCPSA
 , liftCPSA
+, liftCCPSA
 ) where
 
 import Control.Applicative (liftA2)
@@ -182,3 +183,6 @@ runCCPSA = mapC runCPSA
 
 liftCPSA :: Functor m => m a -> CPSA w m a
 liftCPSA m = CPSA $ \ k -> strengthen (k (liftC (liftC m)))
+
+liftCCPSA :: Functor m => (m :.: i) a -> (CPSA w m :.: i) a
+liftCCPSA = mapC liftCPSA
