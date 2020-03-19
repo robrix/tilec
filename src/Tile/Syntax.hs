@@ -35,6 +35,7 @@ import Control.Carrier.Reader
 import Control.Carrier.State.Church
 import Control.Monad (ap)
 import Data.Distributive
+import Tile.Functor.Compose
 import Tile.Plicit
 import Tile.Type
 
@@ -81,8 +82,8 @@ instance Lam v a m => Lam v a (ReaderC r m) where
 
   f $$ a = ReaderC $ \ r -> runReader r f $$ runReader r a
 
-lamA :: (Applicative m, Lam v a expr) => Plicit -> (forall i . Applicative i => i v -> m (i (expr a))) -> m (expr a)
-lamA p f = lam p <$> f id
+lamA :: (Applicative m, Lam v a expr, Permutable i) => Plicit -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) (expr a)) -> (m :.: i) (expr a)
+lamA p f = lam p <$> mapC (fmap getC) (f (C (pure id)))
 
 
 class Var v a expr => Type v a expr where
