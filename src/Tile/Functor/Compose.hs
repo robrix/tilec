@@ -10,7 +10,7 @@ module Tile.Functor.Compose
 , assocRL
 ) where
 
-import Control.Applicative (liftA2)
+import Control.Applicative (Alternative(..), liftA2)
 import Data.Coerce (coerce)
 import Data.Distributive
 
@@ -34,6 +34,11 @@ instance (Applicative f, Applicative g) => Applicative (f :.: g) where
 
   C a <* C b = C (liftA2 (<*) a b)
   {-# INLINE (<*) #-}
+
+instance (Alternative f, Applicative g) => Alternative (f :.: g) where
+  empty = C empty
+
+  C l <|> C r = C (l <|> r)
 
 instance (Distributive f, Distributive g) => Distributive (f :.: g) where
   distribute = C . fmap distribute . collect coerce
