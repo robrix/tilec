@@ -117,7 +117,7 @@ class Lam repr where
 infixl 9 $$
 
 lam :: (Applicative m, Lam repr, Permutable i) => (forall j . Permutable j => (i :.: j) (repr a) -> (m :.: i :.: j) (repr b)) -> (m :.: i) (repr (a -> b))
-lam f = lamPure <$> C (getC <$> getC (f (C (pure id))))
+lam f = lamPure <$> mapC (fmap getC) (f (C (pure id)))
 
 
 var :: Applicative m => i (repr a) -> (m :.: i) (repr a)
