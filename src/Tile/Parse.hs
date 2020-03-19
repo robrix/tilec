@@ -81,20 +81,20 @@ instance (Suspending a m, Lam v a m) => Lam v a (ParseC v m) where
   f $$ a = ParseC $ ParserC $ \ leaf nil fail input ->
     resume leaf nil fail $ suspend input (runParseC f) $$ suspend input (runParseC a)
 
-expr_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Type v a m, MonadFail m) => m a
+expr_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Type v a expr, MonadFail m) => m (expr a)
 expr_ = type_ <|> var_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
 
-var_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Var v a m, MonadFail m) => m a
+var_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Var v a expr, MonadFail m) => m (expr a)
 var_ = do
   v <- identifier_
   v' <- asks (Map.lookup v)
-  maybe (fail "free variable") var v'
+  maybe (fail "free variable") (pure . var) v'
 
-type_ :: (Monad m, TokenParsing m, Type v a m) => m a
-type_ = type' <* reserve identifierStyle "Type"
+type_ :: (Monad m, TokenParsing m, Type v a expr) => m (expr a)
+type_ = type' <$ reserve identifierStyle "Type"
 
 identifierStyle :: CharParsing m => IdentifierStyle m
 identifierStyle = IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier
