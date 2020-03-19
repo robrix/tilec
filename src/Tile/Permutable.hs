@@ -6,9 +6,11 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Tile.Permutable
 ( (:.:)(..)
 , liftC
+, Permutable
 , Boolean(..)
 , false
 , true
@@ -60,6 +62,10 @@ instance (Distributive f, Distributive g) => Distributive (f :.: g) where
 
 liftC :: (Functor m, Applicative i) => m a -> (m :.: i) a
 liftC = C . fmap pure
+
+
+class (Applicative f, Distributive f) => Permutable f
+instance (Applicative f, Distributive f) => Permutable f
 
 
 class Boolean repr where
