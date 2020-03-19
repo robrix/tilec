@@ -33,23 +33,23 @@ import           Text.Parser.Token.Highlight
 import           Tile.Functor.Compose
 import           Tile.Syntax
 
-parse :: forall v m a sig . Has (Throw Notice) sig m => Path -> String -> ParseC v m a -> m a
+parse :: forall i v m a sig . Has (Throw Notice) sig m => Path -> String -> ParseC i v m a -> m a
 parse path s = runReader mempty . runParser (const pure) failure failure (Input lowerBound s) . runParseC where
   failure = throwError . errToNotice path lines
   lines = linesFromString s
 
-parseString :: Has (Throw Notice) sig m => String -> ParseC v m a -> m a
+parseString :: Has (Throw Notice) sig m => String -> ParseC i v m a -> m a
 parseString = parse (Path "(interactive)")
 
-parseFile :: (Has (Throw Notice) sig m, MonadIO m) => Path -> ParseC v m a -> m a
+parseFile :: (Has (Throw Notice) sig m, MonadIO m) => Path -> ParseC i v m a -> m a
 parseFile path p = do
   s <- liftIO (readFile (getPath path))
   parse path s p
 
-newtype ParseC v m a = ParseC { runParseC :: ParserC (ReaderC (Map.Map String v) m) a }
-  deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String v) :+: sig), Alternative, Applicative, CharParsing, Functor, Monad, Parsing, TokenParsing)
+newtype ParseC i v m a = ParseC { runParseC :: ParserC (ReaderC (Map.Map String (i v)) m) a }
+  deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, CharParsing, Functor, Monad, Parsing, TokenParsing)
 
-instance MonadTrans (ParseC v) where
+instance MonadTrans (ParseC i v) where
   lift = ParseC . lift . lift
 
 class Monad m => Suspending a m | m -> a where
@@ -64,17 +64,17 @@ instance Suspending a m => Suspending a (ReaderC r m) where
   sfail   = lift . sfail
   resume leaf nil fail m = ReaderC $ \ r -> resume (\ i -> runReader r . leaf i) (runReader r . nil) (runReader r . fail) (runReader r m)
 
-instance (Monad m, Var v a m) => Var v a (ParseC v m) where
+instance (Monad m, Var v a m) => Var v a (ParseC i v m) where
   var = lift . var
 
-instance (Monad m, Free v a m) => Free v a (ParseC v m) where
+instance (Monad m, Free v a m) => Free v a (ParseC i v m) where
   free = lift . free
 
 suspend :: Suspending a m => Input -> ParserC m a -> m a
 suspend = runParser sleaf snil sfail
 {-# INLINE suspend #-}
 
-instance (Suspending a m, Lam v a m) => Lam v a (ParseC v m) where
+instance (Suspending a m, Lam v a m) => Lam v a (ParseC i v m) where
   lam p f = ParseC $ ParserC $ \ leaf nil fail input ->
     -- we can’t hide the context resulting from the parser produced by f in a, so we’ll hide it in m instead
     resume leaf nil fail $ lam p (suspend input . runParseC . f)
