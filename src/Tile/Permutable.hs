@@ -11,6 +11,7 @@
 module Tile.Permutable
 ( (:.:)(..)
 , liftC
+, mapC
 , assocL
 , assocR
 , Permutable
@@ -65,6 +66,9 @@ instance (Distributive f, Distributive g) => Distributive (f :.: g) where
 
 liftC :: (Functor m, Applicative i) => m a -> (m :.: i) a
 liftC = C . fmap pure
+
+mapC :: (f (g a) -> f' (g' a')) -> ((f :.: g) a -> (f' :.: g') a')
+mapC = coerce
 
 assocL :: Functor f => (f :.: (g :.: h)) a -> ((f :.: g) :.: h) a
 assocL = C . C . fmap getC . getC
