@@ -1,4 +1,6 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeOperators #-}
 module Tile.Functor.Compose
 ( (:.:)(..)
@@ -8,11 +10,15 @@ module Tile.Functor.Compose
 , assocR
 , assocLR
 , assocRL
+, weaken
+, strengthen
+, Extends(..)
 ) where
 
 import Control.Applicative (Alternative(..), liftA2)
 import Data.Coerce (coerce)
 import Data.Distributive
+import Data.Functor.Identity
 
 newtype (f :.: g) a = C { getC :: f (g a) }
   deriving (Functor)
@@ -66,3 +72,22 @@ assocLR = mapC (mapC (fmap (C . fmap getC)))
 
 assocRL :: (Functor f, Functor g) => ((f :.: (g :.: h)) :.: i) a -> ((f :.: g) :.: (h :.: i)) a
 assocRL = mapC (mapC (fmap (fmap C . getC)))
+
+
+weaken :: (Applicative m, Applicative i, Applicative j) => (m :.: i) (repr a) -> (m :.: i :.: j) (repr a)
+weaken = weakens
+
+strengthen :: Functor m => (m :.: Identity) a -> m a
+strengthen = fmap runIdentity . getC
+
+class (Applicative m, Applicative n) => Extends m n where
+  weakens :: m a -> n a
+
+instance (Applicative f, Extends g1 g2) => Extends (f :.: g1) (f :.: g2) where
+  weakens = mapC (fmap weakens)
+
+instance (Applicative f, Applicative g) => Extends f (f :.: g) where
+  weakens = liftC
+
+instance Applicative f => Extends f f where
+  weakens = id

@@ -44,7 +44,6 @@ module Tile.Permutable
 
 import Control.Applicative (liftA2)
 import Data.Distributive
-import Data.Functor.Identity
 import Tile.Functor.Compose
 
 type Permutable f = (Applicative f, Distributive f)
@@ -90,25 +89,6 @@ var = C . pure . fmap varPure
 
 vr :: forall m i j v repr a . (Applicative m, Functor i, Var v repr, Extends (m :.: i) (m :.: j)) => i (v a) -> (m :.: j) (repr a)
 vr = weakens . var @m
-
-
-weaken :: (Applicative m, Applicative i, Applicative j) => (m :.: i) (repr a) -> (m :.: i :.: j) (repr a)
-weaken = weakens
-
-strengthen :: Functor m => (m :.: Identity) a -> m a
-strengthen = fmap runIdentity . getC
-
-class (Applicative m, Applicative n) => Extends m n where
-  weakens :: m a -> n a
-
-instance (Applicative f, Extends g1 g2) => Extends (f :.: g1) (f :.: g2) where
-  weakens = mapC (fmap weakens)
-
-instance (Applicative f, Applicative g) => Extends f (f :.: g) where
-  weakens = liftC
-
-instance Applicative f => Extends f f where
-  weakens = id
 
 
 trace :: Applicative i => String -> (IO :.: i) ()
