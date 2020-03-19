@@ -6,6 +6,7 @@
 module Tile.Permutable
 ( (:.:)(..)
 , liftC
+, Boolean(..)
 , Lam(..)
 , ($$)
 , var
@@ -38,6 +39,11 @@ instance (Applicative f, Applicative g) => Applicative (f :.: g) where
 
 liftC :: (Functor m, Applicative i) => m a -> (m :.: i) a
 liftC = C . fmap pure
+
+
+class Boolean repr where
+  liftBool :: Bool -> repr Bool
+  iff :: repr Bool -> repr a -> repr a -> repr a
 
 
 class Lam repr where
