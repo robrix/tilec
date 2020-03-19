@@ -63,10 +63,10 @@ instance Suspending a m => Suspending a (ReaderC r m) where
   sfail   = lift . sfail
   resume leaf nil fail m = ReaderC $ \ r -> resume (\ i -> runReader r . leaf i) (runReader r . nil) (runReader r . fail) (runReader r m)
 
-instance Var v a m => Var v a (ParseC v m) where
+instance (Monad m, Var v a m) => Var v a (ParseC v m) where
   var = lift . var
 
-instance Free v a m => Free v a (ParseC v m) where
+instance (Monad m, Free v a m) => Free v a (ParseC v m) where
   free = lift . free
 
 suspend :: Suspending a m => Input -> ParserC m a -> m a

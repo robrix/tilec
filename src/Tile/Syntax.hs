@@ -32,13 +32,13 @@ import Control.Monad (ap)
 import Tile.Plicit
 import Tile.Type
 
-class Monad expr => Var v a expr | expr -> v a where
+class Var v a expr | expr -> v a where
   var :: v -> expr a
 
 instance Var v a m => Var v a (ReaderC r m) where
   var = ReaderC . const . var
 
-instance Var v a m => Var v a (StateC s m) where
+instance (Monad m, Var v a m) => Var v a (StateC s m) where
   var v = StateC $ \ k s -> var v >>= k s
 
 
@@ -48,7 +48,7 @@ class Var v a expr => Free v a expr where
 instance Free v a m => Free v a (ReaderC r m) where
   free = ReaderC . const . free
 
-instance Free v a m => Free v a (StateC s m) where
+instance (Monad m, Free v a m) => Free v a (StateC s m) where
   free v = StateC $ \ k s -> free v >>= k s
 
 
