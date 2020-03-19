@@ -120,6 +120,21 @@ instance CharParsing m => CharParsing (EnvC i v m) where
   satisfy = liftEnvC0 . satisfy
   {-# INLINE satisfy #-}
 
+  char = liftEnvC0 . char
+  {-# INLINE char #-}
+
+  notChar = liftEnvC0 . notChar
+  {-# INLINE notChar #-}
+
+  anyChar = liftEnvC0 anyChar
+  {-# INLINE anyChar #-}
+
+  string = liftEnvC0 . string
+  {-# INLINE string #-}
+
+  text = liftEnvC0 . text
+  {-# INLINE text #-}
+
 instance TokenParsing m => TokenParsing (EnvC i v m) where
   someSpace = liftEnvC0 someSpace
   {-# INLINE someSpace #-}
