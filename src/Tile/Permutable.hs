@@ -71,10 +71,10 @@ mapC :: (f (g a) -> f' (g' a')) -> ((f :.: g) a -> (f' :.: g') a')
 mapC = coerce
 
 assocL :: Functor f => (f :.: (g :.: h)) a -> ((f :.: g) :.: h) a
-assocL = C . C . fmap getC . getC
+assocL = C . mapC (fmap getC)
 
 assocR :: Functor f => ((f :.: g) :.: h) a -> (f :.: (g :.: h)) a
-assocR = C . fmap C . getC . getC
+assocR = mapC (fmap C) . getC
 
 
 type Permutable f = (Applicative f, Distributive f)
