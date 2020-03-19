@@ -35,6 +35,9 @@ module Tile.Permutable
 , CPSA(..)
 , runCPSA
 , runCCPSA
+, throw
+, reset
+, resetC
 , liftCPSA
 , liftCCPSA
 ) where
@@ -180,6 +183,19 @@ runCPSA = strengthen . (`getCPSA` id)
 
 runCCPSA :: Functor m => (CPSA (i a) m :.: i) a -> (m :.: i) a
 runCCPSA = mapC runCPSA
+
+throw
+  :: (Applicative m, Applicative hw)
+  => (forall h . Permutable h => ((m :.: hw) :.: h) a -> ((m :.: hw) :.: h) w)
+  -> m a
+  -> (m :.: hw) w
+throw k = strengthen . k . liftC . liftC
+
+reset :: Applicative m => CPSA a m a -> CPSA w m a
+reset m = CPSA $ \k -> throw k $ runCPSA m
+
+resetC :: Applicative m => (CPSA (i a) m :.: i) a -> (CPSA w m :.: i) a
+resetC = mapC reset
 
 liftCPSA :: Functor m => m a -> CPSA w m a
 liftCPSA m = CPSA $ \ k -> strengthen (k (liftC (liftC m)))
