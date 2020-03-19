@@ -6,6 +6,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Syntax
 ( Var(..)
+, varA
 , Free(..)
 , Let(..)
 , Lam(..)
@@ -42,6 +43,9 @@ instance Var v a m => Var v a (ReaderC r m) where
 
 instance (Monad m, Var v a m) => Var v a (StateC s m) where
   var v = StateC $ \ k s -> var v >>= k s
+
+varA :: (Applicative m, Functor i, Var v a expr) => i v -> m (i (expr a))
+varA = pure . fmap var
 
 
 class Var v a expr => Free v a expr where
