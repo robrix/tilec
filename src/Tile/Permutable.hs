@@ -1,9 +1,11 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 module Tile.Permutable
 ( (:.:)(..)
 , Lam(..)
 , ($$)
+, weaken
 ) where
 
 import Control.Applicative (liftA2)
@@ -38,3 +40,7 @@ class Lam repr where
 ($$) = liftA2 appPure
 
 infixl 9 $$
+
+
+weaken :: (Applicative m, Applicative i, Applicative j) => (m :.: i) (repr a) -> (m :.: i :.: j) (repr a)
+weaken = C . fmap (C . fmap pure) . getC
