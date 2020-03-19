@@ -7,6 +7,8 @@ module Tile.Permutable
 ( (:.:)(..)
 , liftC
 , Boolean(..)
+, false
+, true
 , Lam(..)
 , ($$)
 , var
@@ -44,6 +46,10 @@ liftC = C . fmap pure
 class Boolean repr where
   liftBool :: Bool -> repr Bool
   iff :: repr Bool -> repr a -> repr a -> repr a
+
+false, true :: Boolean repr => repr Bool
+false = liftBool False
+true  = liftBool True
 
 
 class Lam repr where
