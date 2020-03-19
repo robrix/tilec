@@ -67,7 +67,7 @@ instance Lam v (m a) => Lam v (ReaderC r m a) where
 
   f $$ a = ReaderC $ \ r -> runReader r f $$ runReader r a
 
-lamA :: (Applicative m, Lam v expr, Permutable i) => Plicit -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) (expr)
+lamA :: (Applicative m, Lam v expr, Permutable i) => Plicit -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
 lamA p f = lam p <$> mapC (fmap getC) (f (C (pure id)))
 
 
