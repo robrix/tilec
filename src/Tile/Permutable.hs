@@ -153,7 +153,7 @@ trace = liftC . putStrLn
 
 
 newtype CPSA w m a = CPSA
-  { runCPSA
+  { getCPSA
     :: forall hw
     .  Permutable hw
     => (forall h . Permutable h => ((m :.: hw) :.: h) a -> ((m :.: hw) :.: h) w)
