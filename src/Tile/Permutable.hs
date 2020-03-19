@@ -54,3 +54,6 @@ weaken = C . fmap (C . fmap pure) . getC
 
 class (Applicative m, Applicative n) => Extends m n where
   weakens :: m a -> n a
+
+instance (Applicative f, Extends g1 g2) => Extends (f :.: g1) (f :.: g2) where
+  weakens = C . fmap weakens . getC
