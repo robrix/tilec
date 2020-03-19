@@ -11,6 +11,8 @@ import Control.Applicative (liftA2)
 newtype (f :.: g) a = C { getC :: f (g a) }
   deriving (Functor)
 
+infixr 7 :.:
+
 instance (Applicative f, Applicative g) => Applicative (f :.: g) where
   pure = C . pure . pure
   {-# INLINE pure #-}
