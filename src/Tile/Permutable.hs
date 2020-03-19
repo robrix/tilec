@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
@@ -57,3 +58,6 @@ class (Applicative m, Applicative n) => Extends m n where
 
 instance (Applicative f, Extends g1 g2) => Extends (f :.: g1) (f :.: g2) where
   weakens = C . fmap weakens . getC
+
+instance (Applicative f, Applicative g) => Extends f (f :.: g) where
+  weakens = C . fmap pure
