@@ -1,6 +1,7 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Syntax
@@ -8,6 +9,7 @@ module Tile.Syntax
 , Free(..)
 , Let(..)
 , Lam(..)
+, lamA
 , Type(..)
 , (-->)
 , (==>)
@@ -69,6 +71,9 @@ instance Lam v a m => Lam v a (ReaderC r m) where
   lam p b = ReaderC $ \ r -> lam p (runReader r . b)
 
   f $$ a = ReaderC $ \ r -> runReader r f $$ runReader r a
+
+lamA :: (Applicative m, Lam v a expr) => Plicit -> (forall i . Applicative i => i v -> m (i (expr a))) -> m (expr a)
+lamA p f = lam p <$> f id
 
 
 class Var v a expr => Type v a expr where
