@@ -37,8 +37,10 @@ instance (Applicative f, Applicative g) => Applicative (f :.: g) where
 
 instance (Alternative f, Applicative g) => Alternative (f :.: g) where
   empty = C empty
+  {-# INLINE empty #-}
 
   C l <|> C r = C (l <|> r)
+  {-# INLINE (<|>) #-}
 
 instance (Distributive f, Distributive g) => Distributive (f :.: g) where
   distribute = C . fmap distribute . collect coerce
