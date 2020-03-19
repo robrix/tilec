@@ -9,7 +9,6 @@ module Tile.Parse
 ( parse
 , parseString
 , parseFile
-, ParseC(..)
 , env
 , runEnv
 , EnvC(..)
@@ -19,7 +18,6 @@ module Tile.Parse
 import           Control.Algebra
 import           Control.Carrier.Parser.Church as Parser
 import           Control.Carrier.Reader
-import           Control.Effect.Cut
 import           Control.Effect.NonDet
 import           Control.Effect.Parser.Lines
 import           Control.Effect.Parser.Notice
@@ -39,23 +37,18 @@ import           Text.Parser.Token.Highlight
 import           Tile.Functor.Compose
 import           Tile.Syntax
 
-parse :: forall i v m a sig . Has (Throw Notice) sig m => Path -> String -> ParseC i v m a -> m a
-parse path s = runParser (const pure) failure failure (Input lowerBound s) . runParseC where
+parse :: forall m a sig . Has (Throw Notice) sig m => Path -> String -> ParserC m a -> m a
+parse path s = runParser (const pure) failure failure (Input lowerBound s) where
   failure = throwError . errToNotice path lines
   lines = linesFromString s
 
-parseString :: Has (Throw Notice) sig m => String -> ParseC i v m a -> m a
+parseString :: Has (Throw Notice) sig m => String -> ParserC m a -> m a
 parseString = parse (Path "(interactive)")
 
-parseFile :: (Has (Throw Notice) sig m, MonadIO m) => Path -> ParseC i v m a -> m a
+parseFile :: (Has (Throw Notice) sig m, MonadIO m) => Path -> ParserC m a -> m a
 parseFile path p = do
   s <- liftIO (readFile (getPath path))
   parse path s p
-
-newtype ParseC i v m a = ParseC { runParseC :: ParserC m a }
-  deriving (Algebra (Parser :+: Cut :+: NonDet :+: sig), Alternative, Applicative, CharParsing, Functor, Monad, MonadPlus, MonadTrans, Parsing, TokenParsing)
-
-deriving instance Algebra sig m => MonadFail (ParseC i v m)
 
 
 env :: Lam v a t => Map.Map String (i v) -> EnvC i v m (t a) -> m (t a)
