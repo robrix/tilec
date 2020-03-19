@@ -101,6 +101,12 @@ instance Parsing m => Parsing (EnvC i v m) where
   m <?> s = liftEnvC1 (<?> s) m
   {-# INLINE (<?>) #-}
 
+  skipMany = liftEnvC1 skipMany
+  {-# INLINE skipMany #-}
+
+  skipSome = liftEnvC1 skipSome
+  {-# INLINE skipSome #-}
+
   unexpected = liftEnvC0 . unexpected
   {-# INLINE unexpected #-}
 
