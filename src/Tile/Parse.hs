@@ -24,6 +24,7 @@ import           Control.Effect.Parser.Path
 import           Control.Effect.Throw
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
+import           Data.Distributive
 import           Data.Functor
 import           Data.HashSet (HashSet, fromList)
 import qualified Data.Map as Map
@@ -89,6 +90,13 @@ runEnv m = runReader m . runEnvC
 
 newtype EnvC i v m a = EnvC { runEnvC :: ReaderC (Map.Map String (i v)) m a }
   deriving (Algebra (Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, Functor, Monad, MonadFail, MonadPlus, MonadTrans)
+
+instance Distributive m => Distributive (EnvC i v m) where
+  distribute m = EnvC . ReaderC $ \ r -> distribute (runEnv r <$> m)
+  {-# INLINE distribute #-}
+
+  collect f m = EnvC . ReaderC $ \ r -> collect (runEnv r . f) m
+  {-# INLINE collect #-}
 
 liftEnvC0 :: m a -> EnvC i v m a
 liftEnvC0 = EnvC . ReaderC . const
