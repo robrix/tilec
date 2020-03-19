@@ -23,6 +23,8 @@ import           Control.Effect.Parser.Path
 import           Control.Effect.Throw
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
+import           Control.Monad.Trans.Reader (runReaderT)
+import           Data.Functor
 import           Data.HashSet (HashSet, fromList)
 import qualified Data.Map as Map
 import           Data.Semilattice.Lower
@@ -82,8 +84,8 @@ instance (Suspending a m, Lam v a m) => Lam v a (ParseC i v m) where
   f $$ a = ParseC $ ParserC $ \ leaf nil fail input ->
     resume leaf nil fail $ suspend input (runParseC f) $$ suspend input (runParseC a)
 
-expr_ :: (Applicative i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Type v a expr, MonadFail m) => (m :.: i) (expr a)
-expr_ = type_ <|> var_
+expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m, MonadPlus m) => (m :.: i) (expr a)
+expr_ = type_ <|> var_ <|> lam_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
@@ -93,6 +95,12 @@ var_ = C $ do
   v <- identifier_
   v' <- asks (Map.lookup v)
   maybe (fail "free variable") varA v'
+
+lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m, MonadPlus m) => (m :.: i) (expr a)
+lam_ = C $ token (char '\\') *> do
+  i <- identifier_
+  void (token (char '.'))
+  getC (lamA Ex (C . runReaderT (getC expr_) . Map.singleton i))
 
 type_ :: (Monad m, Applicative i, TokenParsing m, Type v a expr) => (m :.: i) (expr a)
 type_ = C $ pure type' <$ reserve identifierStyle "Type"
