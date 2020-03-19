@@ -157,19 +157,19 @@ instance TokenParsing m => TokenParsing (EnvC i v m) where
   {-# INLINE token #-}
 
 
-expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m) => (m :.: i) (expr a)
+expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr) => (m :.: i) (expr a)
 expr_ = type_ <|> var_ <|> lam_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
 
-var_ :: (Functor i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Var v a expr, MonadFail m) => (m :.: i) (expr a)
+var_ :: (Functor i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Var v a expr) => (m :.: i) (expr a)
 var_ = C $ do
   v <- identifier_
   v' <- asks (Map.lookup v)
-  maybe (fail "free variable") varA v'
+  maybe (unexpected "free variable") varA v'
 
-lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m) => (m :.: i) (expr a)
+lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr) => (m :.: i) (expr a)
 lam_ = C $ token (char '\\') *> do
   i <- identifier_
   void (token (char '.'))
