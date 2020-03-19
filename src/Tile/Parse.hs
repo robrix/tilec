@@ -1,15 +1,16 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Parse
 ( parse
 , parseString
 , parseFile
-, env
 , runEnv
 , EnvC(..)
-, expr_
+, expr
 ) where
 
 import           Control.Algebra
@@ -24,6 +25,7 @@ import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
 import           Data.Distributive
 import           Data.Functor
+import           Data.Functor.Identity
 import           Data.HashSet (HashSet, fromList)
 import qualified Data.Map as Map
 import           Data.Semilattice.Lower
@@ -47,9 +49,6 @@ parseFile path p = do
   s <- liftIO (readFile (getPath path))
   parse path s p
 
-
-env :: Lam v t => Map.Map String (i v) -> EnvC i v m t -> m t
-env = runEnv
 
 runEnv :: Map.Map String (i v) -> EnvC i v m a -> m a
 runEnv m = runReader m . runEnvC
@@ -127,6 +126,9 @@ instance TokenParsing m => TokenParsing (EnvC i v m) where
   token = liftEnvC1 token
   {-# INLINE token #-}
 
+
+expr :: forall v expr m sig . (Algebra sig m, TokenParsing m, Lam v expr, Type v expr) => m expr
+expr = runEnv @Identity @v mempty (strengthen expr_)
 
 expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Type v expr) => (m :.: i) expr
 expr_ = type_ <|> var_ <|> lam_
