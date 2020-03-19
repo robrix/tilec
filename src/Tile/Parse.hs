@@ -37,7 +37,7 @@ import           Text.Parser.Token.Highlight
 import           Tile.Functor.Compose
 import           Tile.Syntax
 
-parse :: forall m a sig . Has (Throw Notice) sig m => Path -> String -> ParserC m a -> m a
+parse :: Has (Throw Notice) sig m => Path -> String -> ParserC m a -> m a
 parse path s = runParser (const pure) failure failure (Input lowerBound s) where
   failure = throwError . errToNotice path lines
   lines = linesFromString s
