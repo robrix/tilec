@@ -114,6 +114,22 @@ instance CharParsing m => CharParsing (EnvC i v m) where
   satisfy = liftEnvC0 . satisfy
   {-# INLINE satisfy #-}
 
+instance TokenParsing m => TokenParsing (EnvC i v m) where
+  someSpace = liftEnvC0 someSpace
+  {-# INLINE someSpace #-}
+
+  nesting = liftEnvC1 nesting
+  {-# INLINE nesting #-}
+
+  semi = liftEnvC0 semi
+  {-# INLINE semi #-}
+
+  highlight = liftEnvC1 . highlight
+  {-# INLINE highlight #-}
+
+  token = liftEnvC1 token
+  {-# INLINE token #-}
+
 
 expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m, MonadPlus m) => (m :.: i) (expr a)
 expr_ = type_ <|> var_ <|> lam_
