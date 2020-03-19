@@ -96,7 +96,7 @@ class Lam repr where
 
 infixl 9 $$
 
-lam :: (Applicative m, Lam repr, Applicative {-Permutable-} i) => (forall j . Applicative {-Permutable-} j => (i :.: j) (repr a) -> (m :.: i :.: j) (repr b)) -> (m :.: i) (repr (a -> b))
+lam :: (Applicative m, Lam repr, Permutable i) => (forall j . Permutable j => (i :.: j) (repr a) -> (m :.: i :.: j) (repr b)) -> (m :.: i) (repr (a -> b))
 lam f = lamPure <$> C (getC <$> getC (f (C (pure id))))
 
 
@@ -130,8 +130,8 @@ trace = liftC . putStrLn
 newtype CPSA w m a = CPSA
   { runCPSA
     :: forall hw
-    .  Applicative {-Permutable-} hw
-    => (forall h . Applicative {-Permutable-} h => ((m :.: hw) :.: h) a -> ((m :.: hw) :.: h) w)
+    .  Permutable hw
+    => (forall h . Permutable h => ((m :.: hw) :.: h) a -> ((m :.: hw) :.: h) w)
     -> (m :.: hw) w
   }
 
