@@ -1,7 +1,10 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 module Tile.Permutable
 ( (:.:)(..)
@@ -15,6 +18,7 @@ module Tile.Permutable
 , Lam(..)
 , ($$)
 , var
+, vr
 , weaken
 , Extends(..)
 , trace
@@ -78,6 +82,9 @@ infixl 9 $$
 
 var :: Applicative m => i (repr a) -> (m :.: i) (repr a)
 var = C . pure
+
+vr :: forall m i j repr a . (Applicative m, Extends (m :.: i) (m :.: j)) => i (repr a) -> (m :.: j) (repr a)
+vr = weakens . var @m
 
 
 weaken :: (Applicative m, Applicative i, Applicative j) => (m :.: i) (repr a) -> (m :.: i :.: j) (repr a)
