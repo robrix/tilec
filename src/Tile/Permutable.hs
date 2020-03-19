@@ -11,6 +11,7 @@
 module Tile.Permutable
 ( (:.:)(..)
 , liftC
+, assocL
 , Permutable
 , Boolean(..)
 , false
@@ -63,6 +64,9 @@ instance (Distributive f, Distributive g) => Distributive (f :.: g) where
 
 liftC :: (Functor m, Applicative i) => m a -> (m :.: i) a
 liftC = C . fmap pure
+
+assocL :: Functor f => (f :.: (g :.: h)) a -> ((f :.: g) :.: h) a
+assocL = C . C . fmap getC . getC
 
 
 type Permutable f = (Applicative f, Distributive f)
