@@ -163,3 +163,14 @@ newtype CPSA w m a = CPSA
 instance Functor m => Functor (CPSA w m) where
   fmap f (CPSA run) = CPSA $ \ k -> run (k . fmap f)
   {-# INLINE fmap #-}
+
+instance Applicative m => Applicative (CPSA w m) where
+  pure a = CPSA $ \ k -> strengthen (k (pure a))
+  {-# INLINE pure #-}
+
+  CPSA f <*> CPSA a = CPSA $ \ k ->
+    f (\ f' ->
+      assocL $ a (\ a' ->
+        assocLR $
+          k (assocR (liftC f') <*> assocRL a')))
+  {-# INLINE (<*>) #-}
