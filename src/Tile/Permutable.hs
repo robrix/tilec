@@ -13,8 +13,10 @@ newtype (f :.: g) a = C { getC :: f (g a) }
 
 instance (Applicative f, Applicative g) => Applicative (f :.: g) where
   pure = C . pure . pure
+  {-# INLINE pure #-}
 
   C f <*> C a = C (liftA2 (<*>) f a)
+  {-# INLINE (<*>) #-}
 
 
 class Lam repr where
