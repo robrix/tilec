@@ -51,6 +51,8 @@ parseFile path p = do
 newtype ParseC i v m a = ParseC { runParseC :: ParserC (ReaderC (Map.Map String (i v)) m) a }
   deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, CharParsing, Functor, Monad, MonadPlus, Parsing, TokenParsing)
 
+deriving instance Algebra sig m => MonadFail (ParseC i v m)
+
 instance MonadTrans (ParseC i v) where
   lift = ParseC . lift . lift
 
@@ -89,7 +91,7 @@ runEnv :: Map.Map String (i v) -> EnvC i v m a -> m a
 runEnv m = runReader m . runEnvC
 
 newtype EnvC i v m a = EnvC { runEnvC :: ReaderC (Map.Map String (i v)) m a }
-  deriving (Algebra (Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, Functor, Monad, MonadPlus, MonadTrans)
+  deriving (Algebra (Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, Functor, Monad, MonadFail, MonadPlus, MonadTrans)
 
 liftEnvC0 :: m a -> EnvC i v m a
 liftEnvC0 = EnvC . ReaderC . const
