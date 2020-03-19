@@ -31,7 +31,6 @@ module Tile.Syntax
 ) where
 
 import Control.Carrier.Reader
-import Control.Carrier.State.Church
 import Control.Monad (ap)
 import Data.Distributive
 import Tile.Functor.Compose
@@ -45,9 +44,6 @@ class Var v a expr | expr -> v a where
 
 instance Var v a m => Var v a (ReaderC r m) where
   var = ReaderC . const . var
-
-instance (Monad m, Var v a m) => Var v a (StateC s m) where
-  var v = StateC $ \ k s -> var v >>= k s
 
 varA :: (Applicative m, Functor i, Var v a expr) => i v -> m (i (expr a))
 varA = pure . fmap var
