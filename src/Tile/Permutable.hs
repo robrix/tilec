@@ -1,9 +1,13 @@
+{-# LANGUAGE TypeOperators #-}
 module Tile.Permutable
-( Lam(..)
+( (:.:)(..)
+, Lam(..)
 , ($$)
 ) where
 
 import Control.Applicative (liftA2)
+
+newtype (f :.: g) a = C { getC :: f (g a) }
 
 class Lam repr where
   lamPure :: (repr a -> repr b) -> repr (a -> b)
