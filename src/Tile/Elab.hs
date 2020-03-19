@@ -41,7 +41,7 @@ instance (Ord v, Prob v (m a), FreeVariable v e, Err e (m a)) => Var v (ElabC v 
 instance (Ord v, Let v (m a), Prob v (m a), Type v (m a), FreeVariable v e, Err e (m a)) => Let v (ElabC v a m a) where
   let' (v ::: t) b = check $ \ ctx -> do
     _B <- meta type'
-    t' <- letbind ((ctx |- t ::: type')  ::: type')
+    t' <- letbind ((ctx |- t ::: type') ::: type')
     pure
       (   let' ((ctx |- v ::: var t') ::: var t') (\ x ->
             ctx |> x ::: var t' |- b x ::: var _B)
