@@ -173,7 +173,7 @@ lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m
 lam_ = C $ token (char '\\') *> do
   i <- identifier_
   void (token (char '.'))
-  getC (lamA Ex (\ v -> C (runEnv (Map.singleton i v) (getC expr_))))
+  getC (lamA Ex (\ v -> C (asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env (getC expr_))))
 
 type_ :: (Monad m, Applicative i, TokenParsing m, Type v a expr) => (m :.: i) (expr a)
 type_ = C $ pure type' <$ reserve identifierStyle "Type"
