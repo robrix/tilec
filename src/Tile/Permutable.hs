@@ -11,6 +11,7 @@ module Tile.Permutable
 , true
 , (|||)
 , (&&&)
+, not'
 , Lam(..)
 , ($$)
 , var
@@ -59,6 +60,9 @@ a &&& b = iff a b false
 
 infixr 2 |||
 infixr 3 &&&
+
+not' :: Boolean repr => repr Bool -> repr Bool
+not' x = iff x false true
 
 
 class Lam repr where
