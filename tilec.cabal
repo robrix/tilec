@@ -40,6 +40,7 @@ library
     Tile.Error
     Tile.Library
     Tile.Parse
+    Tile.Permutable
     Tile.Plicit
     Tile.Pretty
     Tile.Print
