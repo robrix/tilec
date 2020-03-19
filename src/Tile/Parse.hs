@@ -48,6 +48,9 @@ parseFile path p = do
   s <- liftIO (readFile (getPath path))
   parse path s p
 
+newtype EnvC i v m a = EnvC { runEnvC :: ReaderC (Map.Map String (i v)) m a }
+  deriving (Algebra (Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, Functor, Monad, MonadPlus)
+
 newtype ParseC i v m a = ParseC { runParseC :: ParserC (ReaderC (Map.Map String (i v)) m) a }
   deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, CharParsing, Functor, Monad, MonadPlus, Parsing, TokenParsing)
 
