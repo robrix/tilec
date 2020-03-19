@@ -119,3 +119,7 @@ newtype CPSA w m a = CPSA
     => (forall h . Applicative {-Permutable-} h => ((m :.: hw) :.: h) a -> ((m :.: hw) :.: h) w)
     -> (m :.: hw) w
   }
+
+instance Functor m => Functor (CPSA w m) where
+  fmap f (CPSA run) = CPSA $ \ k -> run (k . fmap f)
+  {-# INLINE fmap #-}
