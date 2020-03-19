@@ -85,6 +85,9 @@ instance (Suspending a m, Lam v a m) => Lam v a (ParseC i v m) where
     resume leaf nil fail $ suspend input (runParseC f) $$ suspend input (runParseC a)
 
 
+runEnv :: Map.Map String (i v) -> EnvC i v m a -> m a
+runEnv m = runReader m . runEnvC
+
 newtype EnvC i v m a = EnvC { runEnvC :: ReaderC (Map.Map String (i v)) m a }
   deriving (Algebra (Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, Functor, Monad, MonadPlus, MonadTrans)
 
