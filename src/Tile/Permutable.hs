@@ -17,6 +17,7 @@ module Tile.Permutable
 , not'
 , Lam(..)
 , ($$)
+, lam
 , var
 , vr
 , weaken
@@ -78,6 +79,9 @@ class Lam repr where
 ($$) = liftA2 appPure
 
 infixl 9 $$
+
+lam :: (Applicative m, Lam repr, Applicative {-Permutable-} i) => (forall j . Applicative {-Permutable-} j => (i :.: j) (repr a) -> (m :.: i :.: j) (repr b)) -> (m :.: i) (repr (a -> b))
+lam f = lamPure <$> C (getC <$> getC (f (C (pure id))))
 
 
 var :: Applicative m => i (repr a) -> (m :.: i) (repr a)
