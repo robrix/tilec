@@ -36,7 +36,7 @@ import           Tile.Functor.Compose
 import           Tile.Syntax
 
 parse :: forall i v m a sig . Has (Throw Notice) sig m => Path -> String -> ParseC i v m a -> m a
-parse path s = runReader mempty . runParser (const pure) failure failure (Input lowerBound s) . runParseC where
+parse path s = runParser (const pure) failure failure (Input lowerBound s) . runParseC where
   failure = throwError . errToNotice path lines
   lines = linesFromString s
 
@@ -48,13 +48,10 @@ parseFile path p = do
   s <- liftIO (readFile (getPath path))
   parse path s p
 
-newtype ParseC i v m a = ParseC { runParseC :: ParserC (ReaderC (Map.Map String (i v)) m) a }
-  deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, CharParsing, Functor, Monad, MonadPlus, Parsing, TokenParsing)
+newtype ParseC i v m a = ParseC { runParseC :: ParserC m a }
+  deriving (Algebra (Parser :+: Cut :+: NonDet :+: sig), Alternative, Applicative, CharParsing, Functor, Monad, MonadPlus, MonadTrans, Parsing, TokenParsing)
 
 deriving instance Algebra sig m => MonadFail (ParseC i v m)
-
-instance MonadTrans (ParseC i v) where
-  lift = ParseC . lift . lift
 
 class Monad m => Suspending a m | m -> a where
   sleaf :: Input -> a -> m a
