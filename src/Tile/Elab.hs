@@ -21,7 +21,7 @@ import Data.Maybe (fromMaybe)
 import Tile.Error
 import Tile.Syntax
 
-(|-) :: Map v (m a) -> ElabC v a m b ::: m a -> m b
+(|-) :: Map v (m a) -> ElabC v a m a ::: m a -> m a
 ctx |- (m ::: t) = runElab t ctx m
 
 infixl 1 |-
