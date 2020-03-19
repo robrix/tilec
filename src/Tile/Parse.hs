@@ -10,6 +10,7 @@ module Tile.Parse
 , parseString
 , parseFile
 , ParseC(..)
+, env
 , runEnv
 , EnvC(..)
 , expr_
@@ -86,6 +87,9 @@ instance (Suspending a m, Lam v a m) => Lam v a (ParseC i v m) where
   f $$ a = ParseC $ ParserC $ \ leaf nil fail input ->
     resume leaf nil fail $ suspend input (runParseC f) $$ suspend input (runParseC a)
 
+
+env :: Lam v a t => Map.Map String (i v) -> EnvC i v m (t a) -> m (t a)
+env = runEnv
 
 runEnv :: Map.Map String (i v) -> EnvC i v m a -> m a
 runEnv m = runReader m . runEnvC
