@@ -23,6 +23,7 @@ module Tile.Permutable
 , weaken
 , Extends(..)
 , trace
+, CPSA(..)
 ) where
 
 import Control.Applicative (liftA2)
@@ -109,3 +110,12 @@ instance Applicative f => Extends f f where
 
 trace :: Applicative i => String -> (IO :.: i) ()
 trace = liftC . putStrLn
+
+
+newtype CPSA w m a = CPSA
+  { runCPSA
+    :: forall hw
+    .  Applicative {-Permutable-} hw
+    => (forall h . Applicative {-Permutable-} h => ((m :.: hw) :.: h) a -> ((m :.: hw) :.: h) w)
+    -> (m :.: hw) w
+  }
