@@ -15,6 +15,7 @@ module Tile.Print
 , runPrint
 , PrintC(PrintC)
 , Highlight(..)
+, Doc
 ) where
 
 import           Control.Algebra
