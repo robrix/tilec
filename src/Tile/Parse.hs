@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Parse
@@ -23,7 +24,6 @@ import           Control.Effect.Parser.Path
 import           Control.Effect.Throw
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Reader (runReaderT)
 import           Data.Functor
 import           Data.HashSet (HashSet, fromList)
 import qualified Data.Map as Map
@@ -157,7 +157,7 @@ instance TokenParsing m => TokenParsing (EnvC i v m) where
   {-# INLINE token #-}
 
 
-expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m, MonadPlus m) => (m :.: i) (expr a)
+expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m) => (m :.: i) (expr a)
 expr_ = type_ <|> var_ <|> lam_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
@@ -169,11 +169,11 @@ var_ = C $ do
   v' <- asks (Map.lookup v)
   maybe (fail "free variable") varA v'
 
-lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m, MonadPlus m) => (m :.: i) (expr a)
+lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m) => (m :.: i) (expr a)
 lam_ = C $ token (char '\\') *> do
   i <- identifier_
   void (token (char '.'))
-  getC (lamA Ex (C . runReaderT (getC expr_) . Map.singleton i))
+  getC (lamA Ex (\ v -> C (runEnv (Map.singleton i v) (getC expr_))))
 
 type_ :: (Monad m, Applicative i, TokenParsing m, Type v a expr) => (m :.: i) (expr a)
 type_ = C $ pure type' <$ reserve identifierStyle "Type"
