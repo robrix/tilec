@@ -92,6 +92,9 @@ instance (Applicative f, Extends g1 g2) => Extends (f :.: g1) (f :.: g2) where
 instance (Applicative f, Applicative g) => Extends f (f :.: g) where
   weakens = C . fmap pure
 
+instance Applicative f => Extends f f where
+  weakens = id
+
 
 trace :: Applicative i => String -> (IO :.: i) ()
 trace = liftC . putStrLn
