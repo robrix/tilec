@@ -88,6 +88,28 @@ instance (Suspending a m, Lam v a m) => Lam v a (ParseC i v m) where
 newtype EnvC i v m a = EnvC { runEnvC :: ReaderC (Map.Map String (i v)) m a }
   deriving (Algebra (Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, Functor, Monad, MonadPlus, MonadTrans)
 
+liftEnvC0 :: m a -> EnvC i v m a
+liftEnvC0 = EnvC . ReaderC . const
+
+liftEnvC1 :: (m a -> m' a') -> EnvC i v m a -> EnvC i v m' a'
+liftEnvC1 f m = EnvC . ReaderC $ \ r -> f (runReader r (runEnvC m))
+
+instance Parsing m => Parsing (EnvC i v m) where
+  try = liftEnvC1 try
+  {-# INLINE try #-}
+
+  m <?> s = liftEnvC1 (<?> s) m
+  {-# INLINE (<?>) #-}
+
+  unexpected = liftEnvC0 . unexpected
+  {-# INLINE unexpected #-}
+
+  eof = liftEnvC0 eof
+  {-# INLINE eof #-}
+
+  notFollowedBy = liftEnvC1 notFollowedBy
+  {-# INLINE notFollowedBy #-}
+
 
 expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v a expr, Type v a expr, MonadFail m, MonadPlus m) => (m :.: i) (expr a)
 expr_ = type_ <|> var_ <|> lam_
