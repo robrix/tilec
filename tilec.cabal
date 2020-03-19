@@ -52,6 +52,7 @@ library
   build-depends:
     , base ^>= 4.13
     , containers
+    , distributive
     , fused-effects
     , fused-effects-parser
     , parsers

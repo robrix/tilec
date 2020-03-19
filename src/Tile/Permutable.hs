@@ -27,6 +27,8 @@ module Tile.Permutable
 ) where
 
 import Control.Applicative (liftA2)
+import Data.Coerce
+import Data.Distributive
 
 newtype (f :.: g) a = C { getC :: f (g a) }
   deriving (Functor)
@@ -48,6 +50,13 @@ instance (Applicative f, Applicative g) => Applicative (f :.: g) where
 
   C a <* C b = C (liftA2 (<*) a b)
   {-# INLINE (<*) #-}
+
+instance (Distributive f, Distributive g) => Distributive (f :.: g) where
+  distribute = C . fmap distribute . collect coerce
+  {-# INLINE distribute #-}
+
+  collect f = C . fmap distribute . collect (coerce f)
+  {-# INLINE collect #-}
 
 liftC :: (Functor m, Applicative i) => m a -> (m :.: i) a
 liftC = C . fmap pure
