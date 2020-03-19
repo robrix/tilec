@@ -1,7 +1,7 @@
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
@@ -22,6 +22,7 @@ module Tile.Permutable
 , (|||)
 , (&&&)
 , not'
+, Var(..)
 , Lam(..)
 , ($$)
 , lam
@@ -67,6 +68,9 @@ infixr 3 &&&
 not' :: Boolean repr => repr Bool -> repr Bool
 not' x = if' x false true
 
+
+class Var v repr | repr -> v where
+  varPure :: v a -> repr a
 
 class Lam repr where
   lamPure :: (repr a -> repr b) -> repr (a -> b)
