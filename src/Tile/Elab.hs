@@ -29,8 +29,8 @@ infixl 1 |-
 runElab :: m a -> Map v (m a) -> ElabC v a m b -> m b
 runElab ty ctx (ElabC run) = run ty ctx
 
-newtype ElabC v a m b = ElabC (m a -> Map v (m a) -> m b)
-  deriving (Applicative, Functor, Monad) via ReaderC (m a) (ReaderC (Map v (m a)) m)
+newtype ElabC v t m a = ElabC (m t -> Map v (m t) -> m a)
+  deriving (Applicative, Functor, Monad) via ReaderC (m t) (ReaderC (Map v (m t)) m)
 
 instance Algebra sig m => Algebra sig (ElabC v a m) where
   alg hdl sig ctx = ElabC $ \ ty env -> alg (runElab ty env . hdl) sig ctx
