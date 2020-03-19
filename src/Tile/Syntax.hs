@@ -80,7 +80,7 @@ class Var v expr => Type v expr where
 instance Type v (m a) => Type v (ReaderC r m a) where
   type' = ReaderC (const type')
 
-  t >-> b = ReaderC $ \ r -> fmap (runReader r) t >-> runReader r . b
+  t >-> b = ReaderC $ \ r -> (runReader r <$> t) >-> runReader r . b
 
 (-->) :: Type v expr => expr -> expr -> expr
 a --> b = (Ex, a) >-> const b
