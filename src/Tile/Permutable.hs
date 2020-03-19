@@ -72,16 +72,16 @@ not' x = if' x false true
 class Var v repr | repr -> v where
   varPure :: v a -> repr a
 
-class Lam repr where
-  lamPure :: (repr a -> repr b) -> repr (a -> b)
+class Var v repr => Lam v repr where
+  lamPure :: (v a -> repr b) -> repr (a -> b)
   appPure :: repr (a -> b) -> (repr a -> repr b)
 
-($$) :: (Lam repr, Applicative m) => m (repr (a -> b)) -> (m (repr a) -> m (repr b))
+($$) :: (Lam v repr, Applicative m) => m (repr (a -> b)) -> (m (repr a) -> m (repr b))
 ($$) = liftA2 appPure
 
 infixl 9 $$
 
-lam :: (Applicative m, Lam repr, Permutable i) => (forall j . Permutable j => (i :.: j) (repr a) -> (m :.: i :.: j) (repr b)) -> (m :.: i) (repr (a -> b))
+lam :: (Applicative m, Lam v repr, Permutable i) => (forall j . Permutable j => (i :.: j) (v a) -> (m :.: i :.: j) (repr b)) -> (m :.: i) (repr (a -> b))
 lam f = lamPure <$> mapC (fmap getC) (f (C (pure id)))
 
 
