@@ -24,6 +24,9 @@ instance (Applicative f, Applicative g) => Applicative (f :.: g) where
   C a *> C b = C (liftA2 (*>) a b)
   {-# INLINE (*>) #-}
 
+  C a <* C b = C (liftA2 (<*) a b)
+  {-# INLINE (<*) #-}
+
 
 class Lam repr where
   lamPure :: (repr a -> repr b) -> repr (a -> b)
