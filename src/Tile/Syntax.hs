@@ -9,7 +9,6 @@ module Tile.Syntax
 ( Permutable
 , Var(..)
 , varA
-, Free(..)
 , Let(..)
 , Lam(..)
 , lamA
@@ -52,16 +51,6 @@ instance (Monad m, Var v a m) => Var v a (StateC s m) where
 
 varA :: (Applicative m, Functor i, Var v a expr) => i v -> m (i (expr a))
 varA = pure . fmap var
-
-
-class Var v a expr => Free v a expr where
-  free :: String -> expr a
-
-instance Free v a m => Free v a (ReaderC r m) where
-  free = ReaderC . const . free
-
-instance (Monad m, Free v a m) => Free v a (StateC s m) where
-  free v = StateC $ \ k s -> free v >>= k s
 
 
 class Var v a expr => Let v a expr where
