@@ -12,6 +12,7 @@ module Tile.Permutable
 ( (:.:)(..)
 , liftC
 , assocL
+, assocR
 , Permutable
 , Boolean(..)
 , false
@@ -67,6 +68,9 @@ liftC = C . fmap pure
 
 assocL :: Functor f => (f :.: (g :.: h)) a -> ((f :.: g) :.: h) a
 assocL = C . C . fmap getC . getC
+
+assocR :: Functor f => ((f :.: g) :.: h) a -> (f :.: (g :.: h)) a
+assocR = C . fmap C . getC . getC
 
 
 type Permutable f = (Applicative f, Distributive f)
