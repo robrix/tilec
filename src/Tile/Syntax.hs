@@ -27,7 +27,6 @@ module Tile.Syntax
 , plicit
 ) where
 
-import Control.Carrier.Reader
 import Control.Monad (ap)
 import Tile.Plicit
 import Tile.Type
@@ -37,15 +36,9 @@ type Syntax v expr = (Let v expr, Lam v expr, Type v expr)
 class Var v expr | expr -> v where
   var :: v -> expr
 
-instance Var v (m a) => Var v (ReaderC r m a) where
-  var = ReaderC . const . var
-
 
 class Var v expr => Let v expr where
   let' :: expr ::: expr -> (v -> expr) -> expr
-
-instance Let v (m a) => Let v (ReaderC r m a) where
-  let' (v ::: t) b = ReaderC $ \ r -> let' (runReader r v ::: runReader r t) (runReader r . b)
 
 
 class Var v expr => Lam v expr where
@@ -54,22 +47,12 @@ class Var v expr => Lam v expr where
   ($$) :: expr -> expr -> expr
   infixl 9 $$
 
-instance Lam v (m a) => Lam v (ReaderC r m a) where
-  lam p b = ReaderC $ \ r -> lam p (runReader r . b)
-
-  f $$ a = ReaderC $ \ r -> runReader r f $$ runReader r a
-
 
 class Var v expr => Type v expr where
   type' :: expr
 
   (>->) :: (Plicit, expr) -> (v -> expr) -> expr
   infixr 6 >->
-
-instance Type v (m a) => Type v (ReaderC r m a) where
-  type' = ReaderC (const type')
-
-  t >-> b = ReaderC $ \ r -> (runReader r <$> t) >-> runReader r . b
 
 (-->) :: Type v expr => expr -> expr -> expr
 a --> b = (Ex, a) >-> const b
@@ -88,11 +71,6 @@ class Var v expr => Prob v expr where
 
   (===) :: expr ::: expr -> expr ::: expr -> expr
   infixl 4 ===
-
-instance Prob v (m a) => Prob v (ReaderC r m a) where
-  ex t b = ReaderC $ \ r -> ex (runReader r t) (runReader r . b)
-
-  (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderC $ \ r -> (runReader r tm1 ::: runReader r ty1) === (runReader r tm2 ::: runReader r ty2)
 
 
 class Def tm ty a def | def -> tm ty where
