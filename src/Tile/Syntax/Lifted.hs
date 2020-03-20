@@ -133,7 +133,7 @@ throw
 throw k = strengthen . k . liftC . liftC
 
 reset :: Applicative m => Script a m a -> Script w m a
-reset m = Script $ \k -> throw k $ runScript m
+reset m = Script $ \ k -> throw k $ runScript m
 
 resetC :: Applicative m => (Script (i a) m :.: i) a -> (Script w m :.: i) a
 resetC = mapC reset
