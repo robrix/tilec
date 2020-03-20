@@ -34,7 +34,7 @@ import           Text.Parser.Combinators
 import           Text.Parser.Token
 import           Text.Parser.Token.Highlight
 import           Tile.Functor.Compose
-import           Tile.Syntax hiding (Permutable, lam, let', type', var)
+import           Tile.Syntax hiding (lam, let', type', var)
 import           Tile.Syntax.Lifted
 
 parse :: Has (Throw Notice) sig m => Path -> String -> ParserC m a -> m a

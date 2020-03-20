@@ -6,8 +6,7 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Syntax
-( Permutable
-, Syntax
+( Syntax
 , Var(..)
 , Let(..)
 , Lam(..)
@@ -30,11 +29,8 @@ module Tile.Syntax
 
 import Control.Carrier.Reader
 import Control.Monad (ap)
-import Data.Distributive
 import Tile.Plicit
 import Tile.Type
-
-type Permutable f = (Applicative f, Distributive f)
 
 type Syntax v expr = (Let v expr, Lam v expr, Type v expr)
 
