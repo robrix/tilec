@@ -1,6 +1,7 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 -- | Elaboration, implemented as a mash-up of:
@@ -16,7 +17,6 @@ module Tile.Elab
 import Control.Algebra
 import Control.Carrier.Reader
 import Control.Effect.Throw
-import Data.Bifunctor (bimap)
 import Data.Map
 import Data.Maybe (fromMaybe)
 import Tile.Functor.Compose
@@ -44,7 +44,7 @@ instance (Ord v, Show v, Prob v (m a), MonadFail m) => Var v (ElabC v a m a) whe
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
 
 instance (Ord (i v), Prob v t, Has (Throw (Err (i v))) sig m, L.Permutable i) => Var (i v) (ElabC' (i v) t (m :.: i) t) where
-  var n = check' $ \ ctx -> L.var n ::: typeOf' ctx n
+  var n = check' $ \ ctx exp -> exp L.=== weaken (L.var n) ::: weaken (typeOf' ctx n)
 
 instance (Ord v, Show v, Let v (m a), Prob v (m a), Type v (m a), MonadFail m) => Let v (ElabC v a m a) where
   let' (v ::: t) b = check $ \ ctx -> do
@@ -108,10 +108,9 @@ ctx |> (v ::: t) = insert v t ctx
 
 infixl 1 |>
 
-check' :: (Applicative m, L.Permutable i) => Prob v t => (Map (i v) t -> (m :.: i) t ::: (m :.: i) t) -> ElabC' (i v) t (m :.: i) t
+check' :: (Applicative m, L.Permutable i) => Prob v t => (forall j . L.Permutable j => Map (i v) t -> (m :.: i :.: j) t ::: (m :.: i :.: j) t -> (m :.: i :.: j) t) -> ElabC' (i v) t (m :.: i) t
 check' f = ElabC' $ \ ty ctx ->
-  pure ty `L.ex` \ exp ->
-  L.var exp ::: pure ty L.=== bimap weaken weaken (f ctx)
+  pure ty `L.ex` \ exp -> f ctx (L.var exp ::: pure ty)
 
 check :: Prob v (m a) => (Map v (m a) -> Script (m a) (m a ::: m a)) -> ElabC v a m a
 check f = ElabC $ \ ty ctx -> runScript id $ do
