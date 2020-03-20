@@ -59,7 +59,7 @@ library
     , parsers
     , prettyprinter
     , prettyprinter-ansi-terminal
-    , semilattices
+    , semantic-source
     , terminal-size
     , transformers
     , unordered-containers

@@ -28,7 +28,7 @@ import           Data.Functor
 import           Data.Functor.Identity
 import           Data.HashSet (HashSet, fromList)
 import qualified Data.Map as Map
-import           Data.Semilattice.Lower
+import           Source.Span
 import           Text.Parser.Char
 import           Text.Parser.Combinators
 import           Text.Parser.Token
@@ -37,7 +37,7 @@ import           Tile.Functor.Compose
 import           Tile.Syntax
 
 parse :: Has (Throw Notice) sig m => Path -> String -> ParserC m a -> m a
-parse path s = runParser (const pure) failure failure (Input lowerBound s) where
+parse path s = runParser (const pure) failure failure (Input (Pos 0 0) s) where
   failure = throwError . errToNotice path lines
   lines = linesFromString s
 
