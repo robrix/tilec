@@ -1,6 +1,9 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 module Tile.Functor.Compose
 ( (:.:)(..)
@@ -13,12 +16,14 @@ module Tile.Functor.Compose
 , weaken
 , strengthen
 , Extends(..)
+, Tr(..)
 ) where
 
 import Control.Applicative (Alternative(..), liftA2)
 import Data.Coerce (coerce)
 import Data.Distributive
 import Data.Functor.Identity
+import Data.Kind (Type)
 
 newtype (f :.: g) a = C { getC :: f (g a) }
   deriving (Functor)
@@ -91,3 +96,10 @@ instance (Applicative f, Applicative g) => Extends f (f :.: g) where
 
 instance Applicative f => Extends f f where
   weakens = id
+
+
+newtype Tr (i :: Type -> Type) (j :: Type -> Type) k a = Tr { getTr :: k a }
+  deriving (Functor, Applicative)
+
+instance (Extends i j, Extends j k) => Extends i (Tr i j k) where
+  weakens (m :: i a) = Tr (weakens (weakens m :: j a))
