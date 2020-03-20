@@ -44,11 +44,7 @@ instance (Ord v, Show v, Prob v (m a), MonadFail m) => Var v (ElabC v a m a) whe
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
 
 instance (Ord (i v), Prob v t, Has (Throw (Err (i v))) sig m, L.Permutable i) => Var (i v) (ElabC' (i v) t (m :.: i) t) where
-  var n = ElabC' $ \ ty ctx ->
-    pure ty `L.ex` \ exp ->
-    L.var exp ::: pure ty
-    L.===
-    weaken (L.var n) ::: weaken (typeOf' ctx n)
+  var n = check' $ \ ctx -> L.var n ::: typeOf' ctx n
 
 instance (Ord v, Show v, Let v (m a), Prob v (m a), Type v (m a), MonadFail m) => Let v (ElabC v a m a) where
   let' (v ::: t) b = check $ \ ctx -> do
