@@ -17,7 +17,9 @@ import Control.Algebra
 import Control.Carrier.Reader
 import Data.Map
 import Data.Maybe (fromMaybe)
+import Tile.Functor.Compose
 import Tile.Syntax
+import qualified Tile.Syntax.Lifted as L
 
 (|-) :: Map v (m a) -> ElabC v a m a ::: m a -> m a
 ctx |- (m ::: t) = runElab t ctx m
@@ -30,11 +32,18 @@ runElab ty ctx (ElabC run) = run ty ctx
 newtype ElabC v t m a = ElabC (m t -> Map v (m t) -> m a)
   deriving (Applicative, Functor, Monad) via ReaderC (m t) (ReaderC (Map v (m t)) m)
 
+newtype ElabC' v t m a = ElabC' (t -> Map v t -> m a)
+  deriving (Applicative, Functor, Monad) via ReaderC t (ReaderC (Map v t) m)
+
 instance Algebra sig m => Algebra sig (ElabC v a m) where
   alg hdl sig ctx = ElabC $ \ ty env -> alg (runElab ty env . hdl) sig ctx
 
 instance (Ord v, Show v, Prob v (m a), MonadFail m) => Var v (ElabC v a m a) where
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
+
+instance (Ord (i v), Show (i v), Prob v t, MonadFail m, L.Permutable i) => Var (i v) (ElabC' (i v) t (m :.: i) t) where
+  var n = ElabC' $ \ ty ctx ->
+    pure ty `L.ex` \ exp -> L.var exp ::: pure ty L.=== weaken (L.var n) ::: weaken (typeOf' ctx n)
 
 instance (Ord v, Show v, Let v (m a), Prob v (m a), Type v (m a), MonadFail m) => Let v (ElabC v a m a) where
   let' (v ::: t) b = check $ \ ctx -> do
@@ -86,6 +95,9 @@ instance (Ord v, Show v, Let v (m a), Prob v (m a), Type v (m a), MonadFail m) =
       ::: (   var t1' ::: type'
           === var t2' ::: type'))
 
+
+typeOf' :: (Ord (i v), Show (i v), MonadFail m, Applicative i) => Map (i v) t -> i v -> (m :.: i) t
+typeOf' ctx n = maybe (C (fail ("free variable:" <> show n))) pure (ctx !? n)
 
 typeOf :: (Ord v, Show v, MonadFail m) => Map v (m a) -> v -> m a
 typeOf ctx n = fromMaybe (fail ("free variable:" <> show n)) (ctx !? n)
