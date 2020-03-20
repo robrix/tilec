@@ -148,5 +148,5 @@ instance Applicative m => Applicative (Script t m) where
   pure a = Script $ \ k -> strengthen (k (pure a))
   {-# INLINE pure #-}
 
-  Script f <*> Script a = Script $ \ k -> f (\ f' -> assocL (a (\ a' -> assocLR (k (assocR (liftC f') <*> assocRL a')))))
+  Script f <*> Script a = Script $ \ k -> f $ \ f' -> assocL $ a $ \ a' -> assocLR (k (assocR (liftC f') <*> assocRL a'))
   {-# INLINE (<*>) #-}
