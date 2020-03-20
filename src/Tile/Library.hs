@@ -84,3 +84,9 @@ nil = lam Ex (lam Ex . const . var) ::: (Im, type') >-> \ _A -> tm list $$ var _
 
 cons :: (Lam v expr, Type v expr) => expr ::: expr
 cons = lam Ex (\ a -> lam Ex (\ as -> lam Ex (const (lam Ex (\ cons -> var cons $$ var a $$ var as))))) ::: (Im, type') >-> \ _A -> tm list $$ var _A
+
+
+-- TODO: vectors
+-- TODO: finite sets
+-- TODO: scott-encodings
+-- TODO: fix
