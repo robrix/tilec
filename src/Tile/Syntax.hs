@@ -19,7 +19,6 @@ module Tile.Syntax
 , (==>)
 , Prob(..)
 , exA
-, Err(..)
 , Def(..)
   -- * Elaborator scripts
 , runScript
@@ -40,7 +39,6 @@ import Tile.Functor.Compose
 import Tile.Plicit
 import Tile.Type
 
--- FIXME: 🔥 Err
 -- FIXME: lift the rest of the syntax to Applicative contexts
 
 type Permutable f = (Applicative f, Distributive f)
@@ -118,13 +116,6 @@ instance Prob v (m a) => Prob v (ReaderC r m a) where
 
 exA :: (Applicative m, Prob v expr, Permutable i) => (m :.: i) expr -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
 exA t f = ex <$> t <*> mapC (fmap getC) (f (C (pure id)))
-
-
-class Err e expr | expr -> e where
-  err :: e -> expr
-
-instance Err e (m a) => Err e (ReaderC r m a) where
-  err = ReaderC . const . err
 
 
 class Def tm ty a def | def -> tm ty where
