@@ -19,6 +19,8 @@ module Tile.Library
 , nat
 , z
 , s
+  -- * List
+, list
 ) where
 
 import Prelude hiding (either, maybe)
@@ -70,3 +72,7 @@ z = lam Ex (lam Ex . const . var) ::: tm nat
 
 s :: (Lam v expr, Type v expr) => expr ::: expr
 s = lam Ex (\ x -> lam Ex (const (lam Ex (\ s -> var s $$ var x)))) ::: tm nat --> tm nat
+
+
+list :: (Lam v expr, Type v expr) => expr ::: expr
+list = lam Ex (\ _A -> (Im, type') >-> \ _R -> var _R --> (var _A --> var _R --> var _R) --> var _R) ::: type' --> type'
