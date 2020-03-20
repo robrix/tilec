@@ -18,6 +18,7 @@ module Tile.Syntax.Lifted
 , S.Type
 , type'
 , (>->)
+, (-->)
   -- * Prob
 , S.Prob
 , ex
@@ -70,6 +71,11 @@ type' = pure S.type'
 (pl, a) >-> b = (S.>->) <$> ((,) <$> pl <*> a) <*> mapC (fmap getC) (b (C (pure id)))
 
 infixr 6 >->
+
+(-->) :: (Applicative m, S.Type v expr, Permutable i) => (m :.: i) expr -> (m :.: i) expr -> (m :.: i) expr
+a --> b = (pure Ex, a) >-> const (weakens b)
+
+infixr 6 -->
 
 
 -- Prob
