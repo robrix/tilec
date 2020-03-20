@@ -19,6 +19,7 @@ module Tile.Syntax.Lifted
 , type'
 , (>->)
 , (-->)
+, (==>)
   -- * Prob
 , S.Prob
 , ex
@@ -76,6 +77,11 @@ infixr 6 >->
 a --> b = (pure Ex, a) >-> const (weakens b)
 
 infixr 6 -->
+
+(==>) :: (Applicative m, S.Type v expr, Permutable i) => (m :.: i) expr -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
+a ==> b = (pure Im, a) >-> b
+
+infixr 6 ==>
 
 
 -- Prob
