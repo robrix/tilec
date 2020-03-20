@@ -15,6 +15,7 @@ module Tile.Elab
 
 import Control.Algebra
 import Control.Carrier.Reader
+import Control.Effect.Throw
 import Data.Map
 import Data.Maybe (fromMaybe)
 import Tile.Functor.Compose
@@ -41,7 +42,7 @@ instance Algebra sig m => Algebra sig (ElabC v a m) where
 instance (Ord v, Show v, Prob v (m a), MonadFail m) => Var v (ElabC v a m a) where
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
 
-instance (Ord (i v), Show (i v), Prob v t, MonadFail m, L.Permutable i) => Var (i v) (ElabC' (i v) t (m :.: i) t) where
+instance (Ord (i v), Prob v t, Has (Throw (Err (i v))) sig m, L.Permutable i) => Var (i v) (ElabC' (i v) t (m :.: i) t) where
   var n = ElabC' $ \ ty ctx ->
     pure ty `L.ex` \ exp -> L.var exp ::: pure ty L.=== weaken (L.var n) ::: weaken (typeOf' ctx n)
 
@@ -96,8 +97,8 @@ instance (Ord v, Show v, Let v (m a), Prob v (m a), Type v (m a), MonadFail m) =
           === var t2' ::: type'))
 
 
-typeOf' :: (Ord (i v), Show (i v), MonadFail m, Applicative i) => Map (i v) t -> i v -> (m :.: i) t
-typeOf' ctx n = maybe (C (fail ("free variable:" <> show n))) pure (ctx !? n)
+typeOf' :: (Ord (i v), Has (Throw (Err (i v))) sig m, Applicative i) => Map (i v) t -> i v -> (m :.: i) t
+typeOf' ctx n = maybe (C (throwError (FreeVariable n))) pure (ctx !? n)
 
 typeOf :: (Ord v, Show v, MonadFail m) => Map v (m a) -> v -> m a
 typeOf ctx n = fromMaybe (fail ("free variable:" <> show n)) (ctx !? n)
@@ -112,3 +113,8 @@ check f = ElabC $ \ ty ctx -> runScript id $ do
   exp <- meta ty
   act <- f ctx
   pure $! var exp ::: ty === act
+
+
+newtype Err v
+  = FreeVariable v
+  deriving (Eq, Ord, Show)
