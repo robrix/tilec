@@ -25,7 +25,7 @@ import Prelude hiding (either, maybe)
 import Tile.Syntax
 
 bool :: Type v expr => expr
-bool = (Im, type') >-> \ a -> var a --> var a --> var a
+bool = (Im, type') >-> \ _A -> var _A --> var _A --> var _A
 
 true :: Lam v expr => expr
 true = lam Ex (lam Ex . const . var)
@@ -42,7 +42,7 @@ const' = lam Ex (lam Ex . const . var)
 
 
 maybe :: Type v expr => expr
-maybe = (Ex, type') >-> \ a -> (Im, type') >-> \ r -> var r --> (var a --> var r) --> var r
+maybe = (Ex, type') >-> \ _A -> (Im, type') >-> \ _R -> var _R --> (var _A --> var _R) --> var _R
 
 nothing :: Lam v expr => expr
 nothing = lam Ex (lam Ex . const . var)
@@ -52,7 +52,7 @@ just = lam Ex (\ a -> lam Ex (const (lam Ex (\ just -> var just $$ var a))))
 
 
 either :: Type v expr => expr
-either = (Ex, type') >-> \ l -> (Ex, type') >-> \ r -> (Im, type') >-> \ k -> (var l --> var k) --> (var r --> var k) --> var k
+either = (Ex, type') >-> \ _L -> (Ex, type') >-> \ _R -> (Im, type') >-> \ _K -> (var _L --> var _K) --> (var _R --> var _K) --> var _K
 
 left :: Lam v expr => expr
 left = lam Ex (\ l -> lam Ex (\ left -> lam Ex (const (var left $$ var l))))
@@ -62,7 +62,7 @@ right = lam Ex (\ r -> lam Ex (const (lam Ex (\ right -> var right $$ var r))))
 
 
 nat :: Type v expr => expr
-nat = (Im, type') >-> \ r -> var r --> (var r --> var r) --> var r
+nat = (Im, type') >-> \ _R -> var _R --> (var _R --> var _R) --> var _R
 
 z :: Lam v expr => expr
 z = lam Ex (lam Ex . const . var)
