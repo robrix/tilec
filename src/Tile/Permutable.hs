@@ -111,7 +111,7 @@ instance Applicative m => Applicative (CPSA w m) where
   pure a = CPSA $ \ k -> strengthen (k (pure a))
   {-# INLINE pure #-}
 
-  CPSA f <*> CPSA a = CPSA $ \ k -> f (\ f' -> assocL (a (assocLR . k . (assocR (liftC f') <*>) . assocRL)))
+  CPSA f <*> CPSA a = CPSA $ \ k -> f (\ f' -> assocL (a (\ a' -> assocLR (k (assocR (liftC f') <*> assocRL a')))))
   {-# INLINE (<*>) #-}
 
 runCPSA :: Functor m => CPSA a m a -> m a
