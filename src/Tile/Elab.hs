@@ -42,9 +42,6 @@ newtype ElabC v t m a = ElabC (m t -> Map v (m t) -> m a)
 newtype ElabC' v t m a = ElabC' (m t -> Map v t -> m a)
   deriving (Applicative, Functor, Monad) via ReaderC (m t) (ReaderC (Map v t) m)
 
-instance Algebra sig m => Algebra sig (ElabC v a m) where
-  alg hdl sig ctx = ElabC $ \ ty env -> alg (runElab ty env . hdl) sig ctx
-
 instance (Ord v, Show v, Prob v (m a), MonadFail m) => Var v (ElabC v a m a) where
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
 
