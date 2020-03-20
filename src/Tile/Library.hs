@@ -62,8 +62,8 @@ right :: (Lam v expr, Type v expr) => expr ::: expr
 right = lam Ex (\ r -> lam Ex (const (lam Ex (\ right -> var right $$ var r)))) ::: (Im, type') >-> \ _L -> (Im, type') >-> \ _R -> var _R --> tm either $$ var _L $$ var _R
 
 
-nat :: Type v expr => expr
-nat = (Im, type') >-> \ _R -> var _R --> (var _R --> var _R) --> var _R
+nat :: Type v expr => expr ::: expr
+nat = ((Im, type') >-> \ _R -> var _R --> (var _R --> var _R) --> var _R) ::: type'
 
 z :: Lam v expr => expr
 z = lam Ex (lam Ex . const . var)
