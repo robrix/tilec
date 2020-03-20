@@ -35,10 +35,10 @@ false = lam Ex (const (lam Ex var))
 
 
 id' :: (Lam v expr, Type v expr) => expr ::: expr
-id' = lam Ex var ::: (Ex, type') >-> \ _A -> var _A --> var _A
+id' = lam Ex var ::: (Im, type') >-> \ _A -> var _A --> var _A
 
 const' :: (Lam v expr, Type v expr) => expr ::: expr
-const' = lam Ex (lam Ex . const . var) ::: (Ex, type') >-> \ _A -> (Ex, type') >-> \ _B -> var _A --> var _B --> var _A
+const' = lam Ex (lam Ex . const . var) ::: (Im, type') >-> \ _A -> (Im, type') >-> \ _B -> var _A --> var _B --> var _A
 
 
 maybe :: Type v expr => expr
