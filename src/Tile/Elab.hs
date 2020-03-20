@@ -16,6 +16,7 @@ module Tile.Elab
 import Control.Algebra
 import Control.Carrier.Reader
 import Control.Effect.Throw
+import Data.Bifunctor (bimap)
 import Data.Map
 import Data.Maybe (fromMaybe)
 import Tile.Functor.Compose
@@ -110,6 +111,11 @@ typeOf ctx n = fromMaybe (fail ("free variable:" <> show n)) (ctx !? n)
 ctx |> (v ::: t) = insert v t ctx
 
 infixl 1 |>
+
+check' :: (Applicative m, L.Permutable i) => Prob v t => (Map (i v) t -> (m :.: i) t ::: (m :.: i) t) -> ElabC' (i v) t (m :.: i) t
+check' f = ElabC' $ \ ty ctx ->
+  pure ty `L.ex` \ exp ->
+  L.var exp ::: pure ty L.=== bimap weaken weaken (f ctx)
 
 check :: Prob v (m a) => (Map v (m a) -> Script (m a) (m a ::: m a)) -> ElabC v a m a
 check f = ElabC $ \ ty ctx -> runScript id $ do
