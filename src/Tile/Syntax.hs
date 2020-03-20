@@ -18,6 +18,7 @@ module Tile.Syntax
 , (-->)
 , (==>)
 , Prob(..)
+, exA
 , Err(..)
 , Def(..)
   -- * Elaborator scripts
@@ -111,6 +112,9 @@ instance Prob v (m a) => Prob v (ReaderC r m a) where
   ex t b = ReaderC $ \ r -> ex (runReader r t) (runReader r . b)
 
   (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderC $ \ r -> (runReader r tm1 ::: runReader r ty1) === (runReader r tm2 ::: runReader r ty2)
+
+exA :: (Applicative m, Prob v expr, Permutable i) => (m :.: i) expr -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
+exA t f = ex <$> t <*> mapC (fmap getC) (f (C (pure id)))
 
 
 class Err e expr | expr -> e where
