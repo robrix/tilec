@@ -14,8 +14,6 @@ module Tile.Elab
 , ElabC(ElabC)
 ) where
 
-import Control.Algebra
-import Control.Carrier.Reader
 import Control.Effect.Throw
 import Data.Map
 import Data.Maybe (fromMaybe)
@@ -37,10 +35,8 @@ runElab :: m a -> Map v (m a) -> ElabC v a m b -> m b
 runElab ty ctx (ElabC run) = run ty ctx
 
 newtype ElabC v t m a = ElabC (m t -> Map v (m t) -> m a)
-  deriving (Applicative, Functor, Monad) via ReaderC (m t) (ReaderC (Map v (m t)) m)
 
 newtype ElabC' v t m a = ElabC' (m t -> Map v t -> m a)
-  deriving (Applicative, Functor, Monad) via ReaderC (m t) (ReaderC (Map v t) m)
 
 instance (Ord v, Show v, Prob v (m a), MonadFail m) => Var v (ElabC v a m a) where
   var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
