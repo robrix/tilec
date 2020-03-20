@@ -55,11 +55,11 @@ just = lam Ex (\ a -> lam Ex (const (lam Ex (\ just -> var just $$ var a)))) :::
 either :: (Lam v expr, Type v expr) => expr ::: expr
 either = lam Ex (\ _L -> lam Ex (\ _R -> (Im, type') >-> \ _K -> (var _L --> var _K) --> (var _R --> var _K) --> var _K)) ::: type' --> type' --> type'
 
-left :: Lam v expr => expr
-left = lam Ex (\ l -> lam Ex (\ left -> lam Ex (const (var left $$ var l))))
+left :: (Lam v expr, Type v expr) => expr ::: expr
+left = lam Ex (\ l -> lam Ex (\ left -> lam Ex (const (var left $$ var l)))) ::: (Im, type') >-> \ _L -> (Im, type') >-> \ _R -> var _L --> tm either $$ var _L $$ var _R
 
-right :: Lam v expr => expr
-right = lam Ex (\ r -> lam Ex (const (lam Ex (\ right -> var right $$ var r))))
+right :: (Lam v expr, Type v expr) => expr ::: expr
+right = lam Ex (\ r -> lam Ex (const (lam Ex (\ right -> var right $$ var r)))) ::: (Im, type') >-> \ _L -> (Im, type') >-> \ _R -> var _R --> tm either $$ var _L $$ var _R
 
 
 nat :: Type v expr => expr
