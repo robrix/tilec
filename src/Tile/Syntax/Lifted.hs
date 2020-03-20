@@ -71,7 +71,7 @@ let''
   => (m :.: i) expr ::: (m :.: i) expr
   -> (forall j . Permutable j => j v -> (m :.: i :.: j) expr)
   -> (m :.: i) expr
-let'' (tm ::: ty) f = S.let' <$> ((:::) <$> tm <*> ty) <*> (C . fmap getC . getC) (f id)
+let'' (tm ::: ty) f = S.let' <$> ((:::) <$> tm <*> ty) <*> mapC (fmap getC) (f id)
 
 
 -- Lam
