@@ -12,7 +12,6 @@ module Test.Gen
 , pi_
 , ex_
 , eq_
-, freeVariable_
 , term_
 , tag
 ) where
@@ -23,7 +22,6 @@ import           Data.Set
 import           Hedgehog (LabelName, MonadGen(..))
 import qualified Hedgehog.Gen as Gen
 import qualified Hedgehog.Range as Range
-import           Tile.Error
 import           Tile.Plicit
 import           Tile.Syntax
 
@@ -54,12 +52,9 @@ ex_ t = Gen.subtermM2 t (local succ t) (\ t b -> (t `ex` const b) <$ tag "ex")
 eq_ :: (MonadGen m, Prob v t, MonadWriter (Set LabelName) m) => m t -> m t
 eq_ t = Gen.subtermM2 t t (\ m1 t1 -> Gen.subtermM2 t t (\ m2 t2 -> ((m1 ::: t1) === (m2 ::: t2)) <$ tag "==="))
 
-freeVariable_ :: (FreeVariable Int e, MonadGen m, MonadWriter (Set LabelName) m) => m e
-freeVariable_ = freeVariable <$> Gen.int (Range.linear (-1) (-10)) <* tag "err"
-
-term_ :: (Let Int t, Lam Int t, Type Int t, Prob Int t, FreeVariable Int e, Err e t, MonadGen m, MonadReader Int m, MonadWriter (Set LabelName) m) => m t
+term_ :: (Let Int t, Lam Int t, Type Int t, Prob Int t, MonadGen m, MonadReader Int m, MonadWriter (Set LabelName) m) => m t
 term_ = ask >>= \ i -> Gen.recursive (Gen.small . Gen.choice)
-  ([ var_ | i > 0 ] <> [ type_, err <$> freeVariable_ ])
+  ([ var_ | i > 0 ] <> [ type_ ])
   ([ let_, lam_, app_, pi_, ex_, eq_ ] <*> [term_])
 
 

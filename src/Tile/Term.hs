@@ -23,7 +23,6 @@ data Term e v a
   | (Plicit, Term e v a) :-> (v -> Term e v a)
   | E (Term e v a) (v -> Term e v a)
   | (Term e v a ::: Term e v a) :===: (Term e v a ::: Term e v a)
-  | Err e
 
 instance (Eq e, Eq v, Eq a, Num v) => Eq (Term e v a) where
   (==) = eq 0 where
@@ -36,7 +35,6 @@ instance (Eq e, Eq v, Eq a, Num v) => Eq (Term e v a) where
       ((p1, a1) :-> b1, (p2, a2) :-> b2) -> p1 == p2 && eq n a1 a2 && eq (n + 1) (b1 n) (b2 n)
       (E t1 b1, E t2 b2) -> eq n t1 t2 && eq (n + 1) (b1 n) (b2 n)
       ((m11 ::: t11) :===: (m21 ::: t21), (m12 ::: t12) :===: (m22 ::: t22)) -> eq n m11 m12 && eq n t11 t12 && eq n m21 m22 && eq n t21 t22
-      (Err e1, Err e2) -> e1 == e2
       _ -> False
 
 instance (Ord e, Ord v, Ord a, Num v) => Ord (Term e v a) where
@@ -57,7 +55,6 @@ instance (Ord e, Ord v, Ord a, Num v) => Ord (Term e v a) where
       (E{}, _) -> LT
       ((m11 ::: t11) :===: (m21 ::: t21), (m12 ::: t12) :===: (m22 ::: t22)) -> cmp n m11 m12 <> cmp n t11 t12 <> cmp n m21 m22 <> cmp n t21 t22
       ((:===:){}, _) -> LT
-      (Err e1, Err e2) -> e1 `compare` e2
       _ -> GT
 
 instance Functor (Term e v) where
@@ -71,7 +68,6 @@ instance Functor (Term e v) where
       a :-> b     -> fmap go a :-> go . b
       E t b       -> E (go t) (go . b)
       t1 :===: t2 -> bimap go go t1 :===: bimap go go t2
-      Err e       -> Err e
 
 instance Num v => Foldable (Term e v) where
   foldMap f = go 0 where
@@ -84,7 +80,6 @@ instance Num v => Foldable (Term e v) where
       a :-> b     -> foldMap (go n) a <> go (n + 1) (b n)
       E t b       -> go n t <> go (n + 1) (b n)
       t1 :===: t2 -> bifoldMap (go n) (go n) t1 <> bifoldMap (go n) (go n) t2
-      Err _       -> mempty
 
 instance (Num v, Show e, Show v, Show a) => Show (Term e v a) where
   showsPrec = go 0 where
@@ -97,7 +92,6 @@ instance (Num v, Show e, Show v, Show a) => Show (Term e v a) where
       a :-> b -> showParen (p > 0) $ liftShowsPrec (go n) (showListWith (go n 0)) 1 a . showString " :-> " . go (n + 1) 0 (b n)
       E t b -> showsBinaryWith (go n) (\ p b -> go (n + 1) p (b n)) "E" p t b
       t1 :===: t2 -> showParen (p > 4) $ showAnn n 4 t1 . showString " :===: " . showAnn n 5 t2
-      Err e -> showsUnaryWith showsPrec "Err" p e
     showAnn n = liftShowsPrec (go n) (showListWith (go n 0))
 
 instance Applicative (Term e v) where
@@ -114,7 +108,6 @@ instance Monad (Term e v) where
     t :-> b     -> fmap (>>= f) t :-> (b >=> f)
     E t b       -> E (t >>= f) (b >=> f)
     t1 :===: t2 -> bimap (>>= f) (>>= f) t1 :===: bimap (>>= f) (>>= f) t2
-    Err e       -> Err e
 
 instance Var v (Term e v v) where
   var = Var
@@ -134,14 +127,11 @@ instance Prob v (Term e v v) where
   ex = E
   (===) = (:===:)
 
-instance Err e (Term e v v) where
-  err = Err
-
 infixl 9 :$
 infixr 6 :->
 infixl 4 :===:
 
-interpret :: (Let v a, Lam v a, Type v a, Prob v a, Err e a) => Term e v v -> a
+interpret :: (Let v a, Lam v a, Type v a, Prob v a) => Term e v v -> a
 interpret = \case
   Var v       -> var v
   Let v b     -> let' (bimap interpret interpret v) (interpret . b)
@@ -151,4 +141,3 @@ interpret = \case
   t :-> b     -> fmap interpret t >-> interpret . b
   E t b       -> interpret t `ex` interpret . b
   t1 :===: t2 -> bimap interpret interpret t1 === bimap interpret interpret t2
-  Err e       -> err e
