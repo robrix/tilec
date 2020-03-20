@@ -74,7 +74,7 @@ assocRL :: (Functor f, Functor g) => ((f :.: (g :.: h)) :.: i) a -> ((f :.: g) :
 assocRL = mapC (mapC (fmap (fmap C . getC)))
 
 
-weaken :: (Applicative m, Applicative i, Applicative j) => (m :.: i) (repr a) -> (m :.: i :.: j) (repr a)
+weaken :: (Applicative m, Applicative i, Applicative j) => (m :.: i) a -> (m :.: i :.: j) a
 weaken = weakens
 
 strengthen :: Functor m => (m :.: Identity) a -> m a
