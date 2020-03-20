@@ -52,8 +52,8 @@ just :: (Lam v expr, Type v expr) => expr ::: expr
 just = lam Ex (\ a -> lam Ex (const (lam Ex (\ just -> var just $$ var a)))) ::: (Im, type') >-> \ _A -> var _A --> tm maybe $$ var _A
 
 
-either :: Type v expr => expr
-either = (Ex, type') >-> \ _L -> (Ex, type') >-> \ _R -> (Im, type') >-> \ _K -> (var _L --> var _K) --> (var _R --> var _K) --> var _K
+either :: (Lam v expr, Type v expr) => expr
+either = lam Ex (\ _L -> lam Ex (\ _R -> (Im, type') >-> \ _K -> (var _L --> var _K) --> (var _R --> var _K) --> var _K))
 
 left :: Lam v expr => expr
 left = lam Ex (\ l -> lam Ex (\ left -> lam Ex (const (var left $$ var l))))
