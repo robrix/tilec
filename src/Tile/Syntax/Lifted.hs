@@ -15,11 +15,9 @@ module Tile.Syntax.Lifted
 , S.Let
 , let'
 , let''
-, let'''
   -- * Lam
 , S.Lam
 , lam
-, lam'
 , ($$)
   -- * Type
 , S.Type
@@ -82,21 +80,11 @@ let''
   -> (m :.: i) expr
 let'' (tm ::: ty) f = S.let' <$> ((:::) <$> tm <*> ty) <*> mapC (fmap getC) (f id)
 
-let'''
-  :: (Applicative m, S.Let v expr)
-  => m expr ::: m expr
-  -> (forall i . Permutable i => i v -> (m :.: i) expr)
-  -> m expr
-let''' (tm ::: ty) f = S.let' <$> ((:::) <$> tm <*> ty) <*> getC (f id)
-
 
 -- Lam
 
 lam :: (Applicative m, S.Lam v expr, Permutable i) => (m :.: i) Plicit -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
 lam p f = S.lam <$> p <*> mapC (fmap getC) (f (C (pure id)))
-
-lam' :: (Applicative m, S.Lam v expr) => m Plicit -> (forall i . Permutable i => i v -> (m :.: i) expr) -> m expr
-lam' p f = S.lam <$> p <*> getC (f id)
 
 ($$) :: (Applicative m, S.Lam v expr) => m expr -> m expr -> m expr
 ($$) = liftA2 (S.$$)
