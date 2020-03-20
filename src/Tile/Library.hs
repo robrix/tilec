@@ -7,13 +7,15 @@ module Tile.Library
 , maybe
 , nothing
 , just
+  -- * Either
+, either
   -- * Nat
 , nat
 , z
 , s
 ) where
 
-import Prelude hiding (maybe)
+import Prelude hiding (either, maybe)
 import Tile.Syntax
 
 bool :: Type v expr => expr
@@ -34,6 +36,10 @@ nothing = lam Ex (lam Ex . const . var)
 
 just :: Lam v expr => expr
 just = lam Ex (\ a -> lam Ex (const (lam Ex (\ just -> var just $$ var a))))
+
+
+either :: Type v expr => expr
+either = (Ex, type') >-> \ l -> (Ex, type') >-> \ r -> (Im, type') >-> \ k -> (var l --> var k) --> (var r --> var k) --> var k
 
 
 nat :: Type v expr => expr
