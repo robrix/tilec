@@ -34,8 +34,6 @@ import Data.Distributive
 import Tile.Plicit
 import Tile.Type
 
--- FIXME: lift the rest of the syntax to Applicative contexts
-
 type Permutable f = (Applicative f, Distributive f)
 
 type Syntax v expr = (Let v expr, Lam v expr, Type v expr)
