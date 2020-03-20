@@ -132,19 +132,19 @@ liftScript m = Script $ \ k -> strengthen (k (liftC (liftC m)))
 liftCScript :: Functor m => (m :.: i) a -> (Script w m :.: i) a
 liftCScript = mapC liftScript
 
-newtype Script w m a = Script
+newtype Script t m a = Script
   { getScript
     :: forall hw
     .  Permutable hw
-    => (forall h . Permutable h => ((m :.: hw) :.: h) a -> ((m :.: hw) :.: h) w)
-    -> (m :.: hw) w
+    => (forall h . Permutable h => ((m :.: hw) :.: h) a -> ((m :.: hw) :.: h) t)
+    -> (m :.: hw) t
   }
 
-instance Functor m => Functor (Script w m) where
+instance Functor m => Functor (Script t m) where
   fmap f (Script run) = Script $ \ k -> run (k . fmap f)
   {-# INLINE fmap #-}
 
-instance Applicative m => Applicative (Script w m) where
+instance Applicative m => Applicative (Script t m) where
   pure a = Script $ \ k -> strengthen (k (pure a))
   {-# INLINE pure #-}
 
