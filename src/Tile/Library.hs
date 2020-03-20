@@ -27,11 +27,11 @@ import Tile.Syntax
 bool :: Type v expr => expr
 bool = (Im, type') >-> \ _A -> var _A --> var _A --> var _A
 
-true :: Lam v expr => expr
-true = lam Ex (lam Ex . const . var)
+true :: (Lam v expr, Type v expr) => expr ::: expr
+true = lam Ex (lam Ex . const . var) ::: bool
 
-false :: Lam v expr => expr
-false = lam Ex (const (lam Ex var))
+false :: (Lam v expr, Type v expr) => expr ::: expr
+false = lam Ex (const (lam Ex var)) ::: bool
 
 
 id' :: (Lam v expr, Type v expr) => expr ::: expr
