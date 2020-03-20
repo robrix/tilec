@@ -34,7 +34,8 @@ import           Text.Parser.Combinators
 import           Text.Parser.Token
 import           Text.Parser.Token.Highlight
 import           Tile.Functor.Compose
-import           Tile.Syntax
+import           Tile.Syntax hiding (Permutable)
+import           Tile.Syntax.Lifted
 
 parse :: Has (Throw Notice) sig m => Path -> String -> ParserC m a -> m a
 parse path s = runParser (const pure) failure failure (Input (Pos 0 0) s) where
