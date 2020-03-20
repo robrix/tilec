@@ -10,6 +10,7 @@ module Tile.Syntax.Lifted
   -- * Let
 , S.Let
 , let'
+, let''
   -- * Lam
 , S.Lam
 , lam
