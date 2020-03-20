@@ -127,11 +127,11 @@ instance TokenParsing m => TokenParsing (EnvC i v m) where
   {-# INLINE token #-}
 
 
-expr :: forall v expr m sig . (Algebra sig m, TokenParsing m, Lam v expr, Type v expr) => m expr
+expr :: forall v expr m sig . (Algebra sig m, TokenParsing m, Let v expr, Lam v expr, Type v expr) => m expr
 expr = runEnv @Identity @v mempty (strengthen expr_)
 
-expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Type v expr) => (m :.: i) expr
-expr_ = type_ <|> var_ <|> lam_
+expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Let v expr, Lam v expr, Type v expr) => (m :.: i) expr
+expr_ = type_ <|> var_ <|> lam_ <|> let_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
@@ -142,7 +142,15 @@ var_ = C $ do
   v' <- asks (Map.lookup v)
   maybe (unexpected "free variable") varA v'
 
-lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Type v expr) => (m :.: i) expr
+let_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Let v expr, Type v expr) => (m :.: i) expr
+let_ = C $ token (string "let") *> do
+  i <- identifier_
+  void (token (char '='))
+  tm <- getC expr_ <* token (char ':')
+  ty <- getC expr_ <* token (string "in")
+  getC (letA (C (pure tm) ::: C (pure ty)) (\ v -> C (asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env (getC expr_))))
+
+lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Let v expr, Type v expr) => (m :.: i) expr
 lam_ = C $ token (char '\\') *> do
   i <- identifier_
   void (token (char '.'))
@@ -160,4 +168,6 @@ reservedWords = fromList
   [ "Type"
   , "module"
   , "import"
+  , "let"
+  , "in"
   ]
