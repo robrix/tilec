@@ -34,8 +34,8 @@ runElab ty ctx (ElabC run) = run ty ctx
 newtype ElabC v t m a = ElabC (m t -> Map v (m t) -> m a)
   deriving (Applicative, Functor, Monad) via ReaderC (m t) (ReaderC (Map v (m t)) m)
 
-newtype ElabC' v t m a = ElabC' (t -> Map v t -> m a)
-  deriving (Applicative, Functor, Monad) via ReaderC t (ReaderC (Map v t) m)
+newtype ElabC' v t m a = ElabC' (m t -> Map v t -> m a)
+  deriving (Applicative, Functor, Monad) via ReaderC (m t) (ReaderC (Map v t) m)
 
 instance Algebra sig m => Algebra sig (ElabC v a m) where
   alg hdl sig ctx = ElabC $ \ ty env -> alg (runElab ty env . hdl) sig ctx
@@ -110,7 +110,7 @@ infixl 1 |>
 
 check' :: (Applicative m, L.Permutable i) => Prob v t => (forall j . L.Permutable j => Map (i v) t -> (m :.: i :.: j) t ::: (m :.: i :.: j) t -> (m :.: i :.: j) t) -> ElabC' (i v) t (m :.: i) t
 check' f = ElabC' $ \ ty ctx ->
-  pure ty `L.ex` \ exp -> f ctx (L.var exp ::: pure ty)
+  ty `L.ex` \ exp -> f ctx (L.var exp ::: weakens ty)
 
 check :: Prob v (m a) => (Map v (m a) -> Script (m a) (m a ::: m a)) -> ElabC v a m a
 check f = ElabC $ \ ty ctx -> runScript id $ do
