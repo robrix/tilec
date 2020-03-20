@@ -31,7 +31,6 @@ import qualified Data.IntSet as IntSet
 import           Data.Monoid (Ap(..))
 import qualified Data.Text.Prettyprint.Doc as PP
 import qualified Data.Text.Prettyprint.Doc.Render.Terminal as ANSI
-import           Tile.Error
 import           Tile.Pretty hiding (Doc, PrecDoc)
 import qualified Tile.Pretty as P
 import           Tile.Syntax
@@ -70,9 +69,6 @@ getDoc (Doc doc) = rainbow (runPrec (Level 0) doc)
 
 newtype Doc = Doc (Prec (Rainbow (PP.Doc (Highlight Int))))
   deriving newtype (P.Doc (Highlight Int), Monoid, P.PrecDoc (Highlight Int), Semigroup, Show)
-
-instance FreeVariable V Doc where
-  freeVariable v = annotate Error (pretty "error") <> pretty ':' <+> vdoc v
 
 
 data V = V
@@ -130,9 +126,6 @@ instance Algebra sig m => Prob V (PrintC m Doc) where
     toMeta v = v { vdoc = annotate MetaVar (pretty '?' <> vdoc v) }
 
   t1 === t2 = prec (Level 4) (inContext Equate (group (align (flatAlt (space <> space) mempty <> prec (Level 5) (prettyAnn t1) </> op "≡" <+> prec (Level 5) (prettyAnn t2)))))
-
-instance Algebra sig m => Err Doc (PrintC m Doc) where
-  err = pure
 
 data Highlight a
   = Name
