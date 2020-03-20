@@ -34,7 +34,7 @@ import           Text.Parser.Combinators
 import           Text.Parser.Token
 import           Text.Parser.Token.Highlight
 import           Tile.Functor.Compose
-import           Tile.Syntax hiding (Permutable)
+import           Tile.Syntax hiding (Permutable, var)
 import           Tile.Syntax.Lifted
 
 parse :: Has (Throw Notice) sig m => Path -> String -> ParserC m a -> m a
@@ -141,7 +141,7 @@ var_ :: (Functor i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, V
 var_ = C $ do
   v <- identifier_
   v' <- asks (Map.lookup v)
-  maybe (unexpected "free variable") varA v'
+  maybe (unexpected "free variable") var v'
 
 let_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Let v expr, Type v expr) => (m :.: i) expr
 let_ = C $ token (string "let") *> do

@@ -9,7 +9,6 @@ module Tile.Syntax
 ( Permutable
 , Syntax
 , Var(..)
-, varA
 , Let(..)
 , letA
 , Lam(..)
@@ -50,9 +49,6 @@ class Var v expr | expr -> v where
 
 instance Var v (m a) => Var v (ReaderC r m a) where
   var = ReaderC . const . var
-
-varA :: (Applicative m, Functor i, Var v expr) => i v -> m (i expr)
-varA = pure . fmap var
 
 
 class Var v expr => Let v expr where
