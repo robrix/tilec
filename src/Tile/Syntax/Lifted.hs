@@ -43,8 +43,8 @@ type Permutable f = (Applicative f, Distributive f)
 
 -- Var
 
-var :: (Applicative m, Functor i, S.Var v expr) => i v -> m (i expr)
-var = pure . fmap S.var
+var :: (Applicative m, Functor i, S.Var v expr) => i v -> (m :.: i) expr
+var = C . pure . fmap S.var
 
 
 -- Let

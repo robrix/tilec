@@ -140,7 +140,7 @@ var_ :: (Functor i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, V
 var_ = C $ do
   v <- identifier_
   v' <- asks (Map.lookup v)
-  maybe (unexpected "free variable") var v'
+  maybe (unexpected "free variable") (getC . var) v'
 
 let_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Let v expr, Type v expr) => (m :.: i) expr
 let_ = C $ token (string "let") *> do
