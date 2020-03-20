@@ -1,5 +1,8 @@
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 module Tile.Syntax.Lifted
 ( Permutable
@@ -7,6 +10,7 @@ module Tile.Syntax.Lifted
   -- * Var
 , S.Var
 , var
+, wvar
   -- * Let
 , S.Let
 , let'
@@ -55,6 +59,9 @@ type Permutable f = (Applicative f, Distributive f)
 
 var :: (Applicative m, Functor i, S.Var v expr) => i v -> (m :.: i) expr
 var = C . pure . fmap S.var
+
+wvar :: forall m i j v expr . (Applicative m, Functor i, S.Var v expr, Extends (m :.: i) (m :.: j)) => i v -> (m :.: j) expr
+wvar = weakens . var @m
 
 
 -- Let
