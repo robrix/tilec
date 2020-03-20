@@ -1,7 +1,6 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 -- | Elaboration, implemented as a mash-up of:
@@ -86,8 +85,6 @@ instance (Ord v, Show v, Let v (m a), Prob v (m a), Type v (m a), MonadFail m) =
           === (ctx |- m2 ::: var t2') ::: var t2')
       ::: (   var t1' ::: type'
           === var t2' ::: type'))
-
-deriving via (ReaderC (m a) (ReaderC (Map v (m a)) m) a) instance Err e (m a) => Err e (ElabC v a m a)
 
 
 typeOf :: (Ord v, Show v, MonadFail m) => Map v (m a) -> v -> m a
