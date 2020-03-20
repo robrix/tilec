@@ -23,15 +23,16 @@ module Tile.Library
 
 import Prelude hiding (either, maybe)
 import Tile.Syntax
+import Tile.Type
 
-bool :: Type v expr => expr
-bool = (Im, type') >-> \ _A -> var _A --> var _A --> var _A
+bool :: Type v expr => expr ::: expr
+bool = ((Im, type') >-> \ _A -> var _A --> var _A --> var _A) ::: type'
 
 true :: (Lam v expr, Type v expr) => expr ::: expr
-true = lam Ex (lam Ex . const . var) ::: bool
+true = lam Ex (lam Ex . const . var) ::: tm bool
 
 false :: (Lam v expr, Type v expr) => expr ::: expr
-false = lam Ex (const (lam Ex var)) ::: bool
+false = lam Ex (const (lam Ex var)) ::: tm bool
 
 
 id' :: (Lam v expr, Type v expr) => expr ::: expr
