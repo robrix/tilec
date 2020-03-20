@@ -12,6 +12,7 @@ module Tile.Syntax.Lifted
 , lam
 , S.Type
 , S.Prob
+, ex
 , S.Def
   -- * Re-exports
 , (:::)(..)
@@ -35,3 +36,6 @@ let' (tm ::: ty) f = S.let' <$> ((:::) <$> tm <*> ty) <*> mapC (fmap getC) (f (C
 
 lam :: (Applicative m, S.Lam v expr, Permutable i) => (m :.: i) Plicit -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
 lam p f = S.lam <$> p <*> mapC (fmap getC) (f (C (pure id)))
+
+ex :: (Applicative m, S.Prob v expr, Permutable i) => (m :.: i) expr -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
+ex t f = S.ex <$> t <*> mapC (fmap getC) (f (C (pure id)))
