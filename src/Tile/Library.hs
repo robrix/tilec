@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeOperators #-}
 module Tile.Library
 ( -- * Booleans
   bool
@@ -33,8 +34,8 @@ false :: Lam v expr => expr
 false = lam Ex (const (lam Ex var))
 
 
-id' :: Lam v expr => expr
-id' = lam Ex var
+id' :: (Lam v expr, Type v expr) => expr ::: expr
+id' = lam Ex var ::: (Ex, type') >-> \ _A -> var _A --> var _A
 
 const' :: Lam v expr => expr
 const' = lam Ex (lam Ex . const . var)
