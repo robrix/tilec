@@ -150,14 +150,20 @@ let_ = C $ token (string "let") *> do
   ty <- getC expr_ <* token (string "in")
   getC (let' (C (pure tm) ::: C (pure ty)) (\ v -> C (asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env (getC expr_))))
 
+-- FIXME: lambdas bindng implicit variables
+
 lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Let v expr, Type v expr) => (m :.: i) expr
 lam_ = C $ token (char '\\') *> do
   i <- identifier_
   void (token (char '.'))
   getC (lam (pure Ex) (\ v -> C (asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env (getC expr_))))
 
+-- FIXME: application
+
 type_ :: (Monad m, Applicative i, TokenParsing m, Type v expr) => (m :.: i) expr
 type_ = C $ type' <$ reserve identifierStyle "Type"
+
+-- FIXME: pi types
 
 identifierStyle :: CharParsing m => IdentifierStyle m
 identifierStyle = IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier
