@@ -9,6 +9,7 @@ module Tile.Syntax.Lifted
 , S.Let
 , let'
 , S.Lam
+, lam
 , S.Type
 , S.Prob
 , S.Def
@@ -31,3 +32,6 @@ var = pure . fmap S.var
 
 let' :: (Applicative m, S.Let v expr, Permutable i) => (m :.: i) expr ::: (m :.: i) expr -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
 let' (tm ::: ty) f = S.let' <$> ((:::) <$> tm <*> ty) <*> mapC (fmap getC) (f (C (pure id)))
+
+lam :: (Applicative m, S.Lam v expr, Permutable i) => (m :.: i) Plicit -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
+lam p f = S.lam <$> p <*> mapC (fmap getC) (f (C (pure id)))

@@ -11,7 +11,6 @@ module Tile.Syntax
 , Var(..)
 , Let(..)
 , Lam(..)
-, lamA
 , Type(..)
 , (-->)
 , (==>)
@@ -67,9 +66,6 @@ instance Lam v (m a) => Lam v (ReaderC r m a) where
   lam p b = ReaderC $ \ r -> lam p (runReader r . b)
 
   f $$ a = ReaderC $ \ r -> runReader r f $$ runReader r a
-
-lamA :: (Applicative m, Lam v expr, Permutable i) => (m :.: i) Plicit -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
-lamA p f = lam <$> p <*> mapC (fmap getC) (f (C (pure id)))
 
 
 class Var v expr => Type v expr where

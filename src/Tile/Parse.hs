@@ -34,7 +34,7 @@ import           Text.Parser.Combinators
 import           Text.Parser.Token
 import           Text.Parser.Token.Highlight
 import           Tile.Functor.Compose
-import           Tile.Syntax hiding (Permutable, var, let')
+import           Tile.Syntax hiding (Permutable, lam, let', var)
 import           Tile.Syntax.Lifted
 
 parse :: Has (Throw Notice) sig m => Path -> String -> ParserC m a -> m a
@@ -155,7 +155,7 @@ lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m
 lam_ = C $ token (char '\\') *> do
   i <- identifier_
   void (token (char '.'))
-  getC (lamA (pure Ex) (\ v -> C (asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env (getC expr_))))
+  getC (lam (pure Ex) (\ v -> C (asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env (getC expr_))))
 
 type_ :: (Monad m, Applicative i, TokenParsing m, Type v expr) => (m :.: i) expr
 type_ = C $ pure type' <$ reserve identifierStyle "Type"
