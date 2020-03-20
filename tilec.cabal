@@ -48,7 +48,6 @@ library
     Tile.Solve
     Tile.Syntax
     Tile.Syntax.Lifted
-    Tile.Term
     Tile.Type
   build-depends:
     , base ^>= 4.13
