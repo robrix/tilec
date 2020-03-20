@@ -28,6 +28,11 @@ ctx |- (m ::: t) = runElab t ctx m
 
 infixl 1 |-
 
+(|--) :: Map (i v) t -> ElabC' (i v) t (m :.: i) t ::: (m :.: i) t -> (m :.: i) t
+ctx |-- (ElabC' m ::: t) = m t ctx
+
+infixl 1 |--
+
 runElab :: m a -> Map v (m a) -> ElabC v a m b -> m b
 runElab ty ctx (ElabC run) = run ty ctx
 
