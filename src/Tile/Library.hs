@@ -3,6 +3,9 @@ module Tile.Library
   bool
 , true
 , false
+  -- * Functions
+, id'
+, const'
   -- * Maybe
 , maybe
 , nothing
@@ -28,6 +31,13 @@ true = lam Ex (lam Ex . const . var)
 
 false :: Lam v expr => expr
 false = lam Ex (const (lam Ex var))
+
+
+id' :: Lam v expr => expr
+id' = lam Ex var
+
+const' :: Lam v expr => expr
+const' = lam Ex (lam Ex . const . var)
 
 
 maybe :: Type v expr => expr
