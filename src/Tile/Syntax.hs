@@ -140,10 +140,14 @@ newtype Script t a = Script ((a -> t) -> t)
 
 instance Applicative (Script t) where
   pure = Script . flip ($)
+  {-# INLINE pure #-}
+
   (<*>) = ap
+  {-# INLINE (<*>) #-}
 
 instance Monad (Script t) where
   m >>= f = Script (\ k -> runScript (runScript k . f) m)
+  {-# INLINE (>>=) #-}
 
 meta :: Prob v t => t -> Script t v
 meta = Script . ex
