@@ -9,6 +9,7 @@ module Tile.Library
 , just
   -- * Either
 , either
+, left
   -- * Nat
 , nat
 , z
@@ -40,6 +41,9 @@ just = lam Ex (\ a -> lam Ex (const (lam Ex (\ just -> var just $$ var a))))
 
 either :: Type v expr => expr
 either = (Ex, type') >-> \ l -> (Ex, type') >-> \ r -> (Im, type') >-> \ k -> (var l --> var k) --> (var r --> var k) --> var k
+
+left :: Lam v expr => expr
+left = lam Ex (\ l -> lam Ex (\ left -> lam Ex (const (var left $$ var l))))
 
 
 nat :: Type v expr => expr
