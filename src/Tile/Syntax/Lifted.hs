@@ -23,6 +23,7 @@ module Tile.Syntax.Lifted
   -- * Prob
 , S.Prob
 , ex
+, (===)
   -- * Modules
 , S.Def
   -- * Re-exports
@@ -88,3 +89,8 @@ infixr 6 ==>
 
 ex :: (Applicative m, S.Prob v expr, Permutable i) => (m :.: i) expr -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
 ex t f = S.ex <$> t <*> mapC (fmap getC) (f (C (pure id)))
+
+(===) :: (Applicative m, S.Prob v expr) => m expr ::: m expr -> m expr ::: m expr -> m expr
+(tm1 ::: ty1) === (tm2 ::: ty2) = (S.===) <$> ((:::) <$> tm1 <*> ty1) <*> ((:::) <$> tm2 <*> ty2)
+
+infixl 4 ===
