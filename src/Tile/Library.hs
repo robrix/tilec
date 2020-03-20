@@ -42,8 +42,8 @@ const' :: (Lam v expr, Type v expr) => expr ::: expr
 const' = lam Ex (lam Ex . const . var) ::: (Im, type') >-> \ _A -> (Im, type') >-> \ _B -> var _A --> var _B --> var _A
 
 
-maybe :: Type v expr => expr ::: expr
-maybe = ((Ex, type') >-> \ _A -> (Im, type') >-> \ _R -> var _R --> (var _A --> var _R) --> var _R) ::: type' --> type'
+maybe :: (Lam v expr, Type v expr) => expr ::: expr
+maybe = lam Ex (\ _A -> (Im, type') >-> \ _R -> var _R --> (var _A --> var _R) --> var _R) ::: type' --> type'
 
 nothing :: (Lam v expr, Type v expr) => expr ::: expr
 nothing = lam Ex (lam Ex . const . var) ::: (Im, type') >-> \ _A -> tm maybe $$ var _A
