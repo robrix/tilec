@@ -16,6 +16,7 @@ module Tile.Syntax.Lifted
 , ($$)
   -- * Type
 , S.Type
+, type'
   -- * Prob
 , S.Prob
 , ex
@@ -57,6 +58,12 @@ lam p f = S.lam <$> p <*> mapC (fmap getC) (f (C (pure id)))
 ($$) = liftA2 (S.$$)
 
 infixl 9 $$
+
+
+-- Type
+
+type' :: (Applicative m, S.Type v expr) => m expr
+type' = pure S.type'
 
 
 -- Prob
