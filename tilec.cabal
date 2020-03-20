@@ -37,7 +37,6 @@ library
   import: common
   exposed-modules:
     Tile.Elab
-    Tile.Error
     Tile.Functor.Compose
     Tile.Library
     Tile.Parse
