@@ -58,7 +58,11 @@ var = C . pure . fmap S.var
 
 -- Let
 
-let' :: (Applicative m, S.Let v expr, Permutable i) => (m :.: i) expr ::: (m :.: i) expr -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
+let'
+  :: (Applicative m, S.Let v expr, Permutable i)
+  => (m :.: i) expr ::: (m :.: i) expr
+  -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr)
+  -> (m :.: i) expr
 let' (tm ::: ty) f = S.let' <$> ((:::) <$> tm <*> ty) <*> mapC (fmap getC) (f (C (pure id)))
 
 
