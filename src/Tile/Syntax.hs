@@ -11,6 +11,7 @@ module Tile.Syntax
 , Var(..)
 , varA
 , Let(..)
+, letA
 , Lam(..)
 , lamA
 , Type(..)
@@ -57,6 +58,9 @@ class Var v expr => Let v expr where
 
 instance Let v (m a) => Let v (ReaderC r m a) where
   let' (v ::: t) b = ReaderC $ \ r -> let' (runReader r v ::: runReader r t) (runReader r . b)
+
+letA :: (Applicative m, Let v expr, Permutable i) => (m :.: i) expr ::: (m :.: i) expr -> (forall j . Permutable j => (i :.: j) v -> (m :.: i :.: j) expr) -> (m :.: i) expr
+letA (tm ::: ty) f = let' <$> ((:::) <$> tm <*> ty) <*> mapC (fmap getC) (f (C (pure id)))
 
 
 class Var v expr => Lam v expr where
