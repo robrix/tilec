@@ -14,17 +14,17 @@ import Data.Functor.Classes
 import Text.Show
 import Tile.Syntax
 
-data Term e v a
+data Term v a
   = Var a
-  | Let (Term e v a ::: Term e v a) (v -> Term e v a)
-  | Lam Plicit (v -> Term e v a)
-  | Term e v a :$ Term e v a
+  | Let (Term v a ::: Term v a) (v -> Term v a)
+  | Lam Plicit (v -> Term v a)
+  | Term v a :$ Term v a
   | Type
-  | (Plicit, Term e v a) :-> (v -> Term e v a)
-  | E (Term e v a) (v -> Term e v a)
-  | (Term e v a ::: Term e v a) :===: (Term e v a ::: Term e v a)
+  | (Plicit, Term v a) :-> (v -> Term v a)
+  | E (Term v a) (v -> Term v a)
+  | (Term v a ::: Term v a) :===: (Term v a ::: Term v a)
 
-instance (Eq e, Eq v, Eq a, Num v) => Eq (Term e v a) where
+instance (Eq v, Eq a, Num v) => Eq (Term v a) where
   (==) = eq 0 where
     eq n l r = case (l, r) of
       (Var v1, Var v2) -> v1 == v2
@@ -37,7 +37,7 @@ instance (Eq e, Eq v, Eq a, Num v) => Eq (Term e v a) where
       ((m11 ::: t11) :===: (m21 ::: t21), (m12 ::: t12) :===: (m22 ::: t22)) -> eq n m11 m12 && eq n t11 t12 && eq n m21 m22 && eq n t21 t22
       _ -> False
 
-instance (Ord e, Ord v, Ord a, Num v) => Ord (Term e v a) where
+instance (Ord v, Ord a, Num v) => Ord (Term v a) where
   compare = cmp 0 where
     cmp n l r = case (l, r) of
       (Var v1, Var v2) -> v1 `compare` v2
@@ -57,7 +57,7 @@ instance (Ord e, Ord v, Ord a, Num v) => Ord (Term e v a) where
       ((:===:){}, _) -> LT
       _ -> GT
 
-instance Functor (Term e v) where
+instance Functor (Term v) where
   fmap f = go where
     go = \case
       Var a       -> Var (f a)
@@ -69,7 +69,7 @@ instance Functor (Term e v) where
       E t b       -> E (go t) (go . b)
       t1 :===: t2 -> bimap go go t1 :===: bimap go go t2
 
-instance Num v => Foldable (Term e v) where
+instance Num v => Foldable (Term v) where
   foldMap f = go 0 where
     go n = \case
       Var a       -> f a
@@ -81,7 +81,7 @@ instance Num v => Foldable (Term e v) where
       E t b       -> go n t <> go (n + 1) (b n)
       t1 :===: t2 -> bifoldMap (go n) (go n) t1 <> bifoldMap (go n) (go n) t2
 
-instance (Num v, Show e, Show v, Show a) => Show (Term e v a) where
+instance (Num v, Show v, Show a) => Show (Term v a) where
   showsPrec = go 0 where
     go n p = \case
       Var v -> showsUnaryWith showsPrec "Var" p v
@@ -94,11 +94,11 @@ instance (Num v, Show e, Show v, Show a) => Show (Term e v a) where
       t1 :===: t2 -> showParen (p > 4) $ showAnn n 4 t1 . showString " :===: " . showAnn n 5 t2
     showAnn n = liftShowsPrec (go n) (showListWith (go n 0))
 
-instance Applicative (Term e v) where
+instance Applicative (Term v) where
   pure = Var
   (<*>) = ap
 
-instance Monad (Term e v) where
+instance Monad (Term v) where
   t >>= f = case t of
     Var a       -> f a
     Let v b     -> Let (bimap (>>= f) (>>= f) v) (b >=> f)
@@ -109,21 +109,21 @@ instance Monad (Term e v) where
     E t b       -> E (t >>= f) (b >=> f)
     t1 :===: t2 -> bimap (>>= f) (>>= f) t1 :===: bimap (>>= f) (>>= f) t2
 
-instance Var v (Term e v v) where
+instance Var v (Term v v) where
   var = Var
 
-instance Let v (Term e v v) where
+instance Let v (Term v v) where
   let' = Let
 
-instance Lam v (Term e v v) where
+instance Lam v (Term v v) where
   lam = Lam
   ($$) = (:$)
 
-instance Type v (Term e v v) where
+instance Type v (Term v v) where
   type' = Type
   (>->) = (:->)
 
-instance Prob v (Term e v v) where
+instance Prob v (Term v v) where
   ex = E
   (===) = (:===:)
 
@@ -131,7 +131,7 @@ infixl 9 :$
 infixr 6 :->
 infixl 4 :===:
 
-interpret :: (Let v a, Lam v a, Type v a, Prob v a) => Term e v v -> a
+interpret :: (Let v a, Lam v a, Type v a, Prob v a) => Term v v -> a
 interpret = \case
   Var v       -> var v
   Let v b     -> let' (bimap interpret interpret v) (interpret . b)
