@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeOperators #-}
 module Tile.Syntax.Lifted
 ( S.Syntax
-, wvar
+, var
   -- * Let
 , S.Let
 , let'
@@ -47,8 +47,8 @@ import           Tile.Functor.Compose
 import           Tile.Syntax ((:::)(..), Plicit(..), plicit)
 import qualified Tile.Syntax as S
 
-wvar :: forall m i j expr . (Applicative m, Extends i j) => i expr -> m (j expr)
-wvar = pure @m . weakens
+var :: forall m i j expr . (Applicative m, Extends i j) => i expr -> m (j expr)
+var = pure @m . weakens
 
 
 -- Let
