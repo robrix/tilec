@@ -10,8 +10,6 @@ module Tile.Functor.Compose
 ( (:.:)(..)
 , liftC
 , mapC
-, assocL
-, assocR
 , weaken
 , strengthen
 , Permutable
@@ -65,12 +63,6 @@ liftC = C . fmap pure
 
 mapC :: (f (g a) -> f' (g' a')) -> ((f :.: g) a -> (f' :.: g') a')
 mapC = coerce
-
-assocL :: Functor f => (f :.: (g :.: h)) a -> ((f :.: g) :.: h) a
-assocL = C . mapC (fmap getC)
-
-assocR :: Functor f => ((f :.: g) :.: h) a -> (f :.: (g :.: h)) a
-assocR = mapC (fmap C) . getC
 
 
 weaken :: (Functor m, Extends env env') => m (env a) -> m (env' a)
