@@ -116,10 +116,10 @@ runScript :: Functor m => Script a m a -> m a
 runScript = fmap runIdentity . (`getScript` id)
 
 throw
-  :: (Applicative m, Applicative hw)
-  => (forall h . Permutable h => m ((hw :.: h) a) -> m ((hw :.: h) w))
+  :: (Applicative m, Permutable env)
+  => (forall env' . Extends env env' => m (env' a) -> m (env' w))
   -> m a
-  -> m (hw w)
+  -> m (env w)
 throw k = strengthen . k . fmap pure
 
 reset :: Applicative m => Script a m a -> Script w m a
