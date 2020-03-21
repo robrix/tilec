@@ -12,8 +12,6 @@ module Tile.Functor.Compose
 , mapC
 , assocL
 , assocR
-, assocLR
-, assocRL
 , weaken
 , strengthen
 , Permutable
@@ -73,12 +71,6 @@ assocL = C . mapC (fmap getC)
 
 assocR :: Functor f => ((f :.: g) :.: h) a -> (f :.: (g :.: h)) a
 assocR = mapC (fmap C) . getC
-
-assocLR :: (Functor f, Functor g) => ((f :.: g) :.: (h :.: i)) a -> ((f :.: (g :.: h)) :.: i) a
-assocLR = mapC (mapC (fmap (C . fmap getC)))
-
-assocRL :: (Functor f, Functor g) => ((f :.: (g :.: h)) :.: i) a -> ((f :.: g) :.: (h :.: i)) a
-assocRL = mapC (mapC (fmap (fmap C . getC)))
 
 
 weaken :: (Permutable m, Permutable i, Permutable j) => (m :.: i) a -> (m :.: i :.: j) a
