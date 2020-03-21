@@ -97,6 +97,12 @@ class (Applicative m, S.Type expr) => Type expr m where
 
   infixr 6 >->
 
+instance (Applicative m, S.Type expr) => Type expr (Ap m)
+
+deriving via Ap Identity instance S.Type expr => Type expr Identity
+deriving via Ap ((->) r) instance S.Type expr => Type expr ((->) r)
+deriving via Ap (ParserC m) instance S.Type expr => Type expr (ParserC m)
+
 (-->) :: (Type expr m, Permutable env) => m (env expr) -> m (env expr) -> m (env expr)
 a --> b = (pure (pure Ex), a) >-> const (weaken b)
 
