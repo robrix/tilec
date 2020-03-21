@@ -161,7 +161,7 @@ lam_ = token (char '\\') *> do
 -- FIXME: application
 
 type_ :: (Monad m, Applicative env, TokenParsing m, Type expr) => m (env expr)
-type_ = type' <$ reserve identifierStyle "Type"
+type_ = type' <$ reserve identifierStyle "Type" <?> "Type"
 
 -- FIXME: pi types
 
