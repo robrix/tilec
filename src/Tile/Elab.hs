@@ -80,8 +80,3 @@ check f = ElabC $ \ ty -> runScript id $ do
   exp <- meta ty
   act <- f
   pure $! exp ::: ty === act
-
-
-newtype Err v
-  = FreeVariable v
-  deriving (Eq, Ord, Show)
