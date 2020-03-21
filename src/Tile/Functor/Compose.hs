@@ -1,3 +1,4 @@
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -15,6 +16,7 @@ module Tile.Functor.Compose
 , assocRL
 , weaken
 , strengthen
+, Permutable
 , Extends(..)
 , Tr(..)
 ) where
@@ -84,6 +86,10 @@ weaken = weakens
 
 strengthen :: Functor m => (m :.: Identity) a -> m a
 strengthen = fmap runIdentity . getC
+
+
+type Permutable f = (Applicative f, Distributive f)
+
 
 class (Applicative m, Applicative n) => Extends m n where
   weakens :: m a -> n a

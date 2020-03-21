@@ -49,8 +49,6 @@ import           Tile.Functor.Compose
 import           Tile.Syntax ((:::)(..), Plicit(..), plicit)
 import qualified Tile.Syntax as S
 
-type Permutable f = (Applicative f, Distributive f)
-
 var :: Applicative m => i expr -> m (i expr)
 var = pure
 
