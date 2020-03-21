@@ -81,7 +81,7 @@ assocRL :: (Functor f, Functor g) => ((f :.: (g :.: h)) :.: i) a -> ((f :.: g) :
 assocRL = mapC (mapC (fmap (fmap C . getC)))
 
 
-weaken :: (Applicative m, Applicative i, Applicative j) => (m :.: i) a -> (m :.: i :.: j) a
+weaken :: (Permutable m, Permutable i, Permutable j) => (m :.: i) a -> (m :.: i :.: j) a
 weaken = weakens
 
 strengthen :: Functor m => (m :.: Identity) a -> m a
@@ -91,16 +91,16 @@ strengthen = fmap runIdentity . getC
 type Permutable f = (Applicative f, Distributive f)
 
 
-class (Applicative m, Applicative n) => Extends m n where
+class (Permutable m, Permutable n) => Extends m n where
   weakens :: m a -> n a
 
-instance (Applicative f, Extends g1 g2) => Extends (f :.: g1) (f :.: g2) where
+instance (Permutable f, Extends g1 g2) => Extends (f :.: g1) (f :.: g2) where
   weakens = mapC (fmap weakens)
 
-instance (Applicative f, Applicative g) => Extends f (f :.: g) where
+instance (Permutable f, Permutable g) => Extends f (f :.: g) where
   weakens = liftC
 
-instance Applicative f => Extends f f where
+instance Permutable f => Extends f f where
   weakens = id
 
 
