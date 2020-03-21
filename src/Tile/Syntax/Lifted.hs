@@ -1,6 +1,10 @@
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 module Tile.Syntax.Lifted
@@ -11,9 +15,7 @@ module Tile.Syntax.Lifted
 , let'
 , let''
   -- * Lam
-, S.Lam
-, lam
-, ($$)
+, Lam(..)
   -- * Type
 , S.Type
 , type'
@@ -40,7 +42,9 @@ module Tile.Syntax.Lifted
 ) where
 
 import           Control.Applicative (liftA2)
+import           Control.Carrier.Parser.Church
 import           Data.Functor.Identity
+import           Data.Monoid (Ap(..))
 import           Tile.Functor.Compose
 import           Tile.Syntax ((:::)(..), Plicit(..), plicit)
 import qualified Tile.Syntax as S
@@ -68,13 +72,20 @@ let'' (tm ::: ty) f = liftA2 S.let' <$> (liftA2 (:::) <$> tm <*> ty) <*> (getC <
 
 -- Lam
 
-lam :: (Applicative m, S.Lam expr, Permutable env) => m (env Plicit) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
-lam p f = liftA2 S.lam <$> p <*> (getC <$> f (C (pure id)))
+class (Applicative m, S.Lam expr) => Lam expr m where
+  lam :: Permutable env => m (env Plicit) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
+  lam p b = liftA2 S.lam <$> p <*> (getC <$> b (C (pure id)))
 
-($$) :: (Applicative m, S.Lam expr) => m expr -> m expr -> m expr
-($$) = liftA2 (S.$$)
+  ($$) :: m expr -> m expr -> m expr
+  ($$) = liftA2 (S.$$)
 
-infixl 9 $$
+  infixl 9 $$
+
+instance (Applicative m, S.Lam expr) => Lam expr (Ap m)
+
+deriving via Ap Identity instance S.Lam expr => Lam expr Identity
+deriving via Ap ((->) r) instance S.Lam expr => Lam expr ((->) r)
+deriving via Ap (ParserC m) instance S.Lam expr => Lam expr (ParserC m)
 
 
 -- Type
