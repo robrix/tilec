@@ -7,6 +7,7 @@ module Tile.Library
   -- * Functions
 , id'
 , const'
+, fix
   -- * Maybe
 , maybe
 , nothing
@@ -44,6 +45,9 @@ id' = lam Ex id ::: (Im, type') >-> \ _A -> _A --> _A
 
 const' :: (Lam expr, Type expr) => expr ::: expr
 const' = lam Ex (lam Ex . const) ::: (Im, type') >-> \ _A -> (Im, type') >-> \ _B -> _A --> _B --> _A
+
+fix :: (Lam expr, Let expr, Type expr) => expr ::: expr
+fix = lam Im (\ _A -> lam Im (\ _B -> lam Ex (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam Ex (\ a -> f $$ fixf $$ a))))) ::: type' ==> \ _A -> type' ==> \ _B -> ((_A --> _B) --> (_A --> _B)) --> (_A --> _B)
 
 
 maybe :: (Lam expr, Type expr) => expr ::: expr
