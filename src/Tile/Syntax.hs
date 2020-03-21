@@ -27,10 +27,11 @@ module Tile.Syntax
 , meta
 , intro
 , letbind
-  -- * Re-exports
+  -- * Typing syntax
 , (:::)(..)
 , tm
 , ty
+  -- * Re-exports
 , Plicit(..)
 , plicit
 ) where
