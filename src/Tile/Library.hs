@@ -93,4 +93,3 @@ cons = lam Ex (\ a -> lam Ex (\ as -> lam Ex (const (lam Ex (\ cons -> cons $$ a
 -- TODO: vectors
 -- TODO: finite sets
 -- TODO: scott-encodings
--- TODO: fix
