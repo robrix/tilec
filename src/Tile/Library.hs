@@ -119,5 +119,4 @@ fs = lam Ex (\ n -> lam Ex (const (lam Ex ($$ n)))) ::: tm nat ==> \ n -> tm fin
 
 
 -- TODO: vectors
--- TODO: finite sets
 -- TODO: scott-encodings
