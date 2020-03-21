@@ -99,7 +99,7 @@ instance Applicative f => Extends f f where
 
 
 newtype Tr (i :: Type -> Type) (j :: Type -> Type) k a = Tr { getTr :: k a }
-  deriving (Functor, Applicative)
+  deriving (Applicative, Functor)
 
 instance (Extends i j, Extends j k) => Extends i (Tr i j k) where
   weakens (m :: i a) = Tr (weakens (weakens m :: j a))
