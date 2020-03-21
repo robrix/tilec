@@ -101,5 +101,12 @@ instance Applicative f => Extends f f where
 newtype Tr (i :: Type -> Type) (j :: Type -> Type) k a = Tr { getTr :: k a }
   deriving (Applicative, Functor)
 
+instance Distributive k => Distributive (Tr i j k) where
+  distribute = Tr . distribute . fmap getTr
+  {-# INLINE distribute #-}
+
+  collect f = Tr . collect (getTr . f)
+  {-# INLINE collect #-}
+
 instance (Extends i j, Extends j k) => Extends i (Tr i j k) where
   weakens (m :: i a) = Tr (weakens (weakens m :: j a))
