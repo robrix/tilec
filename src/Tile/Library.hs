@@ -20,6 +20,7 @@ module Tile.Library
 , right
   -- * Pair
 , pair
+, pair'
   -- * Nat
 , nat
 , z
@@ -133,6 +134,9 @@ right = lam Ex (\ r -> lam Ex (const (lam Ex ($$ r)))) ::: type' ==> \ _L -> typ
 
 pair :: (Lam expr, Type expr) => expr ::: expr
 pair = lam Ex (\ _L -> lam Ex (\ _R -> type' ==> \ _K -> (_L --> _R --> _K) --> _K)) ::: type' --> type' --> type'
+
+pair' :: (Lam expr, Type expr) => expr ::: expr
+pair' = lam Ex (\ l -> lam Ex (\ r -> lam Ex (\ k -> k $$ l $$ r))) ::: type' ==> \ _L -> type' ==> \ _R -> _L --> _R --> tm pair $$ _L $$ _R
 
 
 -- Nat
