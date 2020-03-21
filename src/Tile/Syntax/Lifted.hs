@@ -141,10 +141,10 @@ liftScript m = Script $ \ k -> strengthen <$> k (pure <$> m)
 
 newtype Script t m a = Script
   { getScript
-    :: forall hw
-    .  Permutable hw
-    => (forall h . Permutable h => m ((hw :.: h) a) -> m ((hw :.: h) t))
-    -> m (hw t)
+    :: forall env
+    .  Permutable env
+    => (forall env' . Permutable env' => m ((env :.: env') a) -> m ((env :.: env') t))
+    -> m (env t)
   }
 
 instance Functor m => Functor (Script t m) where
