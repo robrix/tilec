@@ -25,6 +25,7 @@ module Tile.Syntax
   -- * Elaborator scripts
 , runScript
 , Script(..)
+, (.:)
 , meta
 , intro
 , letbind
@@ -126,6 +127,11 @@ instance Applicative (Script t) where
 instance Monad (Script t) where
   m >>= f = Script (\ k -> runScript (runScript k . f) m)
   {-# INLINE (>>=) #-}
+
+(.:) :: Def t def => String -> t := t -> Script (def t) t
+name .: (ty := tm) = Script $ def (name ::: ty := tm)
+
+infix 3 .:
 
 meta :: Prob t => t -> Script t t
 meta = Script . ex
