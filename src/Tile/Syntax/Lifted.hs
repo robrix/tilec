@@ -41,7 +41,6 @@ module Tile.Syntax.Lifted
 ) where
 
 import           Control.Applicative (liftA2)
-import           Data.Distributive
 import           Data.Functor.Identity
 import           Tile.Functor.Compose
 import           Tile.Syntax ((:::)(..), Plicit(..), plicit)
@@ -56,7 +55,7 @@ var = pure @m . weakens
 let'
   :: (Applicative m, S.Let expr, Permutable env)
   => m (env expr) ::: m (env expr)
-  -> (forall env' . (Extends env env', Permutable env') => env' expr -> m (env' expr))
+  -> (forall env' . Extends env env' => env' expr -> m (env' expr))
   -> m (env expr)
 let' v f = let'' v (f . C . pure)
 
@@ -70,7 +69,7 @@ let'' (tm ::: ty) f = liftA2 S.let' <$> (liftA2 (:::) <$> tm <*> ty) <*> (getC <
 
 -- Lam
 
-lam :: (Applicative m, S.Lam expr, Permutable env) => m (env Plicit) -> (forall env' . (Extends env env', Permutable env') => env' expr -> m (env' expr)) -> m (env expr)
+lam :: (Applicative m, S.Lam expr, Permutable env) => m (env Plicit) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
 lam p f = liftA2 S.lam <$> p <*> (getC <$> f (C (pure id)))
 
 ($$) :: (Applicative m, S.Lam expr) => m expr -> m expr -> m expr
@@ -84,7 +83,7 @@ infixl 9 $$
 type' :: (Applicative m, S.Type expr) => m expr
 type' = pure S.type'
 
-(>->) :: (Applicative m, S.Type expr, Permutable env) => (m (env Plicit), m (env expr)) -> (forall env' . (Extends env env', Permutable env') => env' expr -> m (env' expr)) -> m (env expr)
+(>->) :: (Applicative m, S.Type expr, Permutable env) => (m (env Plicit), m (env expr)) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
 (pl, a) >-> b = liftA2 (S.>->) <$> (liftA2 (,) <$> pl <*> a) <*> (getC <$> b (C (pure id)))
 
 infixr 6 >->
@@ -94,7 +93,7 @@ a --> b = (pure (pure Ex), a) >-> const (weakens <$> b)
 
 infixr 6 -->
 
-(==>) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> (forall env' . (Extends env env', Permutable env') => env' expr -> m (env' expr)) -> m (env expr)
+(==>) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
 a ==> b = (pure (pure Im), a) >-> b
 
 infixr 6 ==>
@@ -102,7 +101,7 @@ infixr 6 ==>
 
 -- Prob
 
-ex :: (Applicative m, S.Prob expr, Permutable env) => m (env expr) -> (forall env' . (Extends env env', Permutable env') => env' expr -> m (env' expr)) -> m (env expr)
+ex :: (Applicative m, S.Prob expr, Permutable env) => m (env expr) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
 ex t f = liftA2 S.ex <$> t <*> (getC <$> f (C (pure id)))
 
 (===) :: (Applicative m, S.Prob expr) => m expr ::: m expr -> m expr ::: m expr -> m expr
@@ -136,7 +135,7 @@ newtype Script t m a = Script
   { getScript
     :: forall env
     .  Permutable env
-    => (forall env' . (Extends env env', Distributive env') => m (env' a) -> m (env' t))
+    => (forall env' . Extends env env' => m (env' a) -> m (env' t))
     -> m (env t)
   }
 
@@ -150,6 +149,6 @@ instance Applicative m => Applicative (Script t m) where
 
   (Script f :: Script t m (a -> b)) <*> Script a = Script go
     where
-    go :: forall env . Permutable env => (forall env' . (Extends env env', Distributive env') => m (env' b) -> m (env' t)) -> m (env t)
+    go :: forall env . Permutable env => (forall env' . Extends env env' => m (env' b) -> m (env' t)) -> m (env t)
     go k = f $ \ (f' :: m (env' (a -> b))) -> a $ \ (a' :: m (env'' a)) -> getTr @env @env' @env'' <$> k (Tr <$> liftA2 (<*>) (weakens <$> f') a')
   {-# INLINE (<*>) #-}
