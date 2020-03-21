@@ -24,6 +24,7 @@ import           Control.Effect.Throw
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
 import           Data.Distributive
+import           Data.Foldable (asum)
 import           Data.Functor
 import           Data.Functor.Identity
 import           Data.HashSet (HashSet, fromList)
@@ -138,9 +139,8 @@ identifier_ = ident identifierStyle
 
 var_ :: (Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m) => m (env expr)
 var_ = do
-  v <- identifier_
-  v' <- asks (Map.lookup v)
-  maybe (unexpected "free variable") pure v'
+  env <- asks Map.toList
+  asum (map (\ (k, v) -> v <$ token (string k) <?> k) env)
 
 let_ :: forall env expr m sig . (Permutable env, Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => m (env expr)
 let_ = token (string "let") *> do
