@@ -128,40 +128,40 @@ instance TokenParsing m => TokenParsing (EnvC expr m) where
 
 
 expr :: forall expr m sig . (Algebra sig m, TokenParsing m, Let expr, Lam expr, Type expr) => m expr
-expr = runEnv @(Identity expr) mempty (strengthen expr_)
+expr = runEnv @(Identity expr) mempty (run <$> expr_)
 
-expr_ :: (Permutable i, Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m, Let expr, Lam expr, Type expr) => (m :.: i) expr
+expr_ :: (Permutable env, Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m, Let expr, Lam expr, Type expr) => m (env expr)
 expr_ = type_ <|> var_ <|> lam_ <|> let_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
 
-var_ :: (Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m) => (m :.: i) expr
-var_ = C $ do
+var_ :: (Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m) => m (env expr)
+var_ = do
   v <- identifier_
   v' <- asks (Map.lookup v)
-  maybe (unexpected "free variable") (getC . var) v'
+  maybe (unexpected "free variable") pure v'
 
-let_ :: (Permutable i, Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => (m :.: i) expr
-let_ = C $ token (string "let") *> do
+let_ :: (Permutable env, Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => m (env expr)
+let_ = token (string "let") *> do
   i <- identifier_
   void (token (char '='))
-  tm <- getC expr_ <* token (char ':')
-  ty <- getC expr_ <* token (string "in")
-  getC (let' (C (pure tm) ::: C (pure ty)) (\ v -> C (asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env (getC expr_))))
+  tm <- expr_ <* token (char ':')
+  ty <- expr_ <* token (string "in")
+  let' (pure tm ::: pure ty) (\ v -> asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env expr_)
 
 -- FIXME: lambdas bindng implicit variables
 
-lam_ :: (Permutable i, Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => (m :.: i) expr
-lam_ = C $ token (char '\\') *> do
+lam_ :: (Permutable env, Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => m (env expr)
+lam_ = token (char '\\') *> do
   i <- identifier_
   void (token (char '.'))
-  getC (lam (pure Ex) (\ v -> C (asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env (getC expr_))))
+  lam (pure (pure Ex)) (\ v -> asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env expr_)
 
 -- FIXME: application
 
-type_ :: (Monad m, Applicative i, TokenParsing m, Type expr) => (m :.: i) expr
-type_ = C $ type' <$ reserve identifierStyle "Type"
+type_ :: (Monad m, Applicative env, TokenParsing m, Type expr) => m (env expr)
+type_ = type' <$ reserve identifierStyle "Type"
 
 -- FIXME: pi types
 

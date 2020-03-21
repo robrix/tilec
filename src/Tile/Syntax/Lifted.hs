@@ -52,34 +52,34 @@ import qualified Tile.Syntax as S
 
 type Permutable f = (Applicative f, Distributive f)
 
-var :: Applicative m => i expr -> (m :.: i) expr
-var = C . pure
+var :: Applicative m => i expr -> m (i expr)
+var = pure
 
-wvar :: forall m i j expr . (Applicative m, Extends (m :.: i) (m :.: j)) => i expr -> (m :.: j) expr
-wvar = weakens . var @m
+wvar :: forall m i j expr . (Applicative m, Extends i j) => i expr -> m (j expr)
+wvar = var @m . weakens
 
 
 -- Let
 
 let'
   :: (Applicative m, S.Let expr, Permutable i)
-  => (m :.: i) expr ::: (m :.: i) expr
-  -> (forall j . Permutable j => (i :.: j) expr -> (m :.: i :.: j) expr)
-  -> (m :.: i) expr
+  => m (i expr) ::: m (i expr)
+  -> (forall j . Permutable j => (i :.: j) expr -> m ((i :.: j) expr))
+  -> m (i expr)
 let' v f = let'' v (f . C . pure)
 
 let''
   :: (Applicative m, S.Let expr, Permutable i)
-  => (m :.: i) expr ::: (m :.: i) expr
-  -> (forall j . Permutable j => j expr -> (m :.: i :.: j) expr)
-  -> (m :.: i) expr
-let'' (tm ::: ty) f = S.let' <$> ((:::) <$> tm <*> ty) <*> mapC (fmap getC) (f id)
+  => m (i expr) ::: m (i expr)
+  -> (forall j . Permutable j => j expr -> m ((i :.: j) expr))
+  -> m (i expr)
+let'' (tm ::: ty) f = liftA2 S.let' <$> (liftA2 (:::) <$> tm <*> ty) <*> (getC <$> f id)
 
 
 -- Lam
 
-lam :: (Applicative m, S.Lam expr, Permutable i) => (m :.: i) Plicit -> (forall j . Permutable j => (i :.: j) expr -> (m :.: i :.: j) expr) -> (m :.: i) expr
-lam p f = S.lam <$> p <*> mapC (fmap getC) (f (C (pure id)))
+lam :: (Applicative m, S.Lam expr, Permutable i) => m (i Plicit) -> (forall j . Permutable j => (i :.: j) expr -> m ((i :.: j) expr)) -> m (i expr)
+lam p f = liftA2 S.lam <$> p <*> (getC <$> f (C (pure id)))
 
 ($$) :: (Applicative m, S.Lam expr) => m expr -> m expr -> m expr
 ($$) = liftA2 (S.$$)
@@ -92,26 +92,26 @@ infixl 9 $$
 type' :: (Applicative m, S.Type expr) => m expr
 type' = pure S.type'
 
-(>->) :: (Applicative m, S.Type expr, Permutable i) => ((m :.: i) Plicit, (m :.: i) expr) -> (forall j . Permutable j => (i :.: j) expr -> (m :.: i :.: j) expr) -> (m :.: i) expr
-(pl, a) >-> b = (S.>->) <$> ((,) <$> pl <*> a) <*> mapC (fmap getC) (b (C (pure id)))
+(>->) :: (Applicative m, S.Type expr, Permutable i) => (m (i Plicit), m (i expr)) -> (forall j . Permutable j => (i :.: j) expr -> m ((i :.: j) expr)) -> m (i expr)
+(pl, a) >-> b = liftA2 (S.>->) <$> (liftA2 (,) <$> pl <*> a) <*> (getC <$> b (C (pure id)))
 
 infixr 6 >->
 
-(-->) :: (Applicative m, S.Type expr, Permutable i) => (m :.: i) expr -> (m :.: i) expr -> (m :.: i) expr
-a --> b = (pure Ex, a) >-> const (weakens b)
+(-->) :: (Applicative m, S.Type expr, Permutable i) => m (i expr) -> m (i expr) -> m (i expr)
+a --> b = (pure (pure Ex), a) >-> const (weakens <$> b)
 
 infixr 6 -->
 
-(==>) :: (Applicative m, S.Type expr, Permutable i) => (m :.: i) expr -> (forall j . Permutable j => (i :.: j) expr -> (m :.: i :.: j) expr) -> (m :.: i) expr
-a ==> b = (pure Im, a) >-> b
+(==>) :: (Applicative m, S.Type expr, Permutable i) => m (i expr) -> (forall j . Permutable j => (i :.: j) expr -> m ((i :.: j) expr)) -> m (i expr)
+a ==> b = (pure (pure Im), a) >-> b
 
 infixr 6 ==>
 
 
 -- Prob
 
-ex :: (Applicative m, S.Prob expr, Permutable i) => (m :.: i) expr -> (forall j . Permutable j => (i :.: j) expr -> (m :.: i :.: j) expr) -> (m :.: i) expr
-ex t f = S.ex <$> t <*> mapC (fmap getC) (f (C (pure id)))
+ex :: (Applicative m, S.Prob expr, Permutable i) => m (i expr) -> (forall j . Permutable j => (i :.: j) expr -> m ((i :.: j) expr)) -> m (i expr)
+ex t f = liftA2 S.ex <$> t <*> (getC <$> f (C (pure id)))
 
 (===) :: (Applicative m, S.Prob expr) => m expr ::: m expr -> m expr ::: m expr -> m expr
 (tm1 ::: ty1) === (tm2 ::: ty2) = (S.===) <$> ((:::) <$> tm1 <*> ty1) <*> ((:::) <$> tm2 <*> ty2)
