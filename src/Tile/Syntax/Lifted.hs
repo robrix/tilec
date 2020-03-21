@@ -140,7 +140,7 @@ newtype Script t m a = Script
   { getScript
     :: forall env
     .  Permutable env
-    => (forall env' . Permutable env' => m ((env :.: env') a) -> m ((env :.: env') t))
+    => (forall env' . (Extends env env', Distributive env') => m (env' a) -> m (env' t))
     -> m (env t)
   }
 
@@ -152,5 +152,7 @@ instance Applicative m => Applicative (Script t m) where
   pure a = Script $ \ k -> strengthen <$> k (pure (pure a))
   {-# INLINE pure #-}
 
-  Script f <*> Script a = Script $ \ k -> f $ \ f' -> a $ \ a' -> assocL <$> k (assocR <$> liftA2 (<*>) (weakens <$> f') a')
+  (Script f :: Script t m (a -> b)) <*> Script a = Script go
+    where go :: forall env . Permutable env => (forall env' . (Extends env env', Distributive env') => m (env' b) -> m (env' t)) -> m (env t)
+          go k = f $ \ (f' :: m (env' (a -> b))) -> a $ \ (a' :: m (env'' a)) -> getTr @env @env' @env'' <$> k (Tr <$> liftA2 (<*>) (weakens <$> f') a')
   {-# INLINE (<*>) #-}
