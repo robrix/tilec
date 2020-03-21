@@ -16,15 +16,15 @@ module Tile.Elab
 
 import Tile.Syntax
 
-elab :: ElabC a m a ::: m a -> m a
+elab :: ElabC t t ::: t -> t
 elab (ElabC run ::: ty) = run ty
 
-newtype ElabC t m a = ElabC (m t -> m a)
+newtype ElabC t a = ElabC (t -> a)
 
-var :: m a -> ElabC t m a
+var :: a -> ElabC t a
 var = ElabC . const
 
-instance (Let (m a), Prob (m a), Type (m a)) => Let (ElabC a m a) where
+instance (Let t, Prob t, Type t) => Let (ElabC t t) where
   let' (v ::: t) b = check $ do
     _B <- meta type'
     t' <- letbind (elab (t ::: type') ::: type')
@@ -33,7 +33,7 @@ instance (Let (m a), Prob (m a), Type (m a)) => Let (ElabC a m a) where
             elab (b (var x) ::: _B))
       ::: _B)
 
-instance (Lam (m a), Prob (m a), Type (m a)) => Lam (ElabC a m a) where
+instance (Lam t, Prob t, Type t) => Lam (ElabC t t) where
   lam p b = check $ do
     _A <- meta type'
     _B <- meta (_A --> type')
@@ -48,7 +48,7 @@ instance (Lam (m a), Prob (m a), Type (m a)) => Lam (ElabC a m a) where
       (   elab (f ::: _A --> _B) $$ elab (a ::: _A)
       ::: _B)
 
-instance (Let (m a), Prob (m a), Type (m a)) => Type (ElabC a m a) where
+instance (Let t, Prob t, Type t) => Type (ElabC t t) where
   type' = check (pure (type' ::: type'))
 
   (p, a) >-> b = check $ do
@@ -57,7 +57,7 @@ instance (Let (m a), Prob (m a), Type (m a)) => Type (ElabC a m a) where
       (   (p, a') >-> (\ x -> elab (b (var x) ::: type'))
       ::: type')
 
-instance (Let (m a), Prob (m a), Type (m a)) => Prob (ElabC a m a) where
+instance (Let t, Prob t, Type t) => Prob (ElabC t t) where
   t `ex` b = check $ do
     _B <- meta type'
     t' <- letbind (elab (t ::: type') ::: type')
@@ -75,7 +75,7 @@ instance (Let (m a), Prob (m a), Type (m a)) => Prob (ElabC a m a) where
           === t2' ::: type'))
 
 
-check :: Prob (m a) => Script (m a) (m a ::: m a) -> ElabC a m a
+check :: Prob t => Script t (t ::: t) -> ElabC t t
 check f = ElabC $ \ ty -> runScript id $ do
   exp <- meta ty
   act <- f
