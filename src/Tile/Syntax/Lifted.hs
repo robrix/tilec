@@ -17,7 +17,8 @@ module Tile.Syntax.Lifted
   -- * Lam
 , Lam(..)
   -- * Type
-, Type(..)
+, S.Type
+, type'
 , (>->)
 , (-->)
 , (==>)
@@ -89,9 +90,8 @@ deriving via Ap (ParserC m) instance S.Lam expr => Lam expr (ParserC m)
 
 -- Type
 
-class (Applicative m, S.Type expr) => Type expr m where
-  type' :: Permutable env => m (env expr)
-  type' = pure (pure S.type')
+type' :: (Applicative m, S.Type expr) => m expr
+type' = pure S.type'
 
 (>->) :: (Applicative m, S.Type expr, Permutable env) => (m (env Plicit), m (env expr)) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
 (pl, a) >-> b = liftA2 (S.>->) <$> (liftA2 (,) <$> pl <*> a) <*> (getC <$> b (C (pure id)))

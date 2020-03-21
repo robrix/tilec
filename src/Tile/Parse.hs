@@ -41,10 +41,10 @@ parseFile path p = do
 
 type Env env expr = Map.Map String (env expr)
 
-expr :: (Algebra sig m, TokenParsing m, Let expr, Lam expr m, Type expr m) => m expr
+expr :: (Algebra sig m, TokenParsing m, Let expr, Lam expr m, Type expr) => m expr
 expr = run <$> expr_ Map.empty
 
-expr_ :: (Monad m, Permutable env, TokenParsing m, Let expr, Lam expr m, Type expr m) => Env env expr -> m (env expr)
+expr_ :: (Monad m, Permutable env, TokenParsing m, Let expr, Lam expr m, Type expr) => Env env expr -> m (env expr)
 expr_ env = type_ <|> var_ env <|> lam_ env <|> let_ env
 
 identifier_ :: (Monad m, TokenParsing m) => m String
@@ -53,7 +53,7 @@ identifier_ = ident identifierStyle
 var_ :: TokenParsing m => Env env expr -> m (env expr)
 var_ env = asum (map (\ (k, v) -> v <$ token (string k) <?> '‘':k++"’") (Map.toList env))
 
-let_ :: (Monad m, Permutable env, TokenParsing m, Lam expr m, Let expr, Type expr m) => Env env expr -> m (env expr)
+let_ :: (Monad m, Permutable env, TokenParsing m, Lam expr m, Let expr, Type expr) => Env env expr -> m (env expr)
 let_ env = keyword "let" *> do
   i <- identifier_ <* keyword "="
   tm <- expr_ env <* keyword ":"
@@ -62,15 +62,15 @@ let_ env = keyword "let" *> do
 
 -- FIXME: lambdas bindng implicit variables
 
-lam_ :: (Monad m, Permutable env, TokenParsing m, Lam expr m, Let expr, Type expr m) => Env env expr -> m (env expr)
+lam_ :: (Monad m, Permutable env, TokenParsing m, Lam expr m, Let expr, Type expr) => Env env expr -> m (env expr)
 lam_ env = keyword "\\" *> do
   i <- identifier_ <* keyword "."
   lam (pure (pure Ex)) (\ v -> expr_ (Map.insert i v (weaken env)))
 
 -- FIXME: application
 
-type_ :: (Monad m, Permutable env, TokenParsing m, Type expr m) => m (env expr)
-type_ = keyword "Type" *> type'
+type_ :: (Monad m, Applicative env, TokenParsing m, Type expr) => m (env expr)
+type_ = type' <$ keyword "Type"
 
 -- FIXME: pi types
 
