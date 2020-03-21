@@ -1,144 +1,204 @@
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Syntax
-( Var(..)
-, Free(..)
+( Syntax
+  -- * Let bindings
 , Let(..)
+  -- * Lambda abstraction & application
 , Lam(..)
+  -- * Types
 , Type(..)
 , (-->)
 , (==>)
+  -- * Existentials & equations
 , Prob(..)
-, Err(..)
+  -- * Modules, imports, & declarations
+, Module(..)
+, Import(..)
+, Export(..)
 , Def(..)
   -- * Elaborator scripts
 , runScript
 , Script(..)
+, (.:)
 , meta
 , intro
 , letbind
-  -- * Re-exports
+  -- * Typing syntax
 , (:::)(..)
+  -- * Definition syntax
+, (:=)(..)
+  -- * {Im,ex}plicitness
 , Plicit(..)
 , plicit
 ) where
 
-import Control.Carrier.Reader
-import Control.Carrier.State.Church
 import Control.Monad (ap)
-import Tile.Plicit
-import Tile.Type
+import Data.Bifoldable
+import Data.Bifunctor
+import Data.Bitraversable
+import Data.Functor.Classes
+import Data.Ix
 
-class Monad expr => Var v a expr | expr -> v a where
-  var :: v -> expr a
-
-instance Var v a m => Var v a (ReaderC r m) where
-  var = ReaderC . const . var
-
-instance Var v a m => Var v a (StateC s m) where
-  var v = StateC $ \ k s -> var v >>= k s
+type Syntax expr = (Let expr, Lam expr, Type expr)
 
 
-class Var v a expr => Free v a expr where
-  free :: String -> expr a
+-- Let bindings
 
-instance Free v a m => Free v a (ReaderC r m) where
-  free = ReaderC . const . free
-
-instance Free v a m => Free v a (StateC s m) where
-  free v = StateC $ \ k s -> free v >>= k s
+class Let expr where
+  let' :: expr ::: expr -> (expr -> expr) -> expr
 
 
-class Var v a expr => Let v a expr where
-  let' :: expr a ::: expr a -> (v -> expr a) -> expr a
+-- Lambda abstraction & application
 
-instance Let v a m => Let v a (ReaderC r m) where
-  let' (v ::: t) b = ReaderC $ \ r -> let' (runReader r v ::: runReader r t) (runReader r . b)
+class Lam expr where
+  lam :: Plicit -> (expr -> expr) -> expr
 
-
-class Var v a expr => Lam v a expr where
-  lam :: Plicit -> (v -> expr a) -> expr a
-
-  ($$) :: expr a -> expr a -> expr a
+  ($$) :: expr -> expr -> expr
   infixl 9 $$
 
-instance Lam v a m => Lam v a (ReaderC r m) where
-  lam p b = ReaderC $ \ r -> lam p (runReader r . b)
 
-  f $$ a = ReaderC $ \ r -> runReader r f $$ runReader r a
+-- Types
 
+class Type expr where
+  type' :: expr
 
-class Var v a expr => Type v a expr where
-  type' :: expr a
-
-  (>->) :: (Plicit, expr a) -> (v -> expr a) -> expr a
+  (>->) :: (Plicit, expr) -> (expr -> expr) -> expr
   infixr 6 >->
 
-instance Type v a m => Type v a (ReaderC r m) where
-  type' = ReaderC (const type')
-
-  t >-> b = ReaderC $ \ r -> fmap (runReader r) t >-> runReader r . b
-
-(-->) :: Type v a expr => expr a -> expr a -> expr a
+(-->) :: Type expr => expr -> expr -> expr
 a --> b = (Ex, a) >-> const b
 
 infixr 6 -->
 
-(==>) :: Type v a expr => expr a -> (v -> expr a) -> expr a
+(==>) :: Type expr => expr -> (expr -> expr) -> expr
 a ==> b = (Im, a) >-> b
 
 infixr 6 ==>
 
 
-class Var v a expr => Prob v a expr where
-  ex :: expr a -> (v -> expr a) -> expr a
+-- Existentials & equations
+
+class Prob expr where
+  ex :: expr -> (expr -> expr) -> expr
   infixr 6 `ex`
 
-  (===) :: expr a ::: expr a -> expr a ::: expr a -> expr a
+  (===) :: expr ::: expr -> expr ::: expr -> expr
   infixl 4 ===
 
-instance Prob v a m => Prob v a (ReaderC r m) where
-  ex t b = ReaderC $ \ r -> ex (runReader r t) (runReader r . b)
 
-  (tm1 ::: ty1) === (tm2 ::: ty2) = ReaderC $ \ r -> (runReader r tm1 ::: runReader r ty1) === (runReader r tm2 ::: runReader r ty2)
+-- Modules, imports, & declarations
 
-
-class Err e a expr | expr -> e a where
-  err :: e -> expr a
-
-instance Err e a m => Err e a (ReaderC r m) where
-  err = ReaderC . const . err
+class Module decl repr | repr -> decl where
+  module' :: String -> decl a -> repr a
 
 
-class Def tm ty a def | def -> tm ty where
-  def :: tm a ::: ty a -> def a
+class Import repr where
+  import' :: String -> repr
 
 
--- FIXME: modules
+class Export repr where
+  export :: a -> repr a
+
+
+class Def expr def | def -> expr where
+  def :: String ::: expr := expr -> (expr -> def expr) -> def expr
+
+
 -- FIXME: packages
 
 
-runScript :: (b -> m a) -> Script a m b -> m a
+-- Elaborator scripts
+
+runScript :: (a -> t) -> Script t a -> t
 runScript k (Script r) = r k
 
-newtype Script a m b = Script ((b -> m a) -> m a)
+newtype Script t a = Script ((a -> t) -> t)
   deriving (Functor)
 
-instance Applicative (Script a m) where
+instance Applicative (Script t) where
   pure = Script . flip ($)
+  {-# INLINE pure #-}
+
   (<*>) = ap
+  {-# INLINE (<*>) #-}
 
-instance Monad (Script a m) where
+instance Monad (Script t) where
   m >>= f = Script (\ k -> runScript (runScript k . f) m)
+  {-# INLINE (>>=) #-}
 
-meta :: Prob v a m => m a -> Script a m v
+(.:) :: Def t def => String -> t := t -> Script (def t) t
+name .: (ty := tm) = Script $ def (name ::: ty := tm)
+
+infix 3 .:
+
+meta :: Prob t => t -> Script t t
 meta = Script . ex
 
-intro :: Lam v a m => Plicit -> Script a m v
+intro :: Lam t => Plicit -> Script t t
 intro = Script . lam
 
-letbind :: Let v a m => m a ::: m a -> Script a m v
+letbind :: Let t => t ::: t -> Script t t
 letbind = Script . let'
+
+
+-- Typing syntax
+
+data a ::: b = (:::) { tm :: a, ty :: b }
+  deriving (Eq, Foldable, Functor, Ord, Traversable)
+
+infix 5 :::
+
+instance Bifoldable (:::) where
+  bifoldMap = bifoldMapDefault
+
+instance Bifunctor (:::) where
+  bimap = bimapDefault
+
+instance Bitraversable (:::) where
+  bitraverse f g (l ::: r) = (:::) <$> f l <*> g r
+
+instance Show2 (:::) where
+  liftShowsPrec2 sp1 _ sp2 _ p (a ::: b) = showParen (p > 5) $ sp1 5 a . showString " ::: " . sp2 6 b
+
+instance Show a => Show1 ((:::) a) where
+  liftShowsPrec = liftShowsPrec2 showsPrec showList
+
+instance (Show a, Show b) => Show (a ::: b) where
+  showsPrec = showsPrec1
+
+
+-- Definition syntax
+
+data a := b = a := b
+  deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
+
+infix 4 :=
+
+instance Bifoldable (:=) where
+  bifoldMap = bifoldMapDefault
+
+instance Bifunctor (:=) where
+  bimap = bimapDefault
+
+instance Bitraversable (:=) where
+  bitraverse f g (a := b) = (:=) <$> f a <*> g b
+
+
+-- {Im,ex}plicitness
+
+data Plicit
+  = Im
+  | Ex
+  deriving (Bounded, Enum, Eq, Ix, Ord, Show)
+
+plicit :: a -> a -> Plicit -> a
+plicit im ex = \case
+  Im -> im
+  Ex -> ex

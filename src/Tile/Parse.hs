@@ -1,21 +1,21 @@
-{-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Parse
 ( parse
 , parseString
 , parseFile
-, ParseC(..)
-, expr_
+, runEnv
+, EnvC(..)
+, expr
 ) where
 
 import           Control.Algebra
 import           Control.Carrier.Parser.Church as Parser
 import           Control.Carrier.Reader
-import           Control.Effect.Cut
 import           Control.Effect.NonDet
 import           Control.Effect.Parser.Lines
 import           Control.Effect.Parser.Notice
@@ -23,78 +23,147 @@ import           Control.Effect.Parser.Path
 import           Control.Effect.Throw
 import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Class
+import           Data.Distributive
+import           Data.Functor
+import           Data.Functor.Identity
 import           Data.HashSet (HashSet, fromList)
 import qualified Data.Map as Map
-import           Data.Semilattice.Lower
+import           Source.Span
 import           Text.Parser.Char
 import           Text.Parser.Combinators
 import           Text.Parser.Token
 import           Text.Parser.Token.Highlight
-import           Tile.Syntax
+import           Tile.Functor.Compose
+import           Tile.Syntax.Lifted
 
-parse :: forall v m a sig . Has (Throw Notice) sig m => Path -> String -> ParseC v m a -> m a
-parse path s = runReader mempty . runParser (const pure) failure failure (Input lowerBound s) . runParseC where
+parse :: Has (Throw Notice) sig m => Path -> String -> ParserC m a -> m a
+parse path s = runParser (const pure) failure failure (Input (Pos 0 0) s) where
   failure = throwError . errToNotice path lines
   lines = linesFromString s
 
-parseString :: Has (Throw Notice) sig m => String -> ParseC v m a -> m a
+parseString :: Has (Throw Notice) sig m => String -> ParserC m a -> m a
 parseString = parse (Path "(interactive)")
 
-parseFile :: (Has (Throw Notice) sig m, MonadIO m) => Path -> ParseC v m a -> m a
+parseFile :: (Has (Throw Notice) sig m, MonadIO m) => Path -> ParserC m a -> m a
 parseFile path p = do
   s <- liftIO (readFile (getPath path))
   parse path s p
 
-newtype ParseC v m a = ParseC { runParseC :: ParserC (ReaderC (Map.Map String v) m) a }
-  deriving (Algebra (Parser :+: Cut :+: NonDet :+: Reader (Map.Map String v) :+: sig), Alternative, Applicative, CharParsing, Functor, Monad, Parsing, TokenParsing)
 
-instance MonadTrans (ParseC v) where
-  lift = ParseC . lift . lift
+runEnv :: Map.Map String expr -> EnvC expr m a -> m a
+runEnv m = runReader m . runEnvC
 
-class Monad m => Suspending a m | m -> a where
-  sleaf :: Input -> a -> m a
-  snil  :: Parser.Err -> m a
-  sfail :: Parser.Err -> m a
-  resume :: (Input -> a -> m b) -> (Parser.Err -> m b) -> (Parser.Err -> m b) -> m a -> m b
+newtype EnvC expr m a = EnvC { runEnvC :: ReaderC (Map.Map String expr) m a }
+  deriving (Algebra (Reader (Map.Map String expr) :+: sig), Alternative, Applicative, Functor, Monad, MonadFail, MonadPlus, MonadTrans)
 
-instance Suspending a m => Suspending a (ReaderC r m) where
-  sleaf i = lift . sleaf i
-  snil    = lift . snil
-  sfail   = lift . sfail
-  resume leaf nil fail m = ReaderC $ \ r -> resume (\ i -> runReader r . leaf i) (runReader r . nil) (runReader r . fail) (runReader r m)
+instance Distributive m => Distributive (EnvC expr m) where
+  distribute m = EnvC . ReaderC $ \ r -> distribute (runEnv r <$> m)
+  {-# INLINE distribute #-}
 
-instance Var v a m => Var v a (ParseC v m) where
-  var = lift . var
+  collect f m = EnvC . ReaderC $ \ r -> collect (runEnv r . f) m
+  {-# INLINE collect #-}
 
-instance Free v a m => Free v a (ParseC v m) where
-  free = lift . free
+liftEnvC0 :: m a -> EnvC expr m a
+liftEnvC0 = EnvC . ReaderC . const
 
-suspend :: Suspending a m => Input -> ParserC m a -> m a
-suspend = runParser sleaf snil sfail
-{-# INLINE suspend #-}
+liftEnvC1 :: (m a -> m' a') -> EnvC expr m a -> EnvC expr m' a'
+liftEnvC1 f m = EnvC . ReaderC $ \ r -> f (runReader r (runEnvC m))
 
-instance (Suspending a m, Lam v a m) => Lam v a (ParseC v m) where
-  lam p f = ParseC $ ParserC $ \ leaf nil fail input ->
-    -- we can’t hide the context resulting from the parser produced by f in a, so we’ll hide it in m instead
-    resume leaf nil fail $ lam p (suspend input . runParseC . f)
+instance Parsing m => Parsing (EnvC expr m) where
+  try = liftEnvC1 try
+  {-# INLINE try #-}
 
-  f $$ a = ParseC $ ParserC $ \ leaf nil fail input ->
-    resume leaf nil fail $ suspend input (runParseC f) $$ suspend input (runParseC a)
+  m <?> s = liftEnvC1 (<?> s) m
+  {-# INLINE (<?>) #-}
 
-expr_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Free v a m, Type v a m) => m a
-expr_ = type_ <|> var_
+  skipMany = liftEnvC1 skipMany
+  {-# INLINE skipMany #-}
+
+  skipSome = liftEnvC1 skipSome
+  {-# INLINE skipSome #-}
+
+  unexpected = liftEnvC0 . unexpected
+  {-# INLINE unexpected #-}
+
+  eof = liftEnvC0 eof
+  {-# INLINE eof #-}
+
+  notFollowedBy = liftEnvC1 notFollowedBy
+  {-# INLINE notFollowedBy #-}
+
+instance CharParsing m => CharParsing (EnvC expr m) where
+  satisfy = liftEnvC0 . satisfy
+  {-# INLINE satisfy #-}
+
+  char = liftEnvC0 . char
+  {-# INLINE char #-}
+
+  notChar = liftEnvC0 . notChar
+  {-# INLINE notChar #-}
+
+  anyChar = liftEnvC0 anyChar
+  {-# INLINE anyChar #-}
+
+  string = liftEnvC0 . string
+  {-# INLINE string #-}
+
+  text = liftEnvC0 . text
+  {-# INLINE text #-}
+
+instance TokenParsing m => TokenParsing (EnvC expr m) where
+  someSpace = liftEnvC0 someSpace
+  {-# INLINE someSpace #-}
+
+  nesting = liftEnvC1 nesting
+  {-# INLINE nesting #-}
+
+  semi = liftEnvC0 semi
+  {-# INLINE semi #-}
+
+  highlight = liftEnvC1 . highlight
+  {-# INLINE highlight #-}
+
+  token = liftEnvC1 token
+  {-# INLINE token #-}
+
+
+expr :: forall expr m sig . (Algebra sig m, TokenParsing m, Let expr, Lam expr, Type expr) => m expr
+expr = runEnv @(Identity expr) mempty (strengthen expr_)
+
+expr_ :: (Permutable i, Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m, Let expr, Lam expr, Type expr) => (m :.: i) expr
+expr_ = type_ <|> var_ <|> lam_ <|> let_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
 
-var_ :: (Has (Reader (Map.Map String v)) sig m, TokenParsing m, Free v a m) => m a
-var_ = do
+var_ :: (Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m) => (m :.: i) expr
+var_ = C $ do
   v <- identifier_
   v' <- asks (Map.lookup v)
-  maybe (free v) var v'
+  maybe (unexpected "free variable") (getC . var) v'
 
-type_ :: (Monad m, TokenParsing m, Type v a m) => m a
-type_ = type' <* reserve identifierStyle "Type"
+let_ :: (Permutable i, Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => (m :.: i) expr
+let_ = C $ token (string "let") *> do
+  i <- identifier_
+  void (token (char '='))
+  tm <- getC expr_ <* token (char ':')
+  ty <- getC expr_ <* token (string "in")
+  getC (let' (C (pure tm) ::: C (pure ty)) (\ v -> C (asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env (getC expr_))))
+
+-- FIXME: lambdas bindng implicit variables
+
+lam_ :: (Permutable i, Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => (m :.: i) expr
+lam_ = C $ token (char '\\') *> do
+  i <- identifier_
+  void (token (char '.'))
+  getC (lam (pure Ex) (\ v -> C (asks (Map.insert i v . fmap liftC) >>= \ env -> runEnv env (getC expr_))))
+
+-- FIXME: application
+
+type_ :: (Monad m, Applicative i, TokenParsing m, Type expr) => (m :.: i) expr
+type_ = C $ type' <$ reserve identifierStyle "Type"
+
+-- FIXME: pi types
 
 identifierStyle :: CharParsing m => IdentifierStyle m
 identifierStyle = IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier
@@ -105,4 +174,6 @@ reservedWords = fromList
   [ "Type"
   , "module"
   , "import"
+  , "let"
+  , "in"
   ]

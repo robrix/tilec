@@ -37,26 +37,25 @@ library
   import: common
   exposed-modules:
     Tile.Elab
-    Tile.Error
+    Tile.Functor.Compose
     Tile.Library
     Tile.Parse
-    Tile.Plicit
     Tile.Pretty
     Tile.Print
     Tile.Reconstruct
     Tile.Solve
     Tile.Syntax
-    Tile.Term
-    Tile.Type
+    Tile.Syntax.Lifted
   build-depends:
     , base ^>= 4.13
     , containers
+    , distributive
     , fused-effects
     , fused-effects-parser
     , parsers
     , prettyprinter
     , prettyprinter-ansi-terminal
-    , semilattices
+    , semantic-source
     , terminal-size
     , transformers
     , unordered-containers
@@ -69,7 +68,6 @@ test-suite test
   main-is: Test.hs
   other-modules:
     Test.Gen
-    Test.Term
   build-depends:
     , base
     , containers
