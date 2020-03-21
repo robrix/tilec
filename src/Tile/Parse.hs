@@ -1,29 +1,20 @@
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE UndecidableInstances #-}
 module Tile.Parse
 ( parse
 , parseString
 , parseFile
-, runEnv
-, EnvC(..)
 , expr
 ) where
 
 import           Control.Algebra
 import           Control.Carrier.Parser.Church as Parser
-import           Control.Carrier.Reader
 import           Control.Effect.NonDet
 import           Control.Effect.Parser.Lines
 import           Control.Effect.Parser.Notice
 import           Control.Effect.Parser.Path
 import           Control.Effect.Throw
 import           Control.Monad.IO.Class
-import           Control.Monad.Trans.Class
-import           Data.Distributive
 import           Data.Foldable (asum)
 import           Data.Functor
 import           Data.HashSet (HashSet, fromList)
@@ -48,83 +39,6 @@ parseFile :: (Has (Throw Notice) sig m, MonadIO m) => Path -> ParserC m a -> m a
 parseFile path p = do
   s <- liftIO (readFile (getPath path))
   parse path s p
-
-
-runEnv :: Map.Map String expr -> EnvC expr m a -> m a
-runEnv m = runReader m . runEnvC
-
-newtype EnvC expr m a = EnvC { runEnvC :: ReaderC (Map.Map String expr) m a }
-  deriving (Algebra (Reader (Map.Map String expr) :+: sig), Alternative, Applicative, Functor, Monad, MonadFail, MonadPlus, MonadTrans)
-
-instance Distributive m => Distributive (EnvC expr m) where
-  distribute m = EnvC . ReaderC $ \ r -> distribute (runEnv r <$> m)
-  {-# INLINE distribute #-}
-
-  collect f m = EnvC . ReaderC $ \ r -> collect (runEnv r . f) m
-  {-# INLINE collect #-}
-
-liftEnvC0 :: m a -> EnvC expr m a
-liftEnvC0 = EnvC . ReaderC . const
-
-liftEnvC1 :: (m a -> m' a') -> EnvC expr m a -> EnvC expr m' a'
-liftEnvC1 f m = EnvC . ReaderC $ \ r -> f (runReader r (runEnvC m))
-
-instance Parsing m => Parsing (EnvC expr m) where
-  try = liftEnvC1 try
-  {-# INLINE try #-}
-
-  m <?> s = liftEnvC1 (<?> s) m
-  {-# INLINE (<?>) #-}
-
-  skipMany = liftEnvC1 skipMany
-  {-# INLINE skipMany #-}
-
-  skipSome = liftEnvC1 skipSome
-  {-# INLINE skipSome #-}
-
-  unexpected = liftEnvC0 . unexpected
-  {-# INLINE unexpected #-}
-
-  eof = liftEnvC0 eof
-  {-# INLINE eof #-}
-
-  notFollowedBy = liftEnvC1 notFollowedBy
-  {-# INLINE notFollowedBy #-}
-
-instance CharParsing m => CharParsing (EnvC expr m) where
-  satisfy = liftEnvC0 . satisfy
-  {-# INLINE satisfy #-}
-
-  char = liftEnvC0 . char
-  {-# INLINE char #-}
-
-  notChar = liftEnvC0 . notChar
-  {-# INLINE notChar #-}
-
-  anyChar = liftEnvC0 anyChar
-  {-# INLINE anyChar #-}
-
-  string = liftEnvC0 . string
-  {-# INLINE string #-}
-
-  text = liftEnvC0 . text
-  {-# INLINE text #-}
-
-instance TokenParsing m => TokenParsing (EnvC expr m) where
-  someSpace = liftEnvC0 someSpace
-  {-# INLINE someSpace #-}
-
-  nesting = liftEnvC1 nesting
-  {-# INLINE nesting #-}
-
-  semi = liftEnvC0 semi
-  {-# INLINE semi #-}
-
-  highlight = liftEnvC1 . highlight
-  {-# INLINE highlight #-}
-
-  token = liftEnvC1 token
-  {-# INLINE token #-}
 
 
 type Env env expr = Map.Map String (env expr)
