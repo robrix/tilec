@@ -76,8 +76,8 @@ class (Applicative m, S.Lam expr) => Lam expr m where
   lam :: Permutable env => m (env Plicit) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
   lam p b = liftA2 S.lam <$> p <*> (getC <$> b (C (pure id)))
 
-  ($$) :: m expr -> m expr -> m expr
-  ($$) = liftA2 (S.$$)
+  ($$) :: Permutable env => m (env expr) -> m (env expr) -> m (env expr)
+  ($$) = liftA2 (liftA2 (S.$$))
 
   infixl 9 $$
 
