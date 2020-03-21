@@ -22,6 +22,7 @@ module Tile.Library
 , pair
 , pair'
 , fst
+, snd
   -- * Nat
 , nat
 , z
@@ -36,7 +37,7 @@ module Tile.Library
 , fs
 ) where
 
-import Prelude hiding (either, fst, maybe)
+import Prelude hiding (either, fst, maybe, snd)
 import Tile.Syntax
 
 class Record expr where
@@ -141,6 +142,9 @@ pair' = lam Ex (\ l -> lam Ex (\ r -> lam Ex (\ k -> k $$ l $$ r))) ::: type' ==
 
 fst :: (Lam expr, Type expr) => expr ::: expr
 fst = lam Ex ($$ lam Ex (lam Ex . const)) ::: type' ==> \ _L -> type' ==> \ _R -> tm pair $$ _L $$ _R --> _L
+
+snd :: (Lam expr, Type expr) => expr ::: expr
+snd = lam Ex ($$ lam Ex (const (lam Ex id))) ::: type' ==> \ _L -> type' ==> \ _R -> tm pair $$ _L $$ _R --> _R
 
 
 -- Nat
