@@ -140,6 +140,8 @@ letbind = Script . let'
 data a ::: b = (:::) { tm :: a, ty :: b }
   deriving (Eq, Foldable, Functor, Ord, Traversable)
 
+infix 5 :::
+
 instance Bifoldable (:::) where
   bifoldMap = bifoldMapDefault
 
@@ -154,8 +156,6 @@ instance Show a => Show1 ((:::) a) where
 
 instance (Show a, Show b) => Show (a ::: b) where
   showsPrec = showsPrec1
-
-infix 5 :::
 
 
 -- {Im,ex}plicitness
