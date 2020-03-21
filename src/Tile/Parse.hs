@@ -143,19 +143,17 @@ var_ = do
   asum (map (\ (k, v) -> v <$ token (string k) <?> k) env)
 
 let_ :: forall env expr m sig . (Permutable env, Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => m (env expr)
-let_ = token (string "let") *> do
-  i <- identifier_
-  void (token (char '='))
-  tm <- expr_ <* token (char ':')
-  ty <- expr_ <* token (string "in")
+let_ = keyword "let" *> do
+  i <- identifier_ <* keyword "="
+  tm <- expr_ <* keyword ":"
+  ty <- expr_ <* keyword "in"
   let' (pure tm ::: pure ty) (\ v -> asks (Map.insert i v . weaken @_ @env) >>= \ env -> runEnv env expr_)
 
 -- FIXME: lambdas bindng implicit variables
 
 lam_ :: forall env expr m sig . (Permutable env, Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => m (env expr)
-lam_ = token (char '\\') *> do
-  i <- identifier_
-  void (token (char '.'))
+lam_ = keyword "\\" *> do
+  i <- identifier_ <* keyword "."
   lam (pure (pure Ex)) (\ v -> asks (Map.insert i v . weaken @_ @env) >>= \ env -> runEnv env expr_)
 
 -- FIXME: application
