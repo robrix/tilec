@@ -86,9 +86,6 @@ type Permutable f = (Applicative f, Distributive f)
 class (Permutable m, Permutable n) => Extends m n where
   weakens :: m a -> n a
 
-instance (Permutable f, Extends g1 g2) => Extends (f :.: g1) (f :.: g2) where
-  weakens = mapC weaken
-
 instance (Permutable f, Permutable g) => Extends f (f :.: g) where
   weakens = liftC
 
