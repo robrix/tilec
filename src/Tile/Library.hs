@@ -26,6 +26,7 @@ module Tile.Library
 , cons
   -- * Fin
 , fin
+, fz
 ) where
 
 import Prelude hiding (either, maybe)
@@ -108,6 +109,9 @@ cons = lam Ex (\ a -> lam Ex (\ as -> lam Ex (const (lam Ex (\ cons -> cons $$ a
 
 fin :: (Lam expr, Type expr) => expr ::: expr
 fin = lam Ex (\ n -> (tm nat --> type') ==> \ _R -> _R $$ (tm s $$ n) --> (tm nat ==> \ n -> _R $$ n --> _R $$ (tm s $$ n)) --> _R $$ (tm s $$ n)) ::: tm nat --> type'
+
+fz :: (Lam expr, Type expr) => expr ::: expr
+fz = lam Ex (lam Ex . const) ::: tm nat ==> \ n -> tm fin $$ (tm s $$ n)
 
 
 -- TODO: vectors
