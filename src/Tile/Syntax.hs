@@ -13,6 +13,7 @@ module Tile.Syntax
 , (-->)
 , (==>)
 , Prob(..)
+, Module(..)
 , Def(..)
   -- * Elaborator scripts
 , runScript
@@ -66,6 +67,10 @@ class Prob expr where
 
   (===) :: expr ::: expr -> expr ::: expr -> expr
   infixl 4 ===
+
+
+class Module decl repr | repr -> decl where
+  module' :: String -> decl -> repr
 
 
 class Def tm ty a def | def -> tm ty where
