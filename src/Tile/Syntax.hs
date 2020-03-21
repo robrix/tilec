@@ -7,12 +7,17 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Syntax
 ( Syntax
+  -- * Let bindings
 , Let(..)
+  -- * Lambda abstraction & application
 , Lam(..)
+  -- * Types
 , Type(..)
 , (-->)
 , (==>)
+  -- * Existentials & equations
 , Prob(..)
+  -- * Modules, imports, & declarations
 , Module(..)
 , Import(..)
 , Def(..)
@@ -34,9 +39,14 @@ import Tile.Type
 
 type Syntax expr = (Let expr, Lam expr, Type expr)
 
+
+-- Let bindings
+
 class Let expr where
   let' :: expr ::: expr -> (expr -> expr) -> expr
 
+
+-- Lambda abstraction & application
 
 class Lam expr where
   lam :: Plicit -> (expr -> expr) -> expr
@@ -44,6 +54,8 @@ class Lam expr where
   ($$) :: expr -> expr -> expr
   infixl 9 $$
 
+
+-- Types
 
 class Type expr where
   type' :: expr
@@ -62,6 +74,8 @@ a ==> b = (Im, a) >-> b
 infixr 6 ==>
 
 
+-- Existentials & equations
+
 class Prob expr where
   ex :: expr -> (expr -> expr) -> expr
   infixr 6 `ex`
@@ -69,6 +83,8 @@ class Prob expr where
   (===) :: expr ::: expr -> expr ::: expr -> expr
   infixl 4 ===
 
+
+-- Modules, imports, & declarations
 
 class Module decl repr | repr -> decl where
   module' :: String -> decl -> repr
