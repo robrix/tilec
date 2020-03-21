@@ -48,8 +48,8 @@ import           Control.Applicative (liftA2)
 import           Data.Distributive
 import           Tile.Functor.Compose
 import           Tile.Plicit
+import           Tile.Syntax ((:::)(..))
 import qualified Tile.Syntax as S
-import           Tile.Type
 
 type Permutable f = (Applicative f, Distributive f)
 

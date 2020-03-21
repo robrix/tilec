@@ -32,7 +32,6 @@ module Tile.Library
 
 import Prelude hiding (either, maybe)
 import Tile.Syntax
-import Tile.Type
 
 -- Booleans
 
