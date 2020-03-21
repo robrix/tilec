@@ -1,7 +1,8 @@
 {-# LANGUAGE TypeOperators #-}
 module Tile.Library
 ( -- * Booleans
-  bool
+  baseBool
+, bool
 , true
 , false
   -- * Functions
@@ -33,7 +34,31 @@ module Tile.Library
 import Prelude hiding (either, maybe)
 import Tile.Syntax
 
+class Record expr where
+  record :: [expr] -> expr
+
+
 -- Booleans
+
+baseBool :: (Module decl m, Def expr decl, Export decl, Lam expr, Record expr, Type expr) => m expr
+baseBool = module' "Base.Bool" . runScript export $ do
+  bool <- "Bool"
+    .: type'
+    := type' ==> \ _A -> _A --> _A --> _A
+
+  false <- "False"
+    .: bool
+    := lam Ex (const (lam Ex id))
+
+  true <- "True"
+    .: bool
+    := lam Ex (lam Ex . const)
+
+  pure (record
+    [ bool
+    , false
+    , true
+    ])
 
 bool :: Type expr => expr ::: expr
 bool = (type' ==> \ _A -> _A --> _A --> _A) ::: type'
