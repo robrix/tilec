@@ -148,7 +148,7 @@ let_ = token (string "let") *> do
   void (token (char '='))
   tm <- expr_ <* token (char ':')
   ty <- expr_ <* token (string "in")
-  let' (pure tm ::: pure ty) (\ v -> asks (Map.insert i v . fmap (weakens @env)) >>= \ env -> runEnv env expr_)
+  let' (pure tm ::: pure ty) (\ v -> asks (Map.insert i v . weaken @_ @env) >>= \ env -> runEnv env expr_)
 
 -- FIXME: lambdas bindng implicit variables
 
@@ -156,7 +156,7 @@ lam_ :: forall env expr m sig . (Permutable env, Has (Reader (Map.Map String (en
 lam_ = token (char '\\') *> do
   i <- identifier_
   void (token (char '.'))
-  lam (pure (pure Ex)) (\ v -> asks (Map.insert i v . fmap (weakens @env)) >>= \ env -> runEnv env expr_)
+  lam (pure (pure Ex)) (\ v -> asks (Map.insert i v . weaken @_ @env) >>= \ env -> runEnv env expr_)
 
 -- FIXME: application
 

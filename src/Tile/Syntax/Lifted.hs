@@ -46,8 +46,8 @@ import           Tile.Functor.Compose
 import           Tile.Syntax ((:::)(..), Plicit(..), plicit)
 import qualified Tile.Syntax as S
 
-var :: forall m env j expr . (Applicative m, Extends env j) => env expr -> m (j expr)
-var = pure @m . weakens
+var :: (Applicative m, Extends env j) => env expr -> m (j expr)
+var = weaken . pure
 
 
 -- Let
@@ -89,7 +89,7 @@ type' = pure S.type'
 infixr 6 >->
 
 (-->) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> m (env expr) -> m (env expr)
-a --> b = (pure (pure Ex), a) >-> const (weakens <$> b)
+a --> b = (pure (pure Ex), a) >-> const (weaken b)
 
 infixr 6 -->
 
@@ -150,5 +150,5 @@ instance Applicative m => Applicative (Script t m) where
   (Script f :: Script t m (a -> b)) <*> Script a = Script go
     where
     go :: forall env . Permutable env => (forall env' . Extends env env' => m (env' b) -> m (env' t)) -> m (env t)
-    go k = f $ \ (f' :: m (env' (a -> b))) -> a $ \ (a' :: m (env'' a)) -> getTr @env @env' @env'' <$> k (Tr <$> liftA2 (<*>) (weakens <$> f') a')
+    go k = f $ \ (f' :: m (env' (a -> b))) -> a $ \ (a' :: m (env'' a)) -> getTr @env @env' @env'' <$> k (Tr <$> liftA2 (<*>) (weaken f') a')
   {-# INLINE (<*>) #-}

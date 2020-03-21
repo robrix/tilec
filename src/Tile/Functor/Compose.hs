@@ -73,8 +73,8 @@ assocR :: Functor f => ((f :.: g) :.: h) a -> (f :.: (g :.: h)) a
 assocR = mapC (fmap C) . getC
 
 
-weaken :: (Permutable m, Permutable i, Permutable j) => (m :.: i) a -> (m :.: i :.: j) a
-weaken = weakens
+weaken :: (Functor m, Extends env env') => m (env a) -> m (env' a)
+weaken = fmap weakens
 
 strengthen :: Functor m => (m :.: Identity) a -> m a
 strengthen = fmap runIdentity . getC
@@ -87,7 +87,7 @@ class (Permutable m, Permutable n) => Extends m n where
   weakens :: m a -> n a
 
 instance (Permutable f, Extends g1 g2) => Extends (f :.: g1) (f :.: g2) where
-  weakens = mapC (fmap weakens)
+  weakens = mapC weaken
 
 instance (Permutable f, Permutable g) => Extends f (f :.: g) where
   weakens = liftC
