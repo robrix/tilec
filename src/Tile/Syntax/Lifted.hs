@@ -113,8 +113,8 @@ infixr 6 ==>
 ex :: (Applicative m, S.Prob expr, Permutable env) => m (env expr) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
 ex t f = liftA2 S.ex <$> t <*> (getC <$> f (C (pure id)))
 
-(===) :: (Applicative m, S.Prob expr) => m expr ::: m expr -> m expr ::: m expr -> m expr
-(tm1 ::: ty1) === (tm2 ::: ty2) = (S.===) <$> ((:::) <$> tm1 <*> ty1) <*> ((:::) <$> tm2 <*> ty2)
+(===) :: (Applicative m, Permutable env, S.Prob expr) => m (env expr) ::: m (env expr) -> m (env expr) ::: m (env expr) -> m (env expr)
+(tm1 ::: ty1) === (tm2 ::: ty2) = liftA2 (S.===) <$> (liftA2 (:::) <$> tm1 <*> ty1) <*> (liftA2 (:::) <$> tm2 <*> ty2)
 
 infixl 4 ===
 
