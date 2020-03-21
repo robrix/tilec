@@ -138,7 +138,7 @@ letbind = Script . let'
 -- Typing syntax
 
 data a ::: b = (:::) { tm :: a, ty :: b }
-  deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
+  deriving (Eq, Foldable, Functor, Ord, Traversable)
 
 instance Bifoldable (:::) where
   bifoldMap = bifoldMapDefault
@@ -151,6 +151,9 @@ instance Bitraversable (:::) where
 
 instance Show a => Show1 ((:::) a) where
   liftShowsPrec sp _ p (a ::: b) = showParen (p > 1) $ shows a . showString " ::: " . sp 2 b
+
+instance (Show a, Show b) => Show (a ::: b) where
+  showsPrec = showsPrec1
 
 infix 5 :::
 
