@@ -1,5 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
 module Tile.Parse
 ( parse
 , parseString
@@ -55,19 +53,19 @@ identifier_ = ident identifierStyle
 var_ :: TokenParsing m => Env env expr -> m (env expr)
 var_ env = asum (map (\ (k, v) -> v <$ token (string k) <?> '‘':k++"’") (Map.toList env))
 
-let_ :: forall env expr m . (Monad m, Permutable env, TokenParsing m, Lam expr, Let expr, Type expr) => Env env expr -> m (env expr)
+let_ :: (Monad m, Permutable env, TokenParsing m, Lam expr, Let expr, Type expr) => Env env expr -> m (env expr)
 let_ env = keyword "let" *> do
   i <- identifier_ <* keyword "="
   tm <- expr_ env <* keyword ":"
   ty <- expr_ env <* keyword "in"
-  let' (pure tm ::: pure ty) (\ v -> expr_ (Map.insert i v (weaken @_ @env env)))
+  let' (pure tm ::: pure ty) (\ v -> expr_ (Map.insert i v (weaken env)))
 
 -- FIXME: lambdas bindng implicit variables
 
-lam_ :: forall env expr m . (Monad m, Permutable env, TokenParsing m, Lam expr, Let expr, Type expr) => Env env expr -> m (env expr)
+lam_ :: (Monad m, Permutable env, TokenParsing m, Lam expr, Let expr, Type expr) => Env env expr -> m (env expr)
 lam_ env = keyword "\\" *> do
   i <- identifier_ <* keyword "."
-  lam (pure (pure Ex)) (\ v -> expr_ (Map.insert i v (weaken @_ @env env)))
+  lam (pure (pure Ex)) (\ v -> expr_ (Map.insert i v (weaken env)))
 
 -- FIXME: application
 
