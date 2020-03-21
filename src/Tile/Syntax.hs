@@ -101,8 +101,8 @@ class Import repr where
   import' :: String -> repr
 
 
-class Def tm ty repr | repr -> tm ty where
-  (.:) :: String -> ty := tm -> repr
+class Def expr def | def -> expr where
+  (.:) :: String -> expr := expr -> def
 
   infix 3 .:
 
