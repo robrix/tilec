@@ -2,6 +2,7 @@
 {-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -31,7 +32,7 @@ module Tile.Syntax
 , (:::)(..)
 , tm
 , ty
-  -- * Re-exports
+  -- * {Im,ex}plicitness
 , Plicit(..)
 , plicit
 ) where
@@ -41,7 +42,7 @@ import Data.Bifoldable
 import Data.Bifunctor
 import Data.Bitraversable
 import Data.Functor.Classes
-import Tile.Plicit
+import Data.Ix
 
 type Syntax expr = (Let expr, Lam expr, Type expr)
 
@@ -161,3 +162,16 @@ tm (a ::: _) = a
 
 ty :: a ::: b -> b
 ty (_ ::: b) = b
+
+
+-- {Im,ex}plicitness
+
+data Plicit
+  = Im
+  | Ex
+  deriving (Bounded, Enum, Eq, Ix, Ord, Show)
+
+plicit :: a -> a -> Plicit -> a
+plicit im ex = \case
+  Im -> im
+  Ex -> ex
