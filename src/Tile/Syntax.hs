@@ -30,6 +30,8 @@ module Tile.Syntax
 , letbind
   -- * Typing syntax
 , (:::)(..)
+  -- * Definition syntax
+, (:=)(..)
   -- * {Im,ex}plicitness
 , Plicit(..)
 , plicit
@@ -159,6 +161,12 @@ instance Show a => Show1 ((:::) a) where
 
 instance (Show a, Show b) => Show (a ::: b) where
   showsPrec = showsPrec1
+
+
+-- Definition syntax
+
+data a := b = a := b
+  deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
 
 -- {Im,ex}plicitness
