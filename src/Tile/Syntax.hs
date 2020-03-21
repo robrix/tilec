@@ -30,8 +30,6 @@ module Tile.Syntax
 , letbind
   -- * Typing syntax
 , (:::)(..)
-, tm
-, ty
   -- * {Im,ex}plicitness
 , Plicit(..)
 , plicit
@@ -139,7 +137,7 @@ letbind = Script . let'
 
 -- Typing syntax
 
-data a ::: b = a ::: b
+data a ::: b = (:::) { tm :: a, ty :: b }
   deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
 instance Bifoldable (:::) where
@@ -155,13 +153,6 @@ instance Show a => Show1 ((:::) a) where
   liftShowsPrec sp _ p (a ::: b) = showParen (p > 1) $ shows a . showString " ::: " . sp 2 b
 
 infix 5 :::
-
-
-tm :: a ::: b -> a
-tm (a ::: _) = a
-
-ty :: a ::: b -> b
-ty (_ ::: b) = b
 
 
 -- {Im,ex}plicitness
