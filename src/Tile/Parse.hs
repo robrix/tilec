@@ -70,7 +70,7 @@ lam_ env = keyword "\\" *> do
 -- FIXME: application
 
 type_ :: (Monad m, Applicative env, TokenParsing m, Type expr) => m (env expr)
-type_ = type' <$ keyword "Type"
+type_ = keyword "Type" *> type'
 
 -- FIXME: pi types
 
