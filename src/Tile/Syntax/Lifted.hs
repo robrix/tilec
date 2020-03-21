@@ -110,41 +110,41 @@ infixl 4 ===
 
 -- Elaborator scripts
 
-runScript :: Applicative m => Script a m a -> m a
-runScript = fmap runIdentity . (`getScript` pure)
+runScript :: Functor m => Script a m a -> m a
+runScript = fmap runIdentity . (`getScript` id)
 
 throw
   :: (Applicative m, Permutable env)
   => (forall env' . Extends env env' => m (env' a) -> m (env' w))
   -> m a
   -> m (env w)
-throw k = k . fmap pure
+throw k = strengthen . k . fmap pure
 
-reset :: Monad m => Script a m a -> Script w m a
-reset m = Script $ \ k -> throw (>>= k) $ runScript m
+reset :: Applicative m => Script a m a -> Script w m a
+reset m = Script $ \ k -> throw k $ runScript m
 
-liftScript :: Monad m => m a -> Script w m a
-liftScript m = Script $ \ k -> strengthen (m >>= k . pure)
+liftScript :: Functor m => m a -> Script w m a
+liftScript m = Script $ \ k -> strengthen (k (pure <$> m))
 
 newtype Script t m a = Script
   { getScript
     :: forall env
     .  Permutable env
-    => (forall env' . Extends env env' => env' a -> m (env' t))
+    => (forall env' . Extends env env' => m (env' a) -> m (env' t))
     -> m (env t)
   }
 
 instance Functor m => Functor (Script t m) where
-  fmap f (Script run) = Script $ \ k -> run (k . fmap f)
+  fmap f (Script run) = Script $ \ k -> run (k . fmap (fmap f))
   {-# INLINE fmap #-}
 
 instance Applicative m => Applicative (Script t m) where
-  pure a = Script $ \ k -> strengthen (k (pure a))
+  pure a = Script $ \ k -> strengthen (k (pure (pure a)))
   {-# INLINE pure #-}
 
   f <*> a = Script (go f a)
     where
-    go :: forall env a b . Permutable env => Script t m (a -> b) -> Script t m a -> (forall env' . Extends env env' => env' b -> m (env' t)) -> m (env t)
-    go (Script f) (Script a) k = f $ \ (f' :: env' (a -> b)) -> a $ \ (a' :: env'' a) ->
-      getTr @env @env' @env'' <$> k (Tr (weakens f' <*> a'))
+    go :: forall env a b . Permutable env => Script t m (a -> b) -> Script t m a -> (forall env' . Extends env env' => m (env' b) -> m (env' t)) -> m (env t)
+    go (Script f) (Script a) k = f $ \ (f' :: m (env' (a -> b))) -> a $ \ (a' :: m (env'' a)) ->
+      getTr @env @env' @env'' <$> k (Tr <$> liftA2 (<*>) (weaken f') a')
   {-# INLINE (<*>) #-}
