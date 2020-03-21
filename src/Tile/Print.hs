@@ -18,15 +18,14 @@ module Tile.Print
 , Doc
 ) where
 
-import           Control.Algebra
 import           Control.Applicative ((<**>))
 import           Control.Carrier.Fresh.Church
 import           Control.Carrier.State.Church
 import           Control.Carrier.Writer.Church
-import           Control.Monad (guard, (<=<))
+import           Control.Monad (guard)
 import           Control.Monad.IO.Class
-import           Control.Monad.Trans.Class
 import           Data.Function (on)
+import           Data.Functor.Identity
 import qualified Data.IntSet as IntSet
 import           Data.Monoid (Ap(..))
 import qualified Data.Text.Prettyprint.Doc as PP
@@ -35,11 +34,11 @@ import           Tile.Pretty hiding (Doc, PrecDoc)
 import qualified Tile.Pretty as P
 import           Tile.Syntax
 
-prettyPrint :: MonadIO m => PrintC m Doc -> m ()
+prettyPrint :: MonadIO m => PrintC -> m ()
 prettyPrint = prettyPrintWith defaultStyle
 
-prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> PrintC m Doc -> m ()
-prettyPrintWith style  = putDoc . PP.reAnnotate style . getDoc <=< runPrint
+prettyPrintWith :: MonadIO m => (Highlight Int -> ANSI.AnsiStyle) -> PrintC -> m ()
+prettyPrintWith style  = putDoc . PP.reAnnotate style . getDoc . runPrint
 
 defaultStyle :: Highlight Int -> ANSI.AnsiStyle
 defaultStyle = \case
@@ -81,43 +80,36 @@ instance Ord V where compare = compare `on` vvar
 instance Show V where showsPrec p = showsPrec p . vdoc
 
 
-runPrint :: Applicative m => PrintC m a -> m a
-runPrint = runWriter (const pure) . evalFresh 0 . evalState Nothing . getAp . runPrintC
+runPrint :: PrintC -> Doc
+runPrint = run . runWriter (const pure) . evalFresh 0 . evalState Nothing . getAp . runPrintC
 
-newtype PrintC m a = PrintC { runPrintC :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet m))) a }
-  deriving (Applicative, Functor, Monad, Monoid, Semigroup)
+newtype PrintC = PrintC { runPrintC :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) Doc }
+  deriving (Monoid, Semigroup)
 
-instance MonadTrans PrintC where
-  lift = PrintC . Ap . lift . lift . lift
+deriving instance P.Doc     (Highlight Int) PrintC
+deriving instance P.PrecDoc (Highlight Int) PrintC
 
-
-instance Algebra sig m => Algebra sig (PrintC m) where
-  alg hdl sig = PrintC . alg (runPrintC . hdl) (R (R (R sig)))
-
-deriving instance P.Doc     (Highlight Int) (PrintC m Doc)
-deriving instance P.PrecDoc (Highlight Int) (PrintC m Doc)
-
-instance (Applicative m, Show (m Doc)) => Show (PrintC m Doc) where
+instance Show PrintC where
   showsPrec p = showsPrec p . runPrint
 
-instance Algebra sig m => Let (PrintC m Doc) where
+instance Let PrintC where
   let' (tm ::: ty) b = inContext Let . bind id b $ \ v b ->
     -- FIXME: bind variables on the lhs when tm is a lambda
     kw "let" <+> prettyBind v <+> group (align (prettyAnn (op "=" <+> tm ::: ty))) <+> kw "in" </> b
 
-instance Algebra sig m => Lam (PrintC m Doc) where
+instance Lam PrintC where
   lam p b = prec (Level 6) . inContext Lam . bind id b $ \ v b ->
     plicit braces id p (prettyBind v) <+> b
 
   f $$ a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
 
-instance Algebra sig m => Type (PrintC m Doc) where
+instance Type PrintC where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
   (p, t) >-> b = prec (Level 6) . inContext Pi . bind id b $ \ v b ->
-    group (align (maybe (plicit braces (prec (Level 7)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . pure . vdoc) v </> op "→" <+> b))
+    group (align (maybe (plicit braces (prec (Level 7)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . PrintC . pure . vdoc) v </> op "→" <+> b))
 
-instance Algebra sig m => Prob (PrintC m Doc) where
+instance Prob PrintC where
   ex t b = prec (Level 6) . inContext Exists . bind toMeta b $ \ v b ->
     group (align (op "∃" <+> group (align (reset (Level 0) (prettyAnn (prettyBind (toMeta <$> v) ::: t)))) <+> op "." </> reset (Level 0) b)) where
     toMeta v = v { vdoc = annotate MetaVar (pretty '?' <> vdoc v) }
@@ -157,7 +149,7 @@ data Ctx
   | Equate
   deriving (Eq, Ord, Show)
 
-transition :: Maybe Ctx -> Maybe Ctx -> PrintC m Doc -> PrintC m Doc
+transition :: Maybe Ctx -> Maybe Ctx -> PrintC -> PrintC
 transition from to = exit from . enter to where
   enter = \case
     Just Let    -> group . align
@@ -171,15 +163,15 @@ transition from to = exit from . enter to where
     Just Lam -> (op "." </>) . reset (Level 0)
     _ -> id
 
-inContext :: Algebra sig m => Ctx -> PrintC m Doc -> PrintC m Doc
-inContext ctx m = do
-  ctx' <- PrintC get
+inContext :: Ctx -> PrintC -> PrintC
+inContext ctx m = PrintC $ do
+  ctx' <- get
   if ctx' == Just ctx then
-    m
+    runPrintC m
   else do
-    PrintC (put (Just ctx))
-    a <- transition ctx' (Just ctx) m
-    a <$ PrintC (put ctx')
+    put (Just ctx)
+    a <- runPrintC (transition ctx' (Just ctx) m)
+    a <$ put ctx'
 
 
 kw :: P.Doc (Highlight Int) doc => String -> doc
@@ -188,8 +180,8 @@ kw = annotate Keyword . pretty
 op :: P.Doc (Highlight Int) doc => String -> doc
 op = annotate Op . pretty
 
-prettyBind :: Maybe V -> PrintC m Doc
-prettyBind = maybe (pretty '_') (pure . vdoc)
+prettyBind :: Maybe V -> PrintC
+prettyBind = maybe (pretty '_') (PrintC . pure . vdoc)
 
 prettyVar :: P.Doc (Highlight Int) doc => Int -> doc
 prettyVar i = annotate Name (pretty (alphabet !! r) <> if q > 0 then pretty q else mempty) where
@@ -199,11 +191,11 @@ prettyVar i = annotate Name (pretty (alphabet !! r) <> if q > 0 then pretty q el
 prettyAnn :: P.PrecDoc (Highlight Int) doc => doc ::: doc -> doc
 prettyAnn (tm ::: ty) = group (prec (Level 6) tm </> group (align (op ":" <+> prec (Level 6) ty)))
 
-bind :: Algebra sig m => (V -> V) -> (PrintC m Doc -> PrintC m Doc) -> (Maybe V -> PrintC m Doc -> PrintC m a) -> PrintC m a
+bind :: (V -> V) -> (PrintC -> PrintC) -> (Maybe V -> PrintC -> PrintC) -> PrintC
 bind t b f = PrintC $ do
   v <- fresh
   let v' = t $ V v (prettyVar v)
   (fvs, b') <- censor (IntSet.delete v) (listen (runPrintC (b (var v'))))
-  runPrintC (f (v' <$ guard (v `IntSet.member` fvs)) (pure b'))
+  runPrintC (f (v' <$ guard (v `IntSet.member` fvs)) (PrintC (pure b')))
   where
   var v = inContext Var (PrintC (vdoc v <$ tell (IntSet.singleton (vvar v))))
