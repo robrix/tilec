@@ -6,6 +6,7 @@ module Tile.Library
 , true
 , false
   -- * Functions
+, baseFunction
 , id'
 , const'
 , fix
@@ -71,6 +72,26 @@ false = lam Ex (const (lam Ex id)) ::: tm bool
 
 
 -- Functions
+
+baseFunction :: (Module decl m, Def expr decl, Export decl, Lam expr, Let expr, Record expr, Type expr) => m expr
+baseFunction = module' "Base.Function" . runScript export $ do
+  id <- "id"
+    .: type' ==> (\ _A -> _A --> _A)
+    := lam Ex id
+
+  const <- "const"
+    .: type' ==> (\ _A -> type' ==> \ _B -> _A --> _B --> _A)
+    := lam Ex (lam Ex . const)
+
+  fix <- "fix"
+    .: type' ==> (\ _A -> type' ==> \ _B -> ((_A --> _B) --> (_A --> _B)) --> (_A --> _B))
+    := lam Im (\ _A -> lam Im (\ _B -> lam Ex (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam Ex (\ a -> f $$ fixf $$ a)))))
+
+  pure (record
+    [ id
+    , const
+    , fix
+    ])
 
 id' :: (Lam expr, Type expr) => expr ::: expr
 id' = lam Ex id ::: type' ==> \ _A -> _A --> _A
