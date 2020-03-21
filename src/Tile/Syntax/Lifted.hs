@@ -147,8 +147,8 @@ instance Applicative m => Applicative (Script t m) where
   pure a = Script $ \ k -> strengthen (k (pure (pure a)))
   {-# INLINE pure #-}
 
-  (Script f :: Script t m (a -> b)) <*> Script a = Script go
+  f <*> a = Script (go f a)
     where
-    go :: forall env . Permutable env => (forall env' . Extends env env' => m (env' b) -> m (env' t)) -> m (env t)
-    go k = f $ \ (f' :: m (env' (a -> b))) -> a $ \ (a' :: m (env'' a)) -> getTr @env @env' @env'' <$> k (Tr <$> liftA2 (<*>) (weaken f') a')
+    go :: forall env a b . Permutable env => Script t m (a -> b) -> Script t m a -> (forall env' . Extends env env' => m (env' b) -> m (env' t)) -> m (env t)
+    go (Script f) (Script a) k = f $ \ (f' :: m (env' (a -> b))) -> a $ \ (a' :: m (env'' a)) -> getTr @env @env' @env'' <$> k (Tr <$> liftA2 (<*>) (weaken f') a')
   {-# INLINE (<*>) #-}
