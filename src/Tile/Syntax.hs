@@ -95,7 +95,7 @@ class Prob expr where
 -- Modules, imports, & declarations
 
 class Module decl repr | repr -> decl where
-  module' :: String -> decl -> repr
+  module' :: String -> decl a -> repr a
 
 
 class Import repr where
