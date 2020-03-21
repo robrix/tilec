@@ -47,30 +47,30 @@ import           Tile.Functor.Compose
 import           Tile.Syntax ((:::)(..), Plicit(..), plicit)
 import qualified Tile.Syntax as S
 
-var :: forall m i j expr . (Applicative m, Extends i j) => i expr -> m (j expr)
+var :: forall m env j expr . (Applicative m, Extends env j) => env expr -> m (j expr)
 var = pure @m . weakens
 
 
 -- Let
 
 let'
-  :: (Applicative m, S.Let expr, Permutable i)
-  => m (i expr) ::: m (i expr)
-  -> (forall j . Permutable j => (i :.: j) expr -> m ((i :.: j) expr))
-  -> m (i expr)
+  :: (Applicative m, S.Let expr, Permutable env)
+  => m (env expr) ::: m (env expr)
+  -> (forall j . Permutable j => (env :.: j) expr -> m ((env :.: j) expr))
+  -> m (env expr)
 let' v f = let'' v (f . C . pure)
 
 let''
-  :: (Applicative m, S.Let expr, Permutable i)
-  => m (i expr) ::: m (i expr)
-  -> (forall j . Permutable j => j expr -> m ((i :.: j) expr))
-  -> m (i expr)
+  :: (Applicative m, S.Let expr, Permutable env)
+  => m (env expr) ::: m (env expr)
+  -> (forall j . Permutable j => j expr -> m ((env :.: j) expr))
+  -> m (env expr)
 let'' (tm ::: ty) f = liftA2 S.let' <$> (liftA2 (:::) <$> tm <*> ty) <*> (getC <$> f id)
 
 
 -- Lam
 
-lam :: (Applicative m, S.Lam expr, Permutable i) => m (i Plicit) -> (forall j . Permutable j => (i :.: j) expr -> m ((i :.: j) expr)) -> m (i expr)
+lam :: (Applicative m, S.Lam expr, Permutable env) => m (env Plicit) -> (forall j . Permutable j => (env :.: j) expr -> m ((env :.: j) expr)) -> m (env expr)
 lam p f = liftA2 S.lam <$> p <*> (getC <$> f (C (pure id)))
 
 ($$) :: (Applicative m, S.Lam expr) => m expr -> m expr -> m expr
@@ -84,17 +84,17 @@ infixl 9 $$
 type' :: (Applicative m, S.Type expr) => m expr
 type' = pure S.type'
 
-(>->) :: (Applicative m, S.Type expr, Permutable i) => (m (i Plicit), m (i expr)) -> (forall j . Permutable j => (i :.: j) expr -> m ((i :.: j) expr)) -> m (i expr)
+(>->) :: (Applicative m, S.Type expr, Permutable env) => (m (env Plicit), m (env expr)) -> (forall j . Permutable j => (env :.: j) expr -> m ((env :.: j) expr)) -> m (env expr)
 (pl, a) >-> b = liftA2 (S.>->) <$> (liftA2 (,) <$> pl <*> a) <*> (getC <$> b (C (pure id)))
 
 infixr 6 >->
 
-(-->) :: (Applicative m, S.Type expr, Permutable i) => m (i expr) -> m (i expr) -> m (i expr)
+(-->) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> m (env expr) -> m (env expr)
 a --> b = (pure (pure Ex), a) >-> const (weakens <$> b)
 
 infixr 6 -->
 
-(==>) :: (Applicative m, S.Type expr, Permutable i) => m (i expr) -> (forall j . Permutable j => (i :.: j) expr -> m ((i :.: j) expr)) -> m (i expr)
+(==>) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> (forall j . Permutable j => (env :.: j) expr -> m ((env :.: j) expr)) -> m (env expr)
 a ==> b = (pure (pure Im), a) >-> b
 
 infixr 6 ==>
@@ -102,7 +102,7 @@ infixr 6 ==>
 
 -- Prob
 
-ex :: (Applicative m, S.Prob expr, Permutable i) => m (i expr) -> (forall j . Permutable j => (i :.: j) expr -> m ((i :.: j) expr)) -> m (i expr)
+ex :: (Applicative m, S.Prob expr, Permutable env) => m (env expr) -> (forall j . Permutable j => (env :.: j) expr -> m ((env :.: j) expr)) -> m (env expr)
 ex t f = liftA2 S.ex <$> t <*> (getC <$> f (C (pure id)))
 
 (===) :: (Applicative m, S.Prob expr) => m expr ::: m expr -> m expr ::: m expr -> m expr
@@ -126,7 +126,7 @@ throw k = fmap strengthen . k . fmap pure
 reset :: Applicative m => Script a m a -> Script w m a
 reset m = Script $ \ k -> throw k $ runScript m
 
-resetC :: Applicative m => (Script (i a) m :.: i) a -> (Script w m :.: i) a
+resetC :: Applicative m => (Script (env a) m :.: env) a -> (Script w m :.: env) a
 resetC = mapC reset
 
 liftScript :: Functor m => m a -> Script w m a
