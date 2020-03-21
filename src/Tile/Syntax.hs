@@ -85,6 +85,8 @@ class Def tm ty a def | def -> tm ty where
 -- FIXME: packages
 
 
+-- Elaborator scripts
+
 runScript :: (a -> t) -> Script t a -> t
 runScript k (Script r) = r k
 
