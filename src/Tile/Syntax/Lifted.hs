@@ -150,5 +150,6 @@ instance Applicative m => Applicative (Script t m) where
   f <*> a = Script (go f a)
     where
     go :: forall env a b . Permutable env => Script t m (a -> b) -> Script t m a -> (forall env' . Extends env env' => m (env' b) -> m (env' t)) -> m (env t)
-    go (Script f) (Script a) k = f $ \ (f' :: m (env' (a -> b))) -> a $ \ (a' :: m (env'' a)) -> getTr @env @env' @env'' <$> k (Tr <$> liftA2 (<*>) (weaken f') a')
+    go (Script f) (Script a) k = f $ \ (f' :: m (env' (a -> b))) -> a $ \ (a' :: m (env'' a)) ->
+      getTr @env @env' @env'' <$> k (Tr <$> liftA2 (<*>) (weaken f') a')
   {-# INLINE (<*>) #-}
