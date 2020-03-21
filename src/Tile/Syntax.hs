@@ -102,9 +102,7 @@ class Import repr where
 
 
 class Def expr def | def -> expr where
-  (.:) :: String -> expr := expr -> def
-
-  infix 3 .:
+  def :: String ::: expr := expr -> def expr
 
 
 -- FIXME: packages
