@@ -40,7 +40,6 @@ library
     Tile.Functor.Compose
     Tile.Library
     Tile.Parse
-    Tile.Permutable
     Tile.Pretty
     Tile.Print
     Tile.Reconstruct
