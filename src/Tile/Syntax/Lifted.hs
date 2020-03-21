@@ -120,7 +120,7 @@ throw
   => (forall h . Permutable h => m ((hw :.: h) a) -> m ((hw :.: h) w))
   -> m a
   -> m (hw w)
-throw k = fmap strengthen . k . fmap pure
+throw k = strengthen . k . fmap pure
 
 reset :: Applicative m => Script a m a -> Script w m a
 reset m = Script $ \ k -> throw k $ runScript m
@@ -129,7 +129,7 @@ resetC :: Applicative m => (Script (env a) m :.: env) a -> (Script w m :.: env) 
 resetC = mapC reset
 
 liftScript :: Functor m => m a -> Script w m a
-liftScript m = Script $ \ k -> strengthen <$> k (pure <$> m)
+liftScript m = Script $ \ k -> strengthen (k (pure <$> m))
 
 newtype Script t m a = Script
   { getScript
@@ -144,7 +144,7 @@ instance Functor m => Functor (Script t m) where
   {-# INLINE fmap #-}
 
 instance Applicative m => Applicative (Script t m) where
-  pure a = Script $ \ k -> strengthen <$> k (pure (pure a))
+  pure a = Script $ \ k -> strengthen (k (pure (pure a)))
   {-# INLINE pure #-}
 
   (Script f :: Script t m (a -> b)) <*> Script a = Script go

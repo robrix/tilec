@@ -76,8 +76,8 @@ assocR = mapC (fmap C) . getC
 weaken :: (Functor m, Extends env env') => m (env a) -> m (env' a)
 weaken = fmap weakens
 
-strengthen :: Functor m => (m :.: Identity) a -> m a
-strengthen = fmap runIdentity . getC
+strengthen :: (Functor m, Functor env) => m ((env :.: Identity) a) -> m (env a)
+strengthen = fmap (fmap runIdentity . getC)
 
 
 type Permutable f = (Applicative f, Distributive f)
