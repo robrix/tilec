@@ -168,6 +168,8 @@ instance (Show a, Show b) => Show (a ::: b) where
 data a := b = a := b
   deriving (Eq, Foldable, Functor, Ord, Show, Traversable)
 
+infix 4 :=
+
 
 -- {Im,ex}plicitness
 
