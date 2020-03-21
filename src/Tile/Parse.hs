@@ -140,7 +140,7 @@ identifier_ = ident identifierStyle
 var_ :: (Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m) => m (env expr)
 var_ = do
   env <- asks Map.toList
-  asum (map (\ (k, v) -> v <$ token (string k) <?> k) env)
+  asum (map (\ (k, v) -> v <$ token (string k) <?> '‘':k++"’") env)
 
 let_ :: forall env expr m sig . (Permutable env, Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => m (env expr)
 let_ = keyword "let" *> do
