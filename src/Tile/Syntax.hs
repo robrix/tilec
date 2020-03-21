@@ -151,8 +151,11 @@ instance Bifunctor (:::) where
 instance Bitraversable (:::) where
   bitraverse f g (l ::: r) = (:::) <$> f l <*> g r
 
+instance Show2 (:::) where
+  liftShowsPrec2 sp1 _ sp2 _ p (a ::: b) = showParen (p > 5) $ sp1 5 a . showString " ::: " . sp2 6 b
+
 instance Show a => Show1 ((:::) a) where
-  liftShowsPrec sp _ p (a ::: b) = showParen (p > 5) $ showsPrec 5 a . showString " ::: " . sp 6 b
+  liftShowsPrec = liftShowsPrec2 showsPrec showList
 
 instance (Show a, Show b) => Show (a ::: b) where
   showsPrec = showsPrec1
