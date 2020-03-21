@@ -10,111 +10,76 @@
 -- * Typed Tagless Final Interpreters, Oleg Kiselyov
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module Tile.Elab
-( (|-)
+( elab
 , ElabC(ElabC)
 ) where
 
-import Control.Effect.Throw
-import Data.Map
-import Data.Maybe (fromMaybe)
-import Tile.Functor.Compose
 import Tile.Syntax
-import qualified Tile.Syntax.Lifted as L
 
-(|-) :: Map v (m a) -> ElabC v a m a ::: m a -> m a
-ctx |- (m ::: t) = runElab t ctx m
+elab :: ElabC a m a ::: m a -> m a
+elab (ElabC run ::: ty) = run ty
 
-infixl 1 |-
+newtype ElabC t m a = ElabC (m t -> m a)
 
-(||-) :: Map (i v) t -> ElabC' (i v) t (m :.: i) t ::: (m :.: i) t -> (m :.: i) t
-ctx ||- (ElabC' m ::: t) = m t ctx
+var :: m a -> ElabC t m a
+var = ElabC . const
 
-infixl 1 ||-
-
-runElab :: m a -> Map v (m a) -> ElabC v a m b -> m b
-runElab ty ctx (ElabC run) = run ty ctx
-
-newtype ElabC v t m a = ElabC (m t -> Map v (m t) -> m a)
-
-newtype ElabC' v t m a = ElabC' (m t -> Map v t -> m a)
-
-instance (Ord v, Show v, Prob v (m a), MonadFail m) => Var v (ElabC v a m a) where
-  var n = check $ \ ctx -> pure (var n ::: typeOf ctx n)
-
-instance (Ord (i v), Prob v t, Has (Throw (Err (i v))) sig m, L.Permutable i) => Var (i v) (ElabC' (i v) t (m :.: i) t) where
-  var n = check' $ \ ctx exp -> exp L.=== L.wvar n ::: weaken (typeOf' ctx n)
-
-instance (Ord v, Show v, Let v (m a), Prob v (m a), Type v (m a), MonadFail m) => Let v (ElabC v a m a) where
-  let' (v ::: t) b = check $ \ ctx -> do
+instance (Let (m a), Prob (m a), Type (m a)) => Let (ElabC a m a) where
+  let' (v ::: t) b = check $ do
     _B <- meta type'
-    t' <- letbind ((ctx |- t ::: type') ::: type')
+    t' <- letbind (elab (t ::: type') ::: type')
     pure
-      (   let' ((ctx |- v ::: var t') ::: var t') (\ x ->
-            ctx |> x ::: var t' |- b x ::: var _B)
-      ::: var _B)
+      (   let' (elab (v ::: t') ::: t') (\ x ->
+            elab (b (var x) ::: _B))
+      ::: _B)
 
-instance (Ord v, Show v, Let v (m a), Lam v (m a), Prob v (m a), Type v (m a), MonadFail m) => Lam v (ElabC v a m a) where
-  lam p b = check $ \ ctx -> do
+instance (Lam (m a), Prob (m a), Type (m a)) => Lam (ElabC a m a) where
+  lam p b = check $ do
     _A <- meta type'
-    _B <- meta (var _A --> type')
+    _B <- meta (_A --> type')
     pure
-      (   lam p (\ x -> ctx |> x ::: var _A |- b x ::: var _B $$ var x)
-      ::: (p, var _A) >-> \ x -> var _B $$ var x)
+      (   lam p (\ x -> elab (b (var x) ::: _B $$ x))
+      ::: (p, _A) >-> \ x -> _B $$ x)
 
-  f $$ a = check $ \ ctx -> do
+  f $$ a = check $ do
     _A <- meta type'
     _B <- meta type'
     pure
-      (   (ctx |- f ::: var _A --> var _B) $$ (ctx |- a ::: var _A)
-      ::: var _B)
+      (   elab (f ::: _A --> _B) $$ elab (a ::: _A)
+      ::: _B)
 
-instance (Ord v, Show v, Let v (m a), Prob v (m a), Type v (m a), MonadFail m) => Type v (ElabC v a m a) where
-  type' = check (const (pure (type' ::: type')))
+instance (Let (m a), Prob (m a), Type (m a)) => Type (ElabC a m a) where
+  type' = check (pure (type' ::: type'))
 
-  (p, a) >-> b = check $ \ ctx -> do
-    a' <- letbind ((ctx |- a ::: type') ::: type')
+  (p, a) >-> b = check $ do
+    a' <- letbind (elab (a ::: type') ::: type')
     pure
-      (   (p, var a') >-> (\ x -> ctx |> x ::: var a' |- b x ::: type')
+      (   (p, a') >-> (\ x -> elab (b (var x) ::: type'))
       ::: type')
 
-instance (Ord v, Show v, Let v (m a), Prob v (m a), Type v (m a), MonadFail m) => Prob v (ElabC v a m a) where
-  t `ex` b = check $ \ ctx -> do
+instance (Let (m a), Prob (m a), Type (m a)) => Prob (ElabC a m a) where
+  t `ex` b = check $ do
     _B <- meta type'
-    t' <- letbind ((ctx |- t ::: type') ::: type')
+    t' <- letbind (elab (t ::: type') ::: type')
     pure
-      (   var t' `ex` (\ x -> ctx |> x ::: var t' |- b x ::: var _B)
-      ::: var _B)
+      (   t' `ex` (\ x -> elab (b (var x) ::: _B))
+      ::: _B)
 
-  (m1 ::: t1) === (m2 ::: t2) = check $ \ ctx -> do
-    t1' <- letbind ((ctx |- t1 ::: type') ::: type')
-    t2' <- letbind ((ctx |- t2 ::: type') ::: type')
+  (m1 ::: t1) === (m2 ::: t2) = check $ do
+    t1' <- letbind (elab (t1 ::: type') ::: type')
+    t2' <- letbind (elab (t2 ::: type') ::: type')
     pure
-      (   (   (ctx |- m1 ::: var t1') ::: var t1'
-          === (ctx |- m2 ::: var t2') ::: var t2')
-      ::: (   var t1' ::: type'
-          === var t2' ::: type'))
+      (   (   elab (m1 ::: t1') ::: t1'
+          === elab (m2 ::: t2') ::: t2')
+      ::: (   t1' ::: type'
+          === t2' ::: type'))
 
 
-typeOf' :: (Ord (i v), Has (Throw (Err (i v))) sig m, Applicative i) => Map (i v) t -> i v -> (m :.: i) t
-typeOf' ctx n = maybe (C (throwError (FreeVariable n))) pure (ctx !? n)
-
-typeOf :: (Ord v, Show v, MonadFail m) => Map v (m a) -> v -> m a
-typeOf ctx n = fromMaybe (fail ("free variable:" <> show n)) (ctx !? n)
-
-(|>) :: Ord v => Map v t -> v ::: t -> Map v t
-ctx |> (v ::: t) = insert v t ctx
-
-infixl 1 |>
-
-check' :: (Applicative m, L.Permutable i) => Prob v t => (forall j . L.Permutable j => Map (i v) t -> (m :.: i :.: j) t ::: (m :.: i :.: j) t -> (m :.: i :.: j) t) -> ElabC' (i v) t (m :.: i) t
-check' f = ElabC' $ \ ty ctx ->
-  ty `L.ex` \ exp -> f ctx (L.var exp ::: weakens ty)
-
-check :: Prob v (m a) => (Map v (m a) -> Script (m a) (m a ::: m a)) -> ElabC v a m a
-check f = ElabC $ \ ty ctx -> runScript id $ do
+check :: Prob (m a) => Script (m a) (m a ::: m a) -> ElabC a m a
+check f = ElabC $ \ ty -> runScript id $ do
   exp <- meta ty
-  act <- f ctx
-  pure $! var exp ::: ty === act
+  act <- f
+  pure $! exp ::: ty === act
 
 
 newtype Err v

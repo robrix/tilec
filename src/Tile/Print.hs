@@ -100,28 +100,25 @@ deriving instance P.PrecDoc (Highlight Int) (PrintC m Doc)
 instance (Applicative m, Show (m Doc)) => Show (PrintC m Doc) where
   showsPrec p = showsPrec p . runPrint
 
-instance Algebra sig m => Var V (PrintC m Doc) where
-  var v = inContext Var (PrintC (vdoc v <$ tell (IntSet.singleton (vvar v))))
-
-instance Algebra sig m => Let V (PrintC m Doc) where
-  let' (tm ::: ty) b = inContext Let . bind b $ \ v b ->
+instance Algebra sig m => Let (PrintC m Doc) where
+  let' (tm ::: ty) b = inContext Let . bind id b $ \ v b ->
     -- FIXME: bind variables on the lhs when tm is a lambda
     kw "let" <+> prettyBind v <+> group (align (prettyAnn (op "=" <+> tm ::: ty))) <+> kw "in" </> b
 
-instance Algebra sig m => Lam V (PrintC m Doc) where
-  lam p b = prec (Level 6) . inContext Lam . bind b $ \ v b ->
+instance Algebra sig m => Lam (PrintC m Doc) where
+  lam p b = prec (Level 6) . inContext Lam . bind id b $ \ v b ->
     plicit braces id p (prettyBind v) <+> b
 
   f $$ a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
 
-instance Algebra sig m => Type V (PrintC m Doc) where
+instance Algebra sig m => Type (PrintC m Doc) where
   type' = inContext Type (annotate TypeName (pretty "Type"))
 
-  (p, t) >-> b = prec (Level 6) . inContext Pi . bind b $ \ v b ->
+  (p, t) >-> b = prec (Level 6) . inContext Pi . bind id b $ \ v b ->
     group (align (maybe (plicit braces (prec (Level 7)) p t) (group . align . plicit braces parens p . prettyAnn . (::: t) . pure . vdoc) v </> op "→" <+> b))
 
-instance Algebra sig m => Prob V (PrintC m Doc) where
-  ex t b = prec (Level 6) . inContext Exists . bind (b . toMeta) $ \ v b ->
+instance Algebra sig m => Prob (PrintC m Doc) where
+  ex t b = prec (Level 6) . inContext Exists . bind toMeta b $ \ v b ->
     group (align (op "∃" <+> group (align (reset (Level 0) (prettyAnn (prettyBind (toMeta <$> v) ::: t)))) <+> op "." </> reset (Level 0) b)) where
     toMeta v = v { vdoc = annotate MetaVar (pretty '?' <> vdoc v) }
 
@@ -202,9 +199,11 @@ prettyVar i = annotate Name (pretty (alphabet !! r) <> if q > 0 then pretty q el
 prettyAnn :: P.PrecDoc (Highlight Int) doc => doc ::: doc -> doc
 prettyAnn (tm ::: ty) = group (prec (Level 6) tm </> group (align (op ":" <+> prec (Level 6) ty)))
 
-bind :: Algebra sig m => (V -> PrintC m a) -> (Maybe V -> PrintC m a -> PrintC m b) -> PrintC m b
-bind b f = PrintC $ do
+bind :: Algebra sig m => (V -> V) -> (PrintC m Doc -> PrintC m Doc) -> (Maybe V -> PrintC m Doc -> PrintC m a) -> PrintC m a
+bind t b f = PrintC $ do
   v <- fresh
-  let v' = V v (prettyVar v)
-  (fvs, b') <- censor (IntSet.delete v) (listen (runPrintC (b v')))
+  let v' = t $ V v (prettyVar v)
+  (fvs, b') <- censor (IntSet.delete v) (listen (runPrintC (b (var v'))))
   runPrintC (f (v' <$ guard (v `IntSet.member` fvs)) (pure b'))
+  where
+  var v = inContext Var (PrintC (vdoc v <$ tell (IntSet.singleton (vvar v))))

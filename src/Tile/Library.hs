@@ -29,61 +29,61 @@ import Prelude hiding (either, maybe)
 import Tile.Syntax
 import Tile.Type
 
-bool :: Type v expr => expr ::: expr
-bool = ((Im, type') >-> \ _A -> var _A --> var _A --> var _A) ::: type'
+bool :: Type expr => expr ::: expr
+bool = ((Im, type') >-> \ _A -> _A --> _A --> _A) ::: type'
 
-true :: (Lam v expr, Type v expr) => expr ::: expr
-true = lam Ex (lam Ex . const . var) ::: tm bool
+true :: (Lam expr, Type expr) => expr ::: expr
+true = lam Ex (lam Ex . const) ::: tm bool
 
-false :: (Lam v expr, Type v expr) => expr ::: expr
-false = lam Ex (const (lam Ex var)) ::: tm bool
-
-
-id' :: (Lam v expr, Type v expr) => expr ::: expr
-id' = lam Ex var ::: (Im, type') >-> \ _A -> var _A --> var _A
-
-const' :: (Lam v expr, Type v expr) => expr ::: expr
-const' = lam Ex (lam Ex . const . var) ::: (Im, type') >-> \ _A -> (Im, type') >-> \ _B -> var _A --> var _B --> var _A
+false :: (Lam expr, Type expr) => expr ::: expr
+false = lam Ex (const (lam Ex id)) ::: tm bool
 
 
-maybe :: (Lam v expr, Type v expr) => expr ::: expr
-maybe = lam Ex (\ _A -> (Im, type') >-> \ _R -> var _R --> (var _A --> var _R) --> var _R) ::: type' --> type'
+id' :: (Lam expr, Type expr) => expr ::: expr
+id' = lam Ex id ::: (Im, type') >-> \ _A -> _A --> _A
 
-nothing :: (Lam v expr, Type v expr) => expr ::: expr
-nothing = lam Ex (lam Ex . const . var) ::: (Im, type') >-> \ _A -> tm maybe $$ var _A
-
-just :: (Lam v expr, Type v expr) => expr ::: expr
-just = lam Ex (\ a -> lam Ex (const (lam Ex (\ just -> var just $$ var a)))) ::: (Im, type') >-> \ _A -> var _A --> tm maybe $$ var _A
+const' :: (Lam expr, Type expr) => expr ::: expr
+const' = lam Ex (lam Ex . const) ::: (Im, type') >-> \ _A -> (Im, type') >-> \ _B -> _A --> _B --> _A
 
 
-either :: (Lam v expr, Type v expr) => expr ::: expr
-either = lam Ex (\ _L -> lam Ex (\ _R -> (Im, type') >-> \ _K -> (var _L --> var _K) --> (var _R --> var _K) --> var _K)) ::: type' --> type' --> type'
+maybe :: (Lam expr, Type expr) => expr ::: expr
+maybe = lam Ex (\ _A -> (Im, type') >-> \ _R -> _R --> (_A --> _R) --> _R) ::: type' --> type'
 
-left :: (Lam v expr, Type v expr) => expr ::: expr
-left = lam Ex (\ l -> lam Ex (\ left -> lam Ex (const (var left $$ var l)))) ::: (Im, type') >-> \ _L -> (Im, type') >-> \ _R -> var _L --> tm either $$ var _L $$ var _R
+nothing :: (Lam expr, Type expr) => expr ::: expr
+nothing = lam Ex (lam Ex . const) ::: (Im, type') >-> \ _A -> tm maybe $$ _A
 
-right :: (Lam v expr, Type v expr) => expr ::: expr
-right = lam Ex (\ r -> lam Ex (const (lam Ex (\ right -> var right $$ var r)))) ::: (Im, type') >-> \ _L -> (Im, type') >-> \ _R -> var _R --> tm either $$ var _L $$ var _R
-
-
-nat :: Type v expr => expr ::: expr
-nat = ((Im, type') >-> \ _R -> var _R --> (var _R --> var _R) --> var _R) ::: type'
-
-z :: (Lam v expr, Type v expr) => expr ::: expr
-z = lam Ex (lam Ex . const . var) ::: tm nat
-
-s :: (Lam v expr, Type v expr) => expr ::: expr
-s = lam Ex (\ x -> lam Ex (const (lam Ex (\ s -> var s $$ var x)))) ::: tm nat --> tm nat
+just :: (Lam expr, Type expr) => expr ::: expr
+just = lam Ex (\ a -> lam Ex (const (lam Ex (\ just -> just $$ a)))) ::: (Im, type') >-> \ _A -> _A --> tm maybe $$ _A
 
 
-list :: (Lam v expr, Type v expr) => expr ::: expr
-list = lam Ex (\ _A -> (Im, type') >-> \ _R -> var _R --> (var _A --> var _R --> var _R) --> var _R) ::: type' --> type'
+either :: (Lam expr, Type expr) => expr ::: expr
+either = lam Ex (\ _L -> lam Ex (\ _R -> (Im, type') >-> \ _K -> (_L --> _K) --> (_R --> _K) --> _K)) ::: type' --> type' --> type'
 
-nil :: (Lam v expr, Type v expr) => expr ::: expr
-nil = lam Ex (lam Ex . const . var) ::: (Im, type') >-> \ _A -> tm list $$ var _A
+left :: (Lam expr, Type expr) => expr ::: expr
+left = lam Ex (\ l -> lam Ex (\ left -> lam Ex (const (left $$ l)))) ::: (Im, type') >-> \ _L -> (Im, type') >-> \ _R -> _L --> tm either $$ _L $$ _R
 
-cons :: (Lam v expr, Type v expr) => expr ::: expr
-cons = lam Ex (\ a -> lam Ex (\ as -> lam Ex (const (lam Ex (\ cons -> var cons $$ var a $$ var as))))) ::: (Im, type') >-> \ _A -> tm list $$ var _A
+right :: (Lam expr, Type expr) => expr ::: expr
+right = lam Ex (\ r -> lam Ex (const (lam Ex (\ right -> right $$ r)))) ::: (Im, type') >-> \ _L -> (Im, type') >-> \ _R -> _R --> tm either $$ _L $$ _R
+
+
+nat :: Type expr => expr ::: expr
+nat = ((Im, type') >-> \ _R -> _R --> (_R --> _R) --> _R) ::: type'
+
+z :: (Lam expr, Type expr) => expr ::: expr
+z = lam Ex (lam Ex . const) ::: tm nat
+
+s :: (Lam expr, Type expr) => expr ::: expr
+s = lam Ex (\ x -> lam Ex (const (lam Ex (\ s -> s $$ x)))) ::: tm nat --> tm nat
+
+
+list :: (Lam expr, Type expr) => expr ::: expr
+list = lam Ex (\ _A -> (Im, type') >-> \ _R -> _R --> (_A --> _R --> _R) --> _R) ::: type' --> type'
+
+nil :: (Lam expr, Type expr) => expr ::: expr
+nil = lam Ex (lam Ex . const) ::: (Im, type') >-> \ _A -> tm list $$ _A
+
+cons :: (Lam expr, Type expr) => expr ::: expr
+cons = lam Ex (\ a -> lam Ex (\ as -> lam Ex (const (lam Ex (\ cons -> cons $$ a $$ as))))) ::: (Im, type') >-> \ _A -> tm list $$ _A
 
 
 -- TODO: vectors

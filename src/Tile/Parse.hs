@@ -50,26 +50,26 @@ parseFile path p = do
   parse path s p
 
 
-runEnv :: Map.Map String (i v) -> EnvC i v m a -> m a
+runEnv :: Map.Map String expr -> EnvC expr m a -> m a
 runEnv m = runReader m . runEnvC
 
-newtype EnvC i v m a = EnvC { runEnvC :: ReaderC (Map.Map String (i v)) m a }
-  deriving (Algebra (Reader (Map.Map String (i v)) :+: sig), Alternative, Applicative, Functor, Monad, MonadFail, MonadPlus, MonadTrans)
+newtype EnvC expr m a = EnvC { runEnvC :: ReaderC (Map.Map String expr) m a }
+  deriving (Algebra (Reader (Map.Map String expr) :+: sig), Alternative, Applicative, Functor, Monad, MonadFail, MonadPlus, MonadTrans)
 
-instance Distributive m => Distributive (EnvC i v m) where
+instance Distributive m => Distributive (EnvC expr m) where
   distribute m = EnvC . ReaderC $ \ r -> distribute (runEnv r <$> m)
   {-# INLINE distribute #-}
 
   collect f m = EnvC . ReaderC $ \ r -> collect (runEnv r . f) m
   {-# INLINE collect #-}
 
-liftEnvC0 :: m a -> EnvC i v m a
+liftEnvC0 :: m a -> EnvC expr m a
 liftEnvC0 = EnvC . ReaderC . const
 
-liftEnvC1 :: (m a -> m' a') -> EnvC i v m a -> EnvC i v m' a'
+liftEnvC1 :: (m a -> m' a') -> EnvC expr m a -> EnvC expr m' a'
 liftEnvC1 f m = EnvC . ReaderC $ \ r -> f (runReader r (runEnvC m))
 
-instance Parsing m => Parsing (EnvC i v m) where
+instance Parsing m => Parsing (EnvC expr m) where
   try = liftEnvC1 try
   {-# INLINE try #-}
 
@@ -91,7 +91,7 @@ instance Parsing m => Parsing (EnvC i v m) where
   notFollowedBy = liftEnvC1 notFollowedBy
   {-# INLINE notFollowedBy #-}
 
-instance CharParsing m => CharParsing (EnvC i v m) where
+instance CharParsing m => CharParsing (EnvC expr m) where
   satisfy = liftEnvC0 . satisfy
   {-# INLINE satisfy #-}
 
@@ -110,7 +110,7 @@ instance CharParsing m => CharParsing (EnvC i v m) where
   text = liftEnvC0 . text
   {-# INLINE text #-}
 
-instance TokenParsing m => TokenParsing (EnvC i v m) where
+instance TokenParsing m => TokenParsing (EnvC expr m) where
   someSpace = liftEnvC0 someSpace
   {-# INLINE someSpace #-}
 
@@ -127,22 +127,22 @@ instance TokenParsing m => TokenParsing (EnvC i v m) where
   {-# INLINE token #-}
 
 
-expr :: forall v expr m sig . (Algebra sig m, TokenParsing m, Let v expr, Lam v expr, Type v expr) => m expr
-expr = runEnv @Identity @v mempty (strengthen expr_)
+expr :: forall expr m sig . (Algebra sig m, TokenParsing m, Let expr, Lam expr, Type expr) => m expr
+expr = runEnv @(Identity expr) mempty (strengthen expr_)
 
-expr_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Let v expr, Lam v expr, Type v expr) => (m :.: i) expr
+expr_ :: (Permutable i, Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m, Let expr, Lam expr, Type expr) => (m :.: i) expr
 expr_ = type_ <|> var_ <|> lam_ <|> let_
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
 
-var_ :: (Functor i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Var v expr) => (m :.: i) expr
+var_ :: (Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m) => (m :.: i) expr
 var_ = C $ do
   v <- identifier_
   v' <- asks (Map.lookup v)
   maybe (unexpected "free variable") (getC . var) v'
 
-let_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Let v expr, Type v expr) => (m :.: i) expr
+let_ :: (Permutable i, Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => (m :.: i) expr
 let_ = C $ token (string "let") *> do
   i <- identifier_
   void (token (char '='))
@@ -152,7 +152,7 @@ let_ = C $ token (string "let") *> do
 
 -- FIXME: lambdas bindng implicit variables
 
-lam_ :: (Permutable i, Has (Reader (Map.Map String (i v))) sig m, TokenParsing m, Lam v expr, Let v expr, Type v expr) => (m :.: i) expr
+lam_ :: (Permutable i, Has (Reader (Map.Map String (i expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => (m :.: i) expr
 lam_ = C $ token (char '\\') *> do
   i <- identifier_
   void (token (char '.'))
@@ -160,7 +160,7 @@ lam_ = C $ token (char '\\') *> do
 
 -- FIXME: application
 
-type_ :: (Monad m, Applicative i, TokenParsing m, Type v expr) => (m :.: i) expr
+type_ :: (Monad m, Applicative i, TokenParsing m, Type expr) => (m :.: i) expr
 type_ = C $ type' <$ reserve identifierStyle "Type"
 
 -- FIXME: pi types

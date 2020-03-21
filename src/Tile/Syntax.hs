@@ -7,7 +7,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Tile.Syntax
 ( Syntax
-, Var(..)
 , Let(..)
 , Lam(..)
 , Type(..)
@@ -31,42 +30,38 @@ import Control.Monad (ap)
 import Tile.Plicit
 import Tile.Type
 
-type Syntax v expr = (Let v expr, Lam v expr, Type v expr)
+type Syntax expr = (Let expr, Lam expr, Type expr)
 
-class Var v expr | expr -> v where
-  var :: v -> expr
-
-
-class Var v expr => Let v expr where
-  let' :: expr ::: expr -> (v -> expr) -> expr
+class Let expr where
+  let' :: expr ::: expr -> (expr -> expr) -> expr
 
 
-class Var v expr => Lam v expr where
-  lam :: Plicit -> (v -> expr) -> expr
+class Lam expr where
+  lam :: Plicit -> (expr -> expr) -> expr
 
   ($$) :: expr -> expr -> expr
   infixl 9 $$
 
 
-class Var v expr => Type v expr where
+class Type expr where
   type' :: expr
 
-  (>->) :: (Plicit, expr) -> (v -> expr) -> expr
+  (>->) :: (Plicit, expr) -> (expr -> expr) -> expr
   infixr 6 >->
 
-(-->) :: Type v expr => expr -> expr -> expr
+(-->) :: Type expr => expr -> expr -> expr
 a --> b = (Ex, a) >-> const b
 
 infixr 6 -->
 
-(==>) :: Type v expr => expr -> (v -> expr) -> expr
+(==>) :: Type expr => expr -> (expr -> expr) -> expr
 a ==> b = (Im, a) >-> b
 
 infixr 6 ==>
 
 
-class Var v expr => Prob v expr where
-  ex :: expr -> (v -> expr) -> expr
+class Prob expr where
+  ex :: expr -> (expr -> expr) -> expr
   infixr 6 `ex`
 
   (===) :: expr ::: expr -> expr ::: expr -> expr
@@ -98,11 +93,11 @@ instance Monad (Script t) where
   m >>= f = Script (\ k -> runScript (runScript k . f) m)
   {-# INLINE (>>=) #-}
 
-meta :: Prob v t => t -> Script t v
+meta :: Prob t => t -> Script t t
 meta = Script . ex
 
-intro :: Lam v t => Plicit -> Script t v
+intro :: Lam t => Plicit -> Script t t
 intro = Script . lam
 
-letbind :: Let v t => t ::: t -> Script t v
+letbind :: Let t => t ::: t -> Script t t
 letbind = Script . let'
