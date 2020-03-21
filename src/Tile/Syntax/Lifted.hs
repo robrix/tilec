@@ -71,8 +71,8 @@ let'' (tm ::: ty) f = liftA2 S.let' <$> (liftA2 (:::) <$> tm <*> ty) <*> (getC <
 lam :: (Applicative m, S.Lam expr, Permutable env) => m (env Plicit) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
 lam p f = liftA2 S.lam <$> p <*> (getC <$> f (C (pure id)))
 
-($$) :: (Applicative m, S.Lam expr) => m expr -> m expr -> m expr
-($$) = liftA2 (S.$$)
+($$) :: (Applicative m, Applicative env, S.Lam expr) => m (env expr) -> m (env expr) -> m (env expr)
+($$) = liftA2 (liftA2 (S.$$))
 
 infixl 9 $$
 
