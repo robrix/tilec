@@ -102,7 +102,9 @@ class Import repr where
 
 
 class Def tm ty repr | repr -> tm ty where
-  def :: String ::: ty := tm -> repr
+  (.:) :: String -> ty := tm -> repr
+
+  infix 3 .:
 
 
 -- FIXME: packages
