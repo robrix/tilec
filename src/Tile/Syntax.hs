@@ -101,8 +101,8 @@ class Import repr where
   import' :: String -> repr
 
 
-class Def tm ty a def | def -> tm ty where
-  def :: tm a ::: ty a -> def a
+class Def tm ty repr | repr -> tm ty where
+  def :: String ::: ty := tm -> repr
 
 
 -- FIXME: packages
