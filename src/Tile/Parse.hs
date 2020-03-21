@@ -161,9 +161,12 @@ lam_ = token (char '\\') *> do
 -- FIXME: application
 
 type_ :: (Monad m, Applicative env, TokenParsing m, Type expr) => m (env expr)
-type_ = type' <$ reserve identifierStyle "Type" <?> "Type"
+type_ = type' <$ keyword "Type"
 
 -- FIXME: pi types
+
+keyword :: (Monad m, TokenParsing m) => String -> m ()
+keyword s = void (reserve identifierStyle s) <?> s
 
 identifierStyle :: CharParsing m => IdentifierStyle m
 identifierStyle = IdentifierStyle "identifier" letter (alphaNum <|> char '\'') reservedWords Identifier ReservedIdentifier
