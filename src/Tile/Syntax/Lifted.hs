@@ -31,12 +31,10 @@ module Tile.Syntax.Lifted
 , S.Def
   -- * Elaborator scripts
 , runScript
-, runCScript
 , throw
 , reset
 , resetC
 , liftScript
-, liftCScript
 , Script(..)
   -- * Re-exports
 , (:::)(..)
@@ -46,6 +44,7 @@ module Tile.Syntax.Lifted
 
 import           Control.Applicative (liftA2)
 import           Data.Distributive
+import           Data.Functor.Identity
 import           Tile.Functor.Compose
 import           Tile.Syntax ((:::)(..), Plicit(..), plicit)
 import qualified Tile.Syntax as S
@@ -122,17 +121,14 @@ infixl 4 ===
 -- Elaborator scripts
 
 runScript :: Functor m => Script a m a -> m a
-runScript = strengthen . (`getScript` id)
-
-runCScript :: Functor m => (Script (i a) m :.: i) a -> (m :.: i) a
-runCScript = mapC runScript
+runScript = fmap runIdentity . (`getScript` id)
 
 throw
   :: (Applicative m, Applicative hw)
-  => (forall h . Permutable h => ((m :.: hw) :.: h) a -> ((m :.: hw) :.: h) w)
+  => (forall h . Permutable h => m ((hw :.: h) a) -> m ((hw :.: h) w))
   -> m a
-  -> (m :.: hw) w
-throw k = strengthen . k . liftC . liftC
+  -> m (hw w)
+throw k = fmap strengthen . k . fmap pure
 
 reset :: Applicative m => Script a m a -> Script w m a
 reset m = Script $ \ k -> throw k $ runScript m
@@ -141,26 +137,23 @@ resetC :: Applicative m => (Script (i a) m :.: i) a -> (Script w m :.: i) a
 resetC = mapC reset
 
 liftScript :: Functor m => m a -> Script w m a
-liftScript m = Script $ \ k -> strengthen (k (liftC (liftC m)))
-
-liftCScript :: Functor m => (m :.: i) a -> (Script w m :.: i) a
-liftCScript = mapC liftScript
+liftScript m = Script $ \ k -> strengthen <$> k (pure <$> m)
 
 newtype Script t m a = Script
   { getScript
     :: forall hw
     .  Permutable hw
-    => (forall h . Permutable h => ((m :.: hw) :.: h) a -> ((m :.: hw) :.: h) t)
-    -> (m :.: hw) t
+    => (forall h . Permutable h => m ((hw :.: h) a) -> m ((hw :.: h) t))
+    -> m (hw t)
   }
 
 instance Functor m => Functor (Script t m) where
-  fmap f (Script run) = Script $ \ k -> run (k . fmap f)
+  fmap f (Script run) = Script $ \ k -> run (k . fmap (fmap f))
   {-# INLINE fmap #-}
 
 instance Applicative m => Applicative (Script t m) where
-  pure a = Script $ \ k -> strengthen (k (pure a))
+  pure a = Script $ \ k -> strengthen <$> k (pure (pure a))
   {-# INLINE pure #-}
 
-  Script f <*> Script a = Script $ \ k -> f $ \ f' -> assocL $ a $ \ a' -> assocLR (k (assocR (liftC f') <*> assocRL a'))
+  Script f <*> Script a = Script $ \ k -> f $ \ f' -> a $ \ a' -> assocL <$> k (assocR <$> liftA2 (<*>) (weakens <$> f') a')
   {-# INLINE (<*>) #-}
