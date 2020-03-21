@@ -26,7 +26,6 @@ import           Control.Monad.Trans.Class
 import           Data.Distributive
 import           Data.Foldable (asum)
 import           Data.Functor
-import           Data.Functor.Identity
 import           Data.HashSet (HashSet, fromList)
 import qualified Data.Map as Map
 import           Source.Span
@@ -128,33 +127,33 @@ instance TokenParsing m => TokenParsing (EnvC expr m) where
   {-# INLINE token #-}
 
 
-expr :: forall expr m sig . (Algebra sig m, TokenParsing m, Let expr, Lam expr, Type expr) => m expr
-expr = runEnv @(Identity expr) mempty (run <$> expr_)
+type Env env expr = Map.Map String (env expr)
 
-expr_ :: (Permutable env, Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m, Let expr, Lam expr, Type expr) => m (env expr)
-expr_ = type_ <|> var_ <|> lam_ <|> let_
+expr :: (Algebra sig m, TokenParsing m, Let expr, Lam expr, Type expr) => m expr
+expr = run <$> expr_ Map.empty
+
+expr_ :: (Monad m, Permutable env, TokenParsing m, Let expr, Lam expr, Type expr) => Env env expr -> m (env expr)
+expr_ env = type_ <|> var_ env <|> lam_ env <|> let_ env
 
 identifier_ :: (Monad m, TokenParsing m) => m String
 identifier_ = ident identifierStyle
 
-var_ :: (Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m) => m (env expr)
-var_ = do
-  env <- asks Map.toList
-  asum (map (\ (k, v) -> v <$ token (string k) <?> '‘':k++"’") env)
+var_ :: TokenParsing m => Env env expr -> m (env expr)
+var_ env = asum (map (\ (k, v) -> v <$ token (string k) <?> '‘':k++"’") (Map.toList env))
 
-let_ :: forall env expr m sig . (Permutable env, Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => m (env expr)
-let_ = keyword "let" *> do
+let_ :: forall env expr m . (Monad m, Permutable env, TokenParsing m, Lam expr, Let expr, Type expr) => Env env expr -> m (env expr)
+let_ env = keyword "let" *> do
   i <- identifier_ <* keyword "="
-  tm <- expr_ <* keyword ":"
-  ty <- expr_ <* keyword "in"
-  let' (pure tm ::: pure ty) (\ v -> asks (Map.insert i v . weaken @_ @env) >>= \ env -> runEnv env expr_)
+  tm <- expr_ env <* keyword ":"
+  ty <- expr_ env <* keyword "in"
+  let' (pure tm ::: pure ty) (\ v -> expr_ (Map.insert i v (weaken @_ @env env)))
 
 -- FIXME: lambdas bindng implicit variables
 
-lam_ :: forall env expr m sig . (Permutable env, Has (Reader (Map.Map String (env expr))) sig m, TokenParsing m, Lam expr, Let expr, Type expr) => m (env expr)
-lam_ = keyword "\\" *> do
+lam_ :: forall env expr m . (Monad m, Permutable env, TokenParsing m, Lam expr, Let expr, Type expr) => Env env expr -> m (env expr)
+lam_ env = keyword "\\" *> do
   i <- identifier_ <* keyword "."
-  lam (pure (pure Ex)) (\ v -> asks (Map.insert i v . weaken @_ @env) >>= \ env -> runEnv env expr_)
+  lam (pure (pure Ex)) (\ v -> expr_ (Map.insert i v (weaken @_ @env env)))
 
 -- FIXME: application
 
