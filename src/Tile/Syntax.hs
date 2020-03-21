@@ -152,7 +152,7 @@ instance Bitraversable (:::) where
   bitraverse f g (l ::: r) = (:::) <$> f l <*> g r
 
 instance Show a => Show1 ((:::) a) where
-  liftShowsPrec sp _ p (a ::: b) = showParen (p > 1) $ shows a . showString " ::: " . sp 2 b
+  liftShowsPrec sp _ p (a ::: b) = showParen (p > 5) $ showsPrec 5 a . showString " ::: " . sp 6 b
 
 instance (Show a, Show b) => Show (a ::: b) where
   showsPrec = showsPrec1
