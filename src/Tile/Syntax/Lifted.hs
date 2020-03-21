@@ -30,7 +30,6 @@ module Tile.Syntax.Lifted
 , runScript
 , throw
 , reset
-, resetC
 , liftScript
 , Script(..)
   -- * Re-exports
@@ -123,9 +122,6 @@ throw k = strengthen . k . fmap pure
 
 reset :: Applicative m => Script a m a -> Script w m a
 reset m = Script $ \ k -> throw k $ runScript m
-
-resetC :: Applicative m => (Script (env a) m :.: env) a -> (Script w m :.: env) a
-resetC = mapC reset
 
 liftScript :: Functor m => m a -> Script w m a
 liftScript m = Script $ \ k -> strengthen (k (pure <$> m))
