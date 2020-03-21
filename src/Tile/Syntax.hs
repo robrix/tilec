@@ -77,7 +77,6 @@ class Def tm ty a def | def -> tm ty where
   def :: tm a ::: ty a -> def a
 
 
--- FIXME: modules
 -- FIXME: packages
 
 
