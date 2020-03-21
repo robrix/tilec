@@ -21,6 +21,7 @@ module Tile.Syntax
   -- * Modules, imports, & declarations
 , Module(..)
 , Import(..)
+, Export(..)
 , Def(..)
   -- * Elaborator scripts
 , runScript
@@ -100,6 +101,10 @@ class Module decl repr | repr -> decl where
 
 class Import repr where
   import' :: String -> repr
+
+
+class Export repr where
+  export :: a -> repr a
 
 
 class Def expr def | def -> expr where
