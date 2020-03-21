@@ -5,8 +5,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
 module Tile.Syntax.Lifted
-( Permutable
-, S.Syntax
+( S.Syntax
 , var
 , wvar
   -- * Let
