@@ -81,8 +81,8 @@ class (Applicative m, S.Lam expr) => Lam expr m where
 
 instance (Applicative m, S.Lam expr) => Lam expr (Ap m)
 
-deriving via Ap Identity    instance S.Lam expr => Lam expr Identity
-deriving via Ap ((->) r)    instance S.Lam expr => Lam expr ((->) r)
+deriving via Ap Identity instance S.Lam expr => Lam expr Identity
+deriving via Ap ((->) r) instance S.Lam expr => Lam expr ((->) r)
 deriving via Ap (ParserC m) instance S.Lam expr => Lam expr (ParserC m)
 
 
@@ -99,8 +99,8 @@ class (Applicative m, S.Type expr) => Type expr m where
 
 instance (Applicative m, S.Type expr) => Type expr (Ap m)
 
-deriving via Ap Identity    instance S.Type expr => Type expr Identity
-deriving via Ap ((->) r)    instance S.Type expr => Type expr ((->) r)
+deriving via Ap Identity instance S.Type expr => Type expr Identity
+deriving via Ap ((->) r) instance S.Type expr => Type expr ((->) r)
 deriving via Ap (ParserC m) instance S.Type expr => Type expr (ParserC m)
 
 (-->) :: (Type expr m, Permutable env) => m (env expr) -> m (env expr) -> m (env expr)
