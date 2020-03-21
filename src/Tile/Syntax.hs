@@ -170,6 +170,15 @@ data a := b = a := b
 
 infix 4 :=
 
+instance Bifoldable (:=) where
+  bifoldMap = bifoldMapDefault
+
+instance Bifunctor (:=) where
+  bimap = bimapDefault
+
+instance Bitraversable (:=) where
+  bitraverse f g (a := b) = (:=) <$> f a <*> g b
+
 
 -- {Im,ex}plicitness
 
