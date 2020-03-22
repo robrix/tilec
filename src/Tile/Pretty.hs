@@ -153,7 +153,7 @@ newtype Level = Level Int
 
 class Doc ann doc => PrecDoc ann doc where
   prec :: Level -> doc -> doc
-  reset :: Level -> doc -> doc
+  resetPrec :: Level -> doc -> doc
 
 
 rainbow :: Rainbow doc -> doc
@@ -187,7 +187,7 @@ nestRainbow l r (Rainbow run) = Rainbow $ \ lv -> annotate (pure lv) l <> run (1
 
 instance (PrecDoc (ann Int) doc, Applicative ann) => PrecDoc (ann Int) (Rainbow doc) where
   prec = fmap . prec
-  reset = fmap . reset
+  resetPrec = fmap . resetPrec
 
 
 runPrec :: Level -> Prec a -> a
@@ -212,16 +212,16 @@ instance Doc ann doc => Doc ann (Prec doc) where
 
   flatAlt = liftA2 flatAlt
 
-  parens = fmap parens . reset (Level 0)
+  parens = fmap parens . resetPrec (Level 0)
 
-  brackets = fmap brackets . reset (Level 0)
+  brackets = fmap brackets . resetPrec (Level 0)
 
-  braces = fmap braces . reset (Level 0)
+  braces = fmap braces . resetPrec (Level 0)
 
 instance Doc ann doc => PrecDoc ann (Prec doc) where
   prec l (Prec d) = Prec $ \ l' -> parensIf (l' > l) (d l)
-  reset l (Prec d) = Prec $ \ _ -> d l
+  resetPrec l (Prec d) = Prec $ \ _ -> d l
 
 instance (Applicative f, PrecDoc ann a) => PrecDoc ann (Ap f a) where
   prec = fmap . prec
-  reset = fmap . reset
+  resetPrec = fmap . resetPrec

@@ -111,7 +111,7 @@ instance Type PrintC where
 
 instance Prob PrintC where
   ex t b = prec (Level 6) . inContext Exists . bind toMeta b $ \ v b ->
-    group (align (op "∃" <+> group (align (reset (Level 0) (prettyAnn (prettyBind (toMeta <$> v) ::: t)))) <+> op "." </> reset (Level 0) b)) where
+    group (align (op "∃" <+> group (align (resetPrec (Level 0) (prettyAnn (prettyBind (toMeta <$> v) ::: t)))) <+> op "." </> resetPrec (Level 0) b)) where
     toMeta v = v { vdoc = annotate MetaVar (pretty '?' <> vdoc v) }
 
   t1 === t2 = prec (Level 4) (inContext Equate (group (align (flatAlt (space <> space) mempty <> prec (Level 5) (prettyAnn t1) </> op "≡" <+> prec (Level 5) (prettyAnn t2)))))
@@ -160,7 +160,7 @@ transition from to = exit from . enter to where
     Just Equate -> group
     _ -> id
   exit = \case
-    Just Lam -> (op "." </>) . reset (Level 0)
+    Just Lam -> (op "." </>) . resetPrec (Level 0)
     _ -> id
 
 inContext :: Ctx -> PrintC -> PrintC
