@@ -96,7 +96,7 @@ instance Lam Print where
   lam p b = prec (Level 6) . inContext Lam . bind id b $ \ v b ->
     plicit braces id p (prettyBind v) <+> b
 
-  f $$ a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
+  app f (_, a) = prec (Level 10) (inContext App (f </> prec (Level 11) a))
 
 instance Type Print where
   type' = inContext Type (annotate TypeName (pretty "Type"))

@@ -32,4 +32,4 @@ newtype Reconstruct t = Reconstruct { runReconstruct :: t -> t }
 instance Lam (Reconstruct t) where
   lam _ _ = Reconstruct id
 
-  _ $$ _ = Reconstruct id
+  app _ _ = Reconstruct id
