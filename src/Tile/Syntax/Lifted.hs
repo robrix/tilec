@@ -113,7 +113,7 @@ infixl 4 ===
 
 -- Elaborator scripts
 
-runScript :: Functor m => Script a m a -> m a
+runScript :: Functor m => Script t m t -> m t
 runScript = fmap runIdentity . (`getScript` id)
 
 throw
@@ -123,10 +123,10 @@ throw
   -> m (env w)
 throw k = strengthen . k . fmap pure
 
-reset :: Applicative m => Script a m a -> Script w m a
+reset :: Applicative m => Script t m t -> Script t' m t
 reset m = Script $ \ k -> throw k $ runScript m
 
-liftScript :: Functor m => m a -> Script w m a
+liftScript :: Functor m => m t -> Script t' m t
 liftScript m = Script $ \ k -> strengthen (k (pure <$> m))
 
 newtype Script t m a = Script
