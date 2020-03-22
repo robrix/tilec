@@ -1,4 +1,3 @@
-{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeOperators #-}
 -- | Elaboration, implemented as a mash-up of:
 --
@@ -13,15 +12,15 @@ module Tile.Elab
 import Tile.Script
 import Tile.Syntax
 
-elab :: ElabC t t ::: t -> t
+elab :: ElabC t ::: t -> t
 elab (ElabC run ::: ty) = run ty
 
-newtype ElabC t a = ElabC (t -> a)
+newtype ElabC t = ElabC (t -> t)
 
-var :: a -> ElabC t a
+var :: t -> ElabC t
 var = ElabC . const
 
-instance (Let t, Prob t, Type t) => Let (ElabC t t) where
+instance (Let t, Prob t, Type t) => Let (ElabC t) where
   let' (v ::: t) b = check $ do
     _B <- meta type'
     t' <- letbind (elab (t ::: type') ::: type')
@@ -30,7 +29,7 @@ instance (Let t, Prob t, Type t) => Let (ElabC t t) where
             elab (b (var x) ::: _B))
       ::: _B)
 
-instance (Lam t, Prob t, Type t) => Lam (ElabC t t) where
+instance (Lam t, Prob t, Type t) => Lam (ElabC t) where
   lam p b = check $ do
     _A <- meta type'
     _B <- meta (_A --> type')
@@ -45,7 +44,7 @@ instance (Lam t, Prob t, Type t) => Lam (ElabC t t) where
       (   elab (f ::: _A --> _B) $$ elab (a ::: _A)
       ::: _B)
 
-instance (Let t, Prob t, Type t) => Type (ElabC t t) where
+instance (Let t, Prob t, Type t) => Type (ElabC t) where
   type' = check (pure (type' ::: type'))
 
   (p, a) >-> b = check $ do
@@ -54,7 +53,7 @@ instance (Let t, Prob t, Type t) => Type (ElabC t t) where
       (   (p, a') >-> (\ x -> elab (b (var x) ::: type'))
       ::: type')
 
-instance (Let t, Prob t, Type t) => Prob (ElabC t t) where
+instance (Let t, Prob t, Type t) => Prob (ElabC t) where
   t `ex` b = check $ do
     _B <- meta type'
     t' <- letbind (elab (t ::: type') ::: type')
@@ -72,7 +71,7 @@ instance (Let t, Prob t, Type t) => Prob (ElabC t t) where
           === t2' ::: type'))
 
 
-check :: Prob t => Script t (t ::: t) -> ElabC t t
+check :: Prob t => Script t (t ::: t) -> ElabC t
 check f = ElabC $ \ ty -> evalScript $ do
   exp <- meta ty
   act <- f
