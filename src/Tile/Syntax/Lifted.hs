@@ -28,6 +28,7 @@ module Tile.Syntax.Lifted
 , S.Def
   -- * Elaborator scripts
 , runScript
+, evalScript
 , throw
 , reset
 , liftScript
@@ -116,6 +117,9 @@ infixl 4 ===
 runScript :: Functor m => Script t m t -> m t
 runScript = fmap runIdentity . (`getScript` id)
 
+evalScript :: Functor m => Script t m t -> m t
+evalScript = fmap runIdentity . (`getScript` id)
+
 throw
   :: (Applicative m, Permutable env)
   => (forall env' . Extends env env' => m (env' a) -> m (env' w))
@@ -124,7 +128,7 @@ throw
 throw k = strengthen . k . fmap pure
 
 reset :: Applicative m => Script t m t -> Script t' m t
-reset m = Script $ \ k -> throw k $ runScript m
+reset m = Script $ \ k -> throw k $ evalScript m
 
 liftScript :: Functor m => m t -> Script t' m t
 liftScript m = Script $ \ k -> strengthen (k (pure <$> m))
