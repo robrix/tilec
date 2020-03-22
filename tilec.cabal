@@ -44,6 +44,7 @@ library
     Tile.Print
     Tile.Reconstruct
     Tile.Script
+    Tile.Script.Lifted
     Tile.Solve
     Tile.Syntax
     Tile.Syntax.Lifted
