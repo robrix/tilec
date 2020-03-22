@@ -14,6 +14,7 @@ module Tile.Elab
 , ElabC(ElabC)
 ) where
 
+import Tile.Script
 import Tile.Syntax
 
 elab :: ElabC t t ::: t -> t

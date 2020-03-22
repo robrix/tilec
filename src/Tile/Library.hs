@@ -38,6 +38,7 @@ module Tile.Library
 ) where
 
 import Prelude hiding (either, fst, maybe, snd)
+import Tile.Script
 import Tile.Syntax
 
 class Record expr where
