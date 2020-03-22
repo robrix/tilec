@@ -43,6 +43,7 @@ library
     Tile.Pretty
     Tile.Print
     Tile.Reconstruct
+    Tile.Script
     Tile.Solve
     Tile.Syntax
     Tile.Syntax.Lifted
