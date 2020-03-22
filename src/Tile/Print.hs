@@ -5,9 +5,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE UndecidableInstances #-}
 module Tile.Print
 ( prettyPrint
 , prettyPrintWith
@@ -84,10 +82,7 @@ runPrint :: PrintC -> Doc
 runPrint = run . runWriter (const pure) . evalFresh 0 . evalState Nothing . getAp . runPrintC
 
 newtype PrintC = PrintC { runPrintC :: Ap (StateC (Maybe Ctx) (FreshC (WriterC IntSet.IntSet Identity))) Doc }
-  deriving (Monoid, Semigroup)
-
-deriving instance P.Doc     (Highlight Int) PrintC
-deriving instance P.PrecDoc (Highlight Int) PrintC
+  deriving (P.Doc (Highlight Int), Monoid, P.PrecDoc (Highlight Int), Semigroup)
 
 instance Show PrintC where
   showsPrec p = showsPrec p . runPrint
