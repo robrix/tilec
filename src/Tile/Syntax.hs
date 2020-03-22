@@ -26,6 +26,7 @@ module Tile.Syntax
   -- * Elaborator scripts
 , runScript
 , evalScript
+, shift
 , Script(..)
 , (.:)
 , meta
@@ -122,6 +123,9 @@ runScript = flip getScript
 
 evalScript :: Script t t -> t
 evalScript = runScript id
+
+shift :: ((a -> t) -> Script t t) -> Script t a
+shift f = Script (evalScript . f)
 
 newtype Script t a = Script { getScript :: (a -> t) -> t }
   deriving (Functor)
