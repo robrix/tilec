@@ -53,7 +53,7 @@ instance Functor m => Functor (Script t m) where
   {-# INLINE fmap #-}
 
 instance Applicative m => Applicative (Script t m) where
-  pure a = Script $ \ k -> strengthen (k (pure (pure a)))
+  pure a = Script $ \ k -> throw k (pure a)
   {-# INLINE pure #-}
 
   f <*> a = Script (go f a)
