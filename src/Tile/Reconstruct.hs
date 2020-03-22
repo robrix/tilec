@@ -25,4 +25,11 @@ module Tile.Reconstruct
 ( Reconstruct(..)
 ) where
 
-newtype Reconstruct t = Reconstruct { runReconstruct :: t }
+import Tile.Syntax
+
+newtype Reconstruct t = Reconstruct { runReconstruct :: t -> t }
+
+instance Lam (Reconstruct t) where
+  lam _ _ = Reconstruct id
+
+  _ $$ _ = Reconstruct id
