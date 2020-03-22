@@ -12,6 +12,15 @@
 --   : { a : Type } -> a -> a
 --   = \ {_} a . a
 -- @
+--
+-- Inserting an implicit application:
+--
+-- @
+-- id true
+-- @
+-- @
+-- id {?} true
+-- @
 module Tile.Reconstruct
 ( Reconstruct(..)
 ) where
