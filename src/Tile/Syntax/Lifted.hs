@@ -114,8 +114,8 @@ infixl 4 ===
 
 -- Elaborator scripts
 
-runScript :: Functor m => Script t m t -> m t
-runScript = fmap runIdentity . (`getScript` id)
+runScript :: Permutable env => (forall env' . Extends env env' => m (env' a) -> m (env' t)) -> Script t m a -> m (env t)
+runScript k s = getScript s k
 
 evalScript :: Functor m => Script t m t -> m t
 evalScript = fmap runIdentity . (`getScript` id)
