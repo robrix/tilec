@@ -6,21 +6,21 @@
 -- * Type checking through unification, Francesco Mazzoli, Andreas Abel
 module Tile.Elab
 ( elab
-, ElabC(ElabC)
+, Elab(..)
 ) where
 
 import Tile.Script
 import Tile.Syntax
 
-elab :: ElabC t ::: t -> t
-elab (ElabC run ::: ty) = run ty
+elab :: Elab t ::: t -> t
+elab (Elab run ::: ty) = run ty
 
-newtype ElabC t = ElabC (t -> t)
+newtype Elab t = Elab (t -> t)
 
-var :: t -> ElabC t
-var = ElabC . const
+var :: t -> Elab t
+var = Elab . const
 
-instance (Let t, Prob t, Type t) => Let (ElabC t) where
+instance (Let t, Prob t, Type t) => Let (Elab t) where
   let' (v ::: t) b = check $ do
     _B <- meta type'
     t' <- letbind (elab (t ::: type') ::: type')
@@ -29,7 +29,7 @@ instance (Let t, Prob t, Type t) => Let (ElabC t) where
             elab (b (var x) ::: _B))
       ::: _B)
 
-instance (Lam t, Prob t, Type t) => Lam (ElabC t) where
+instance (Lam t, Prob t, Type t) => Lam (Elab t) where
   lam p b = check $ do
     _A <- meta type'
     _B <- meta (_A --> type')
@@ -44,7 +44,7 @@ instance (Lam t, Prob t, Type t) => Lam (ElabC t) where
       (   elab (f ::: _A --> _B) $$ elab (a ::: _A)
       ::: _B)
 
-instance (Let t, Prob t, Type t) => Type (ElabC t) where
+instance (Let t, Prob t, Type t) => Type (Elab t) where
   type' = check (pure (type' ::: type'))
 
   (p, a) >-> b = check $ do
@@ -53,7 +53,7 @@ instance (Let t, Prob t, Type t) => Type (ElabC t) where
       (   (p, a') >-> (\ x -> elab (b (var x) ::: type'))
       ::: type')
 
-instance (Let t, Prob t, Type t) => Prob (ElabC t) where
+instance (Let t, Prob t, Type t) => Prob (Elab t) where
   t `ex` b = check $ do
     _B <- meta type'
     t' <- letbind (elab (t ::: type') ::: type')
@@ -71,8 +71,8 @@ instance (Let t, Prob t, Type t) => Prob (ElabC t) where
           === t2' ::: type'))
 
 
-check :: Prob t => Script t (t ::: t) -> ElabC t
-check f = ElabC $ \ ty -> evalScript $ do
+check :: Prob t => Script t (t ::: t) -> Elab t
+check f = Elab $ \ ty -> evalScript $ do
   exp <- meta ty
   act <- f
   pure $! exp ::: ty === act
