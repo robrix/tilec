@@ -119,7 +119,7 @@ class Def expr def | def -> expr where
 runScript :: (a -> t) -> Script t a -> t
 runScript k (Script r) = r k
 
-newtype Script t a = Script ((a -> t) -> t)
+newtype Script t a = Script { getScript :: (a -> t) -> t }
   deriving (Functor)
 
 instance Applicative (Script t) where
