@@ -117,7 +117,7 @@ class Def expr def | def -> expr where
 -- Elaborator scripts
 
 runScript :: (a -> t) -> Script t a -> t
-runScript k (Script r) = r k
+runScript = flip getScript
 
 newtype Script t a = Script { getScript :: (a -> t) -> t }
   deriving (Functor)
