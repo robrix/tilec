@@ -1,6 +1,6 @@
 -- | Type reconstruction in tagless final style.
 --
--- Inserting implicit lambdas:
+-- Inserting an implicit abstraction:
 --
 -- @
 -- id
