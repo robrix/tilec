@@ -118,7 +118,7 @@ runScript :: Permutable env => (forall env' . Extends env env' => m (env' a) -> 
 runScript k s = getScript s k
 
 evalScript :: Functor m => Script t m t -> m t
-evalScript = fmap runIdentity . (`getScript` id)
+evalScript = fmap runIdentity . runScript id
 
 throw
   :: (Applicative m, Permutable env)
