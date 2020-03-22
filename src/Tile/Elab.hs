@@ -76,7 +76,7 @@ instance (Let t, Prob t, Type t) => Prob (ElabC t t) where
 
 
 check :: Prob t => Script t (t ::: t) -> ElabC t t
-check f = ElabC $ \ ty -> runScript id $ do
+check f = ElabC $ \ ty -> evalScript $ do
   exp <- meta ty
   act <- f
   pure $! exp ::: ty === act
