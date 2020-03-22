@@ -27,6 +27,7 @@ module Tile.Syntax
 , runScript
 , evalScript
 , shift
+, reset
 , Script(..)
 , (.:)
 , meta
@@ -126,6 +127,9 @@ evalScript = runScript id
 
 shift :: ((a -> t) -> Script t t) -> Script t a
 shift f = Script (evalScript . f)
+
+reset :: Script t t -> Script t' t
+reset = pure . evalScript
 
 newtype Script t a = Script { getScript :: (a -> t) -> t }
   deriving (Functor)
