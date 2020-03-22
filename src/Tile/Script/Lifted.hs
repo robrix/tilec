@@ -29,9 +29,9 @@ evalScript = fmap runIdentity . runScript id
 
 throw
   :: (Applicative m, Permutable env)
-  => (forall env' . Extends env env' => m (env' a) -> m (env' w))
+  => (forall env' . Extends env env' => m (env' a) -> m (env' a'))
   -> m a
-  -> m (env w)
+  -> m (env a')
 throw k = strengthen . k . fmap pure
 
 reset :: Applicative m => Script t m t -> Script t' m t
