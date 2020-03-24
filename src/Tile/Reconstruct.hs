@@ -19,7 +19,7 @@
 -- id true
 -- @
 -- @
--- id {?} true
+-- ∃ ?x . id {?x} true
 -- @
 module Tile.Reconstruct
 ( Reconstruct(..)
