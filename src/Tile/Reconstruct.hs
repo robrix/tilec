@@ -19,7 +19,7 @@
 -- id true
 -- @
 -- @
--- (∃ ?x . id {?x}) true
+-- (∃ ?t : Type . ∃ ?x : ?t . id {?x}) true
 -- @
 module Tile.Reconstruct
 ( Reconstruct(..)
