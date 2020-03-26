@@ -12,6 +12,7 @@ module Tile.Script.Lifted
 , Script(..)
 , meta
 , intro
+, iintro
 , letbind
 ) where
 
@@ -68,6 +69,9 @@ meta ty = Script $ \ k -> ex (pure <$> ty) (k . pure)
 
 intro :: (Applicative m, S.Lam t) => Script t m t
 intro = Script $ \ k -> lam (k . pure)
+
+iintro :: (Applicative m, S.Lam t) => Script t m t
+iintro = Script $ \ k -> ilam (k . pure)
 
 letbind :: (Applicative m, S.Let t) => m t ::: m t -> Script t m t
 letbind (tm ::: ty) = Script $ \ k -> let' (fmap pure tm ::: fmap pure ty) (k . pure)

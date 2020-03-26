@@ -10,6 +10,7 @@ module Tile.Script
 , (.:)
 , meta
 , intro
+, iintro
 , letbind
 ) where
 
@@ -52,6 +53,9 @@ meta = Script . ex
 
 intro :: Lam t => Script t t
 intro = Script lam
+
+iintro :: Lam t => Script t t
+iintro = Script ilam
 
 letbind :: Let t => t ::: t -> Script t t
 letbind = Script . let'
