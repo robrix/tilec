@@ -13,7 +13,7 @@ module Tile.Syntax
   -- * Lambda abstraction & application
 , Lam(..)
 , Lams(..)
-, I(..)
+, Return(..)
   -- * Types
 , Type(..)
 , (-->)
@@ -66,15 +66,15 @@ class Lams expr t | t -> expr where
   lams  :: t -> expr
   ilams :: t -> expr
 
-instance Lams expr (I expr) where
-  lams  = getI
-  ilams = getI
+instance Lams expr (Return expr) where
+  lams  = getReturn
+  ilams = getReturn
 
 instance (Lam expr, Lams expr t) => Lams expr (expr -> t) where
   lams  f = lam  (lams  . f)
   ilams f = ilam (ilams . f)
 
-newtype I a = I { getI :: a }
+newtype Return a = Return { getReturn :: a }
 
 
 -- Types
@@ -98,8 +98,8 @@ class Types expr t | t -> expr where
   (*=>>) :: expr -> t -> expr
   infixr 6 *=>>
 
-instance Types expr (I expr) where
-  (*=>>) = const getI
+instance Types expr (Return expr) where
+  (*=>>) = const getReturn
 
 instance (Type expr, Types expr t) => Types expr (expr -> t) where
   ty *=>> f = ty =>> (ty *=>>) . f
