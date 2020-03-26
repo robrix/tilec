@@ -13,7 +13,6 @@ module Tile.Syntax
   -- * Lambda abstraction & application
 , Lam(..)
 , Lams(..)
-, Return(..)
   -- * Types
 , Type(..)
 , (-->)
@@ -32,6 +31,8 @@ module Tile.Syntax
   -- * {Im,ex}plicitness
 , Plicit(..)
 , plicit
+  -- * Polyvariadics base case
+, Return(..)
 ) where
 
 import Data.Bifoldable
@@ -73,8 +74,6 @@ instance Lams expr (Return expr) where
 instance (Lam expr, Lams expr t) => Lams expr (expr -> t) where
   lams  f = lam  (lams  . f)
   ilams f = ilam (ilams . f)
-
-newtype Return a = Return { getReturn :: a }
 
 
 -- Types
@@ -190,3 +189,8 @@ plicit :: a -> a -> Plicit -> a
 plicit im ex = \case
   Im -> im
   Ex -> ex
+
+
+-- Polyvariadics base case
+
+newtype Return a = Return { getReturn :: a }
