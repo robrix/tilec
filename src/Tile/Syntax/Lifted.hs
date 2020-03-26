@@ -87,7 +87,7 @@ a ->> b = liftA2 (S.->>) <$> a <*> (getC <$> b (C (pure id)))
 
 infixr 6 ->>
 
-(=>>) :: (Applicative m, S.IType expr, Permutable env) => m (env expr) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
+(=>>) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
 a =>> b = liftA2 (S.=>>) <$> a <*> (getC <$> b (C (pure id)))
 
 infixr 6 =>>

@@ -19,7 +19,6 @@ module Tile.Syntax
   -- * Types
 , Type(..)
 , (-->)
-, IType(..)
   -- * Existentials & equations
 , Prob(..)
   -- * Modules, imports, & declarations
@@ -88,19 +87,14 @@ class Type expr where
   type' :: expr
 
   (->>) :: expr -> (expr -> expr) -> expr
-  infixr 6 ->>
+  (=>>) :: expr -> (expr -> expr) -> expr
+
+  infixr 6 ->>, =>>
 
 (-->) :: Type expr => expr -> expr -> expr
 a --> b = a ->> const b
 
 infixr 6 -->
-
-
--- Implicits
-
-class Type expr => IType expr where
-  (=>>) :: expr -> (expr -> expr) -> expr
-  infixr 6 =>>
 
 
 -- Existentials & equations
