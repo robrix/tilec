@@ -35,14 +35,14 @@ instance (Lam t, Prob t, Type t) => Lam (Elab t) where
     _B <- meta (_A --> type')
     pure
       (   lam (\ x -> elab (b (var x) ::: _B $$ x))
-      ::: (Ex, _A) >-> \ x -> _B $$ x)
+      ::: _A ->> \ x -> _B $$ x)
 
   ilam b = check $ do
     _A <- meta type'
     _B <- meta (_A --> type')
     pure
       (   ilam (\ x -> elab (b (var x) ::: _B $$ x))
-      ::: (Im, _A) >-> \ x -> _B $$ x)
+      ::: _A =>> \ x -> _B $$ x)
 
   ($$)  = app ($$)
   ($$?) = app ($$?)
@@ -58,10 +58,16 @@ app app f a = check $ do
 instance (Let t, Prob t, Type t) => Type (Elab t) where
   type' = check (pure (type' ::: type'))
 
-  (p, a) >-> b = check $ do
+  a ->> b = check $ do
     a' <- letbind (elab (a ::: type') ::: type')
     pure
-      (   (p, a') >-> (\ x -> elab (b (var x) ::: type'))
+      (   a' ->> (\ x -> elab (b (var x) ::: type'))
+      ::: type')
+
+  a =>> b = check $ do
+    a' <- letbind (elab (a ::: type') ::: type')
+    pure
+      (   a' =>> (\ x -> elab (b (var x) ::: type'))
       ::: type')
 
 instance (Let t, Prob t, Type t) => Prob (Elab t) where

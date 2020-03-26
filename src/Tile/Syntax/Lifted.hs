@@ -17,9 +17,9 @@ module Tile.Syntax.Lifted
   -- * Type
 , S.Type
 , type'
-, (>->)
-, (-->)
+, (->>)
 , (=>>)
+, (-->)
   -- * Prob
 , S.Prob
 , ex
@@ -80,20 +80,20 @@ infixl 9 $$, $$?
 type' :: (Applicative m, Applicative env, S.Type expr) => m (env expr)
 type' = pure (pure S.type')
 
-(>->) :: (Applicative m, S.Type expr, Permutable env) => (m (env Plicit), m (env expr)) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
-(pl, a) >-> b = liftA2 (S.>->) <$> (liftA2 (,) <$> pl <*> a) <*> (getC <$> b (C (pure id)))
+(->>) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
+a ->> b = liftA2 (S.->>) <$> a <*> (getC <$> b (C (pure id)))
 
-infixr 6 >->
-
-(-->) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> m (env expr) -> m (env expr)
-a --> b = (pure (pure Ex), a) >-> const (weaken b)
-
-infixr 6 -->
+infixr 6 ->>
 
 (=>>) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
-a =>> b = (pure (pure Im), a) >-> b
+a =>> b = liftA2 (S.=>>) <$> a <*> (getC <$> b (C (pure id)))
 
 infixr 6 =>>
+
+(-->) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> m (env expr) -> m (env expr)
+a --> b = a ->> const (weaken b)
+
+infixr 6 -->
 
 
 -- Prob

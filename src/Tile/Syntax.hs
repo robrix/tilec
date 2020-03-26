@@ -17,7 +17,6 @@ module Tile.Syntax
   -- * Types
 , Type(..)
 , (-->)
-, (=>>)
   -- * Existentials & equations
 , Prob(..)
   -- * Modules, imports, & declarations
@@ -79,18 +78,15 @@ newtype I a = I { getI :: a }
 class Type expr where
   type' :: expr
 
-  (>->) :: (Plicit, expr) -> (expr -> expr) -> expr
-  infixr 6 >->
+  (->>) :: expr -> (expr -> expr) -> expr
+  (=>>) :: expr -> (expr -> expr) -> expr
+
+  infixr 6 ->>, =>>
 
 (-->) :: Type expr => expr -> expr -> expr
-a --> b = (Ex, a) >-> const b
+a --> b = a ->> const b
 
 infixr 6 -->
-
-(=>>) :: Type expr => expr -> (expr -> expr) -> expr
-a =>> b = (Im, a) >-> b
-
-infixr 6 =>>
 
 
 -- Existentials & equations
