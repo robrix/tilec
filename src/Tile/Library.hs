@@ -143,12 +143,12 @@ either
 left :: (Lam expr, Type expr) => expr ::: expr
 left
   =   lams (\ l left _ -> I $ left $$ l)
-  ::: type' =>> \ _L -> type' =>> \ _R -> _L --> tm either $$ _L $$ _R
+  ::: type' *=>> \ _L _R -> I $ _L --> tm either $$ _L $$ _R
 
 right :: (Lam expr, Type expr) => expr ::: expr
 right
   =   lams (\ r _ right -> I $ right $$ r)
-  ::: type' =>> \ _L -> type' =>> \ _R -> _R --> tm either $$ _L $$ _R
+  ::: type' *=>> \ _L _R -> I $ _R --> tm either $$ _L $$ _R
 
 
 -- Pair
@@ -161,17 +161,17 @@ pair
 pair' :: (Lam expr, Type expr) => expr ::: expr
 pair'
   =   lams (\ fst snd k -> I $ k $$ fst $$ snd)
-  ::: type' =>> \ _L -> type' =>> \ _R -> _L --> _R --> tm pair $$ _L $$ _R
+  ::: type' *=>> \ _L _R -> I $ _L --> _R --> tm pair $$ _L $$ _R
 
 fst :: (Lam expr, Type expr) => expr ::: expr
 fst
   =   lam ($$ lams (\ fst _ -> I fst))
-  ::: type' =>> \ _L -> type' =>> \ _R -> tm pair $$ _L $$ _R --> _L
+  ::: type' *=>> \ _L _R -> I $ tm pair $$ _L $$ _R --> _L
 
 snd :: (Lam expr, Type expr) => expr ::: expr
 snd
   =   lam ($$ lams (\ _ snd -> I snd))
-  ::: type' =>> \ _L -> type' =>> \ _R -> tm pair $$ _L $$ _R --> _R
+  ::: type' *=>> \ _L _R -> I $ tm pair $$ _L $$ _R --> _R
 
 
 -- Nat
