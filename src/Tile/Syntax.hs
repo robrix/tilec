@@ -28,9 +28,6 @@ module Tile.Syntax
 , (:::)(..)
   -- * Definition syntax
 , (:=)(..)
-  -- * {Im,ex}plicitness
-, Plicit(..)
-, plicit
   -- * Polyvariadics base case
 , Return(..)
 ) where
@@ -39,7 +36,6 @@ import Data.Bifoldable
 import Data.Bifunctor
 import Data.Bitraversable
 import Data.Functor.Classes
-import Data.Ix
 
 type Syntax expr = (Let expr, Lam expr, Type expr)
 
@@ -176,19 +172,6 @@ instance Bifunctor (:=) where
 
 instance Bitraversable (:=) where
   bitraverse f g (a := b) = (:=) <$> f a <*> g b
-
-
--- {Im,ex}plicitness
-
-data Plicit
-  = Im
-  | Ex
-  deriving (Bounded, Enum, Eq, Ix, Ord, Show)
-
-plicit :: a -> a -> Plicit -> a
-plicit im ex = \case
-  Im -> im
-  Ex -> ex
 
 
 -- Polyvariadics base case

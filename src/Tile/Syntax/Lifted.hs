@@ -28,13 +28,11 @@ module Tile.Syntax.Lifted
 , S.Def
   -- * Re-exports
 , (:::)(..)
-, Plicit(..)
-, plicit
 ) where
 
 import           Control.Applicative (liftA2)
 import           Tile.Functor.Compose
-import           Tile.Syntax ((:::)(..), Plicit(..), plicit)
+import           Tile.Syntax ((:::)(..))
 import qualified Tile.Syntax as S
 
 var :: (Applicative m, Extends env j) => env expr -> m (j expr)
