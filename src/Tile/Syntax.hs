@@ -17,7 +17,7 @@ module Tile.Syntax
   -- * Types
 , Type(..)
 , (-->)
-, (==>)
+, (=>>)
   -- * Existentials & equations
 , Prob(..)
   -- * Modules, imports, & declarations
@@ -87,10 +87,10 @@ a --> b = (Ex, a) >-> const b
 
 infixr 6 -->
 
-(==>) :: Type expr => expr -> (expr -> expr) -> expr
-a ==> b = (Im, a) >-> b
+(=>>) :: Type expr => expr -> (expr -> expr) -> expr
+a =>> b = (Im, a) >-> b
 
-infixr 6 ==>
+infixr 6 =>>
 
 
 -- Existentials & equations

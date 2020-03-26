@@ -19,7 +19,7 @@ module Tile.Syntax.Lifted
 , type'
 , (>->)
 , (-->)
-, (==>)
+, (=>>)
   -- * Prob
 , S.Prob
 , ex
@@ -90,10 +90,10 @@ a --> b = (pure (pure Ex), a) >-> const (weaken b)
 
 infixr 6 -->
 
-(==>) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
-a ==> b = (pure (pure Im), a) >-> b
+(=>>) :: (Applicative m, S.Type expr, Permutable env) => m (env expr) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
+a =>> b = (pure (pure Im), a) >-> b
 
-infixr 6 ==>
+infixr 6 =>>
 
 
 -- Prob
