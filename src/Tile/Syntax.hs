@@ -17,6 +17,7 @@ module Tile.Syntax
   -- * Types
 , Type(..)
 , (-->)
+, Types(..)
   -- * Existentials & equations
 , Prob(..)
   -- * Modules, imports, & declarations
@@ -90,6 +91,18 @@ class Type expr where
 a --> b = a ->> const b
 
 infixr 6 -->
+
+
+-- | Variadic type construction.
+class Types expr u t | t -> u expr where
+  (*=>>) :: u -> t -> expr
+  infixr 6 *=>>
+
+instance Types expr () (I expr) where
+  (*=>>) = const getI
+
+instance (Type expr, Types expr u t) => Types expr (expr, u) (expr -> t) where
+  (ty, tys) *=>> f = ty =>> (tys *=>>) . f
 
 
 -- Existentials & equations
