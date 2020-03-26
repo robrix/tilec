@@ -100,7 +100,7 @@ instance Lam Print where
     braces (prettyBind v) <+> b
 
   f $$  a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
-  f $$? a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
+  f $$? a = prec (Level 10) (inContext App (f </> braces a))
 
 instance Type Print where
   type' = inContext Type (annotate TypeName (pretty "Type"))
