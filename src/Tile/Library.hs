@@ -118,7 +118,7 @@ nothing :: (Lam expr, Type expr) => expr ::: expr
 nothing = lams (\ a _ -> I a) ::: type' ==> \ _A -> tm maybe $$ _A
 
 just :: (Lam expr, Type expr) => expr ::: expr
-just = lams (\ a _ just -> I (just $$ a)) ::: type' ==> \ _A -> _A --> tm maybe $$ _A
+just = lams (\ a _ just -> I $ just $$ a) ::: type' ==> \ _A -> _A --> tm maybe $$ _A
 
 
 -- Either
