@@ -94,15 +94,15 @@ infixr 6 -->
 
 
 -- | Variadic type construction.
-class Types expr u t | t -> u expr where
-  (*=>>) :: u -> t -> expr
+class Types expr t | t -> expr where
+  (*=>>) :: expr -> t -> expr
   infixr 6 *=>>
 
-instance Types expr () (I expr) where
+instance Types expr (I expr) where
   (*=>>) = const getI
 
-instance (Type expr, Types expr u t) => Types expr (expr, u) (expr -> t) where
-  (ty, tys) *=>> f = ty =>> (tys *=>>) . f
+instance (Type expr, Types expr t) => Types expr (expr -> t) where
+  ty *=>> f = ty =>> (ty *=>>) . f
 
 
 -- Existentials & equations
