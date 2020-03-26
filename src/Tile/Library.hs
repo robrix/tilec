@@ -70,11 +70,11 @@ baseBool = module' "Base.Bool" . runScript export $ do
 bool :: Type expr => expr ::: expr
 bool = (type' ==> \ _A -> _A --> _A --> _A) ::: type'
 
-true :: (Lam expr, Type expr) => expr ::: expr
-true = lam Ex (lam Ex . const) ::: tm bool
-
 false :: (Lam expr, Type expr) => expr ::: expr
 false = lam Ex (const (lam Ex id)) ::: tm bool
+
+true :: (Lam expr, Type expr) => expr ::: expr
+true = lam Ex (lam Ex . const) ::: tm bool
 
 
 -- Functions
