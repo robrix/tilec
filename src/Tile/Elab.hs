@@ -34,7 +34,7 @@ instance (Lam t, Prob t, Type t) => Lam (Elab t) where
 
   ($$)  = app ($$)
 
-instance (ILam t, Prob t, Type t) => ILam (Elab t) where
+instance (ILam t, Prob t, IType t) => ILam (Elab t) where
   ilam = lam' ilam (=>>)
 
   ($$?) = app ($$?)
@@ -64,6 +64,7 @@ instance (Let t, Prob t, Type t) => Type (Elab t) where
       (   a' ->> (\ x -> elab (b (var x) ::: type'))
       ::: type')
 
+instance (Let t, Prob t, IType t) => IType (Elab t) where
   a =>> b = check $ do
     a' <- letbind (elab (a ::: type') ::: type')
     pure

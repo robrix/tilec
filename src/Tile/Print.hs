@@ -110,6 +110,7 @@ instance Type Print where
   t ->> b = prec (Level 6) . inContext Pi . bind id b $ \ v b ->
     group (align (maybe (prec (Level 7) t) (group . align . parens . prettyAnn . (::: t) . Print . pure . vdoc) v </> op "→" <+> b))
 
+instance IType Print where
   t =>> b = prec (Level 6) . inContext Pi . bind id b $ \ v b ->
     group (align (maybe (braces t) (group . align . braces . prettyAnn . (::: t) . Print . pure . vdoc) v </> op "→" <+> b))
 
