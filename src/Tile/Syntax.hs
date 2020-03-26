@@ -62,13 +62,16 @@ class Lam expr where
 
 -- | Variadic lambda construction.
 class Lams expr t | t -> expr where
-  lams :: t -> expr
+  lams  :: t -> expr
+  ilams :: t -> expr
 
 instance Lams expr (I expr) where
-  lams = getI
+  lams  = getI
+  ilams = getI
 
 instance (Lam expr, Lams expr t) => Lams expr (expr -> t) where
-  lams f = lam (lams . f)
+  lams  f = lam  (lams  . f)
+  ilams f = ilam (ilams . f)
 
 newtype I a = I { getI :: a }
 
