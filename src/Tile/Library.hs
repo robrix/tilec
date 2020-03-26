@@ -91,7 +91,7 @@ baseFunction = module' "Base.Function" . runScript export $ do
 
   fix <- "fix"
     .: type' =>> (\ _A -> type' =>> \ _B -> ((_A --> _B) --> (_A --> _B)) --> (_A --> _B))
-    := ilam (\ _A -> ilam (\ _B -> lam (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam (\ a -> f $$ fixf $$ a)))))
+    := ilams (\ _A _B -> I $ lam (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam (\ a -> f $$ fixf $$ a))))
 
   pure (record
     [ id
@@ -106,7 +106,7 @@ const' :: (Lam expr, Type expr) => expr ::: expr
 const' = lams (\ a _ -> I a) ::: type' =>> \ _A -> type' =>> \ _B -> _A --> _B --> _A
 
 fix :: (Lam expr, Let expr, Type expr) => expr ::: expr
-fix = ilam (\ _A -> ilam (\ _B -> lam (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam (\ a -> f $$ fixf $$ a))))) ::: type' =>> \ _A -> type' =>> \ _B -> ((_A --> _B) --> (_A --> _B)) --> (_A --> _B)
+fix = ilams (\ _A _B -> I $ lam (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam (\ a -> f $$ fixf $$ a)))) ::: type' =>> \ _A -> type' =>> \ _B -> ((_A --> _B) --> (_A --> _B)) --> (_A --> _B)
 
 
 -- Maybe
