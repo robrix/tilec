@@ -13,6 +13,8 @@ module Tile.Syntax
   -- * Lambda abstraction & application
 , Lam(..)
 , ($$)
+, Lams(..)
+, I(..)
   -- * Types
 , Type(..)
 , (-->)
@@ -59,6 +61,19 @@ class Lam expr where
 f $$ a = app f (Ex, a)
 
 infixl 9 $$
+
+
+-- | Variadic lambda construction.
+class Lams expr t | t -> expr where
+  lams :: t -> expr
+
+instance Lams expr (I expr) where
+  lams = getI
+
+instance (Lam expr, Lams expr t) => Lams expr (expr -> t) where
+  lams f = lam Ex (lams . f)
+
+newtype I a = I { getI :: a }
 
 
 -- Types
