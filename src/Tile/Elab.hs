@@ -31,9 +31,12 @@ instance (Let t, Prob t, Type t) => Let (Elab t) where
 
 instance (Lam t, Prob t, Type t) => Lam (Elab t) where
   lam  = lam' lam  (->>)
-  ilam = lam' ilam (=>>)
 
   ($$)  = app ($$)
+
+instance (ILam t, Prob t, Type t) => ILam (Elab t) where
+  ilam = lam' ilam (=>>)
+
   ($$?) = app ($$?)
 
 lam' :: (Prob t, Lam t, Type t) => ((t -> t) -> t) -> (t -> (t -> t) -> t) -> (Elab t -> Elab t) -> Elab t

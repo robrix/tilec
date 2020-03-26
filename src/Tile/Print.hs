@@ -96,10 +96,12 @@ instance Lam Print where
   lam b = prec (Level 6) . inContext Lam . bind id b $ \ v b ->
     prettyBind v <+> b
 
+  f $$  a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
+
+instance ILam Print where
   ilam b = prec (Level 6) . inContext Lam . bind id b $ \ v b ->
     braces (prettyBind v) <+> b
 
-  f $$  a = prec (Level 10) (inContext App (f </> prec (Level 11) a))
   f $$? a = prec (Level 10) (inContext App (f </> braces a))
 
 instance Type Print where

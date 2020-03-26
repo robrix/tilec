@@ -11,8 +11,10 @@ module Tile.Syntax.Lifted
   -- * Lam
 , S.Lam
 , lam
-, ilam
 , ($$)
+  -- ** Implicits
+, S.ILam
+, ilam
 , ($$?)
   -- * Type
 , S.Type
@@ -63,13 +65,13 @@ let'' (tm ::: ty) f = liftA2 S.let' <$> (liftA2 (:::) <$> tm <*> ty) <*> (getC <
 lam :: (Applicative m, S.Lam expr, Permutable env) => (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
 lam f = fmap S.lam . getC <$> f (C (pure id))
 
-ilam :: (Applicative m, S.Lam expr, Permutable env) => (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
-ilam f = fmap S.ilam . getC <$> f (C (pure id))
-
 ($$) :: (Applicative m, Applicative env, S.Lam expr) => m (env expr) -> m (env expr) -> m (env expr)
 f $$ a = liftA2 (liftA2 (S.$$)) f a
 
-($$?) :: (Applicative m, Applicative env, S.Lam expr) => m (env expr) -> m (env expr) -> m (env expr)
+ilam :: (Applicative m, S.ILam expr, Permutable env) => (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
+ilam f = fmap S.ilam . getC <$> f (C (pure id))
+
+($$?) :: (Applicative m, Applicative env, S.ILam expr) => m (env expr) -> m (env expr) -> m (env expr)
 f $$? a = liftA2 (liftA2 (S.$$?)) f a
 
 infixl 9 $$, $$?
