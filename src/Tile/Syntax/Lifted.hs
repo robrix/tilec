@@ -11,8 +11,8 @@ module Tile.Syntax.Lifted
   -- * Lam
 , S.Lam
 , lam
-, app
 , ($$)
+, ($$?)
   -- * Type
 , S.Type
 , type'
@@ -62,13 +62,13 @@ let'' (tm ::: ty) f = liftA2 S.let' <$> (liftA2 (:::) <$> tm <*> ty) <*> (getC <
 lam :: (Applicative m, S.Lam expr, Permutable env) => m (env Plicit) -> (forall env' . Extends env env' => env' expr -> m (env' expr)) -> m (env expr)
 lam p f = liftA2 S.lam <$> p <*> (getC <$> f (C (pure id)))
 
-app :: (Applicative m, Applicative env, S.Lam expr) => m (env expr) -> (m (env Plicit), m (env expr)) -> m (env expr)
-app f (p, a) = liftA2 (liftA2 S.app) f (liftA2 (,) <$> p <*> a)
-
 ($$) :: (Applicative m, Applicative env, S.Lam expr) => m (env expr) -> m (env expr) -> m (env expr)
-f $$ a = app f (pure (pure Ex), a)
+f $$ a = liftA2 (liftA2 (S.$$)) f a
 
-infixl 9 $$
+($$?) :: (Applicative m, Applicative env, S.Lam expr) => m (env expr) -> m (env expr) -> m (env expr)
+f $$? a = liftA2 (liftA2 (S.$$?)) f a
+
+infixl 9 $$, $$?
 
 
 -- Type
