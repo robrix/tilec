@@ -37,19 +37,16 @@ instance (Lam t, Prob t, Type t) => Lam (Elab t) where
       (   lam p (\ x -> elab (b (var x) ::: _B $$ x))
       ::: (p, _A) >-> \ x -> _B $$ x)
 
-  f $$ a = check $ do
-    _A <- meta type'
-    _B <- meta type'
-    pure
-      (   elab (f ::: _A --> _B) $$ elab (a ::: _A)
-      ::: _B)
+  ($$)  = app ($$)
+  ($$?) = app ($$?)
 
-  f $$? a = check $ do
-    _A <- meta type'
-    _B <- meta type'
-    pure
-      (   elab (f ::: _A --> _B) $$? elab (a ::: _A)
-      ::: _B)
+app :: (Prob t, Type t) => (t -> t -> t) -> Elab t -> Elab t -> Elab t
+app app f a = check $ do
+  _A <- meta type'
+  _B <- meta type'
+  pure
+    (   elab (f ::: _A --> _B) `app` elab (a ::: _A)
+    ::: _B)
 
 instance (Let t, Prob t, Type t) => Type (Elab t) where
   type' = check (pure (type' ::: type'))
