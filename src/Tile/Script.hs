@@ -39,7 +39,7 @@ instance Applicative (Script t) where
   {-# INLINE (<*>) #-}
 
 instance Monad (Script t) where
-  m >>= f = Script (\ k -> runScript (runScript k . f) m)
+  m >>= f = Script $ \ k -> runScript (runScript k . f) m
   {-# INLINE (>>=) #-}
 
 (.:) :: Def t def => String -> t := t -> Script (def t) t
