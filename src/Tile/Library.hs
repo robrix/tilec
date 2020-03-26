@@ -103,10 +103,10 @@ id' :: (Lam expr, Type expr) => expr ::: expr
 id' = lams I ::: type' =>> \ _A -> _A --> _A
 
 const' :: (Lam expr, Type expr) => expr ::: expr
-const' = lams (\ a _ -> I a) ::: type' =>> \ _A -> type' =>> \ _B -> _A --> _B --> _A
+const' = lams (\ a _ -> I a) ::: type' *=>> \ _A _B -> I $ _A --> _B --> _A
 
 fix :: (Lam expr, Let expr, Type expr) => expr ::: expr
-fix = ilams (\ _A _B -> I $ lam (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam (\ a -> f $$ fixf $$ a)))) ::: type' =>> \ _A -> type' =>> \ _B -> ((_A --> _B) --> (_A --> _B)) --> (_A --> _B)
+fix = ilams (\ _A _B -> I $ lam (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam (\ a -> f $$ fixf $$ a)))) ::: type' *=>> \ _A _B -> I $ ((_A --> _B) --> (_A --> _B)) --> (_A --> _B)
 
 
 -- Maybe
