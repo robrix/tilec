@@ -65,7 +65,7 @@ let_ env = keyword "let" *> do
 lam_ :: (Monad m, Permutable env, TokenParsing m, Lam expr, Let expr, Type expr) => Env env expr -> m (env expr)
 lam_ env = keyword "\\" *> do
   i <- identifier_ <* keyword "."
-  lam (pure (pure Ex)) (\ v -> expr_ (Map.insert i v (weaken env)))
+  lam (\ v -> expr_ (Map.insert i v (weaken env)))
 
 -- FIXME: application
 

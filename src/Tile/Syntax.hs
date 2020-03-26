@@ -52,7 +52,8 @@ class Let expr where
 -- Lambda abstraction & application
 
 class Lam expr where
-  lam :: Plicit -> (expr -> expr) -> expr
+  lam :: (expr -> expr) -> expr
+  ilam :: (expr -> expr) -> expr
 
   ($$) :: expr -> expr -> expr
   ($$?) :: expr -> expr -> expr
@@ -68,7 +69,7 @@ instance Lams expr (I expr) where
   lams = getI
 
 instance (Lam expr, Lams expr t) => Lams expr (expr -> t) where
-  lams f = lam Ex (lams . f)
+  lams f = lam (lams . f)
 
 newtype I a = I { getI :: a }
 

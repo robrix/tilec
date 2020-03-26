@@ -91,7 +91,7 @@ baseFunction = module' "Base.Function" . runScript export $ do
 
   fix <- "fix"
     .: type' ==> (\ _A -> type' ==> \ _B -> ((_A --> _B) --> (_A --> _B)) --> (_A --> _B))
-    := lam Im (\ _A -> lam Im (\ _B -> lam Ex (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam Ex (\ a -> f $$ fixf $$ a)))))
+    := ilam (\ _A -> ilam (\ _B -> lam (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam (\ a -> f $$ fixf $$ a)))))
 
   pure (record
     [ id
@@ -106,13 +106,13 @@ const' :: (Lam expr, Type expr) => expr ::: expr
 const' = lams (\ a _ -> I a) ::: type' ==> \ _A -> type' ==> \ _B -> _A --> _B --> _A
 
 fix :: (Lam expr, Let expr, Type expr) => expr ::: expr
-fix = lam Im (\ _A -> lam Im (\ _B -> lam Ex (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam Ex (\ a -> f $$ fixf $$ a))))) ::: type' ==> \ _A -> type' ==> \ _B -> ((_A --> _B) --> (_A --> _B)) --> (_A --> _B)
+fix = ilam (\ _A -> ilam (\ _B -> lam (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam (\ a -> f $$ fixf $$ a))))) ::: type' ==> \ _A -> type' ==> \ _B -> ((_A --> _B) --> (_A --> _B)) --> (_A --> _B)
 
 
 -- Maybe
 
 maybe :: (Lam expr, Type expr) => expr ::: expr
-maybe = lam Ex (\ _A -> type' ==> \ _R -> _R --> (_A --> _R) --> _R) ::: type' --> type'
+maybe = lam (\ _A -> type' ==> \ _R -> _R --> (_A --> _R) --> _R) ::: type' --> type'
 
 nothing :: (Lam expr, Type expr) => expr ::: expr
 nothing = lams (\ a _ -> I a) ::: type' ==> \ _A -> tm maybe $$ _A
@@ -142,10 +142,10 @@ pair' :: (Lam expr, Type expr) => expr ::: expr
 pair' = lams (\ fst snd k -> I $ k $$ fst $$ snd) ::: type' ==> \ _L -> type' ==> \ _R -> _L --> _R --> tm pair $$ _L $$ _R
 
 fst :: (Lam expr, Type expr) => expr ::: expr
-fst = lam Ex ($$ lams (\ fst _ -> I fst)) ::: type' ==> \ _L -> type' ==> \ _R -> tm pair $$ _L $$ _R --> _L
+fst = lam ($$ lams (\ fst _ -> I fst)) ::: type' ==> \ _L -> type' ==> \ _R -> tm pair $$ _L $$ _R --> _L
 
 snd :: (Lam expr, Type expr) => expr ::: expr
-snd = lam Ex ($$ lams (\ _ snd -> I snd)) ::: type' ==> \ _L -> type' ==> \ _R -> tm pair $$ _L $$ _R --> _R
+snd = lam ($$ lams (\ _ snd -> I snd)) ::: type' ==> \ _L -> type' ==> \ _R -> tm pair $$ _L $$ _R --> _R
 
 
 -- Nat
@@ -163,7 +163,7 @@ s = lams (\ x _ s -> I $ s $$ x) ::: tm nat --> tm nat
 -- List
 
 list :: (Lam expr, Type expr) => expr ::: expr
-list = lam Ex (\ _A -> type' ==> \ _R -> _R --> (_A --> _R --> _R) --> _R) ::: type' --> type'
+list = lam (\ _A -> type' ==> \ _R -> _R --> (_A --> _R --> _R) --> _R) ::: type' --> type'
 
 nil :: (Lam expr, Type expr) => expr ::: expr
 nil = lams (\ nil _ -> I nil) ::: type' ==> \ _A -> tm list $$ _A
@@ -175,7 +175,7 @@ cons = lams (\ a as _ cons -> I $ cons $$ a $$ as) ::: type' ==> \ _A -> tm list
 -- Fin
 
 fin :: (Lam expr, Type expr) => expr ::: expr
-fin = lam Ex (\ n -> (tm nat --> type') ==> \ _R -> _R $$ (tm s $$ n) --> (tm nat ==> \ n -> _R $$ n --> _R $$ (tm s $$ n)) --> _R $$ (tm s $$ n)) ::: tm nat --> type'
+fin = lam (\ n -> (tm nat --> type') ==> \ _R -> _R $$ (tm s $$ n) --> (tm nat ==> \ n -> _R $$ n --> _R $$ (tm s $$ n)) --> _R $$ (tm s $$ n)) ::: tm nat --> type'
 
 fz :: (Lam expr, Type expr) => expr ::: expr
 fz = lams (\ fz _ -> I fz) ::: tm nat ==> \ n -> tm fin $$ (tm s $$ n)

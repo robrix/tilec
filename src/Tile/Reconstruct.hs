@@ -30,7 +30,8 @@ import Tile.Syntax
 newtype Reconstruct t = Reconstruct { runReconstruct :: t -> t }
 
 instance Lam (Reconstruct t) where
-  lam _ _ = Reconstruct id
+  lam _ = Reconstruct id
+  ilam _ = Reconstruct id
 
   _ $$ _ = Reconstruct id
   _ $$? _ = Reconstruct id

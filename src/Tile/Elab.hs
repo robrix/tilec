@@ -30,12 +30,19 @@ instance (Let t, Prob t, Type t) => Let (Elab t) where
       ::: _B)
 
 instance (Lam t, Prob t, Type t) => Lam (Elab t) where
-  lam p b = check $ do
+  lam b = check $ do
     _A <- meta type'
     _B <- meta (_A --> type')
     pure
-      (   lam p (\ x -> elab (b (var x) ::: _B $$ x))
-      ::: (p, _A) >-> \ x -> _B $$ x)
+      (   lam (\ x -> elab (b (var x) ::: _B $$ x))
+      ::: (Ex, _A) >-> \ x -> _B $$ x)
+
+  ilam b = check $ do
+    _A <- meta type'
+    _B <- meta (_A --> type')
+    pure
+      (   ilam (\ x -> elab (b (var x) ::: _B $$ x))
+      ::: (Im, _A) >-> \ x -> _B $$ x)
 
   ($$)  = app ($$)
   ($$?) = app ($$?)

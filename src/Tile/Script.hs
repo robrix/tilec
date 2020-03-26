@@ -50,8 +50,8 @@ infix 3 .:
 meta :: Prob t => t -> Script t t
 meta = Script . ex
 
-intro :: Lam t => Plicit -> Script t t
-intro = Script . lam
+intro :: Lam t => Script t t
+intro = Script lam
 
 letbind :: Let t => t ::: t -> Script t t
 letbind = Script . let'
