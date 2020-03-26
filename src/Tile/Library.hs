@@ -86,11 +86,11 @@ baseFunction = module' "Base.Function" . runScript export $ do
     := lams I
 
   const <- "const"
-    .: type' =>> (\ _A -> type' =>> \ _B -> _A --> _B --> _A)
+    .: (type', (type', ())) *=>> (\ _A _B -> I $ _A --> _B --> _A)
     := lams (\ a _ -> I a)
 
   fix <- "fix"
-    .: type' =>> (\ _A -> type' =>> \ _B -> ((_A --> _B) --> (_A --> _B)) --> (_A --> _B))
+    .: (type', (type', ())) *=>> (\ _A _B -> I $ ((_A --> _B) --> (_A --> _B)) --> (_A --> _B))
     := ilams (\ _A _B -> I $ lam (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam (\ a -> f $$ fixf $$ a))))
 
   pure (record
