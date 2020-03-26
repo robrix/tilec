@@ -178,7 +178,7 @@ snd
 
 nat :: Type expr => expr ::: expr
 nat
-  =   (type' =>> \ _R -> _R --> (_R --> _R) --> _R)
+  =   type' =>> (\ _R -> _R --> (_R --> _R) --> _R)
   ::: type'
 
 z :: (Lam expr, Type expr) => expr ::: expr
