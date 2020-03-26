@@ -79,7 +79,7 @@ true = lams (\ a _ -> I a) ::: tm bool
 
 -- Functions
 
-baseFunction :: (Module decl m, Def expr decl, Export decl, ILam expr, Let expr, Record expr, Type expr) => m expr
+baseFunction :: (Module decl m, Def expr decl, Export decl, Lam expr, Let expr, Record expr, Type expr) => m expr
 baseFunction = module' "Base.Function" . runScript export $ do
   id <- "id"
     .: type' =>> (\ _A -> _A --> _A)
@@ -105,7 +105,7 @@ id' = lams I ::: type' =>> \ _A -> _A --> _A
 const' :: (Lam expr, Type expr) => expr ::: expr
 const' = lams (\ a _ -> I a) ::: type' =>> \ _A -> type' =>> \ _B -> _A --> _B --> _A
 
-fix :: (ILam expr, Let expr, Type expr) => expr ::: expr
+fix :: (Lam expr, Let expr, Type expr) => expr ::: expr
 fix = ilam (\ _A -> ilam (\ _B -> lam (\ f -> let' (tm fix $$ f ::: _A --> _B) (\ fixf -> lam (\ a -> f $$ fixf $$ a))))) ::: type' =>> \ _A -> type' =>> \ _B -> ((_A --> _B) --> (_A --> _B)) --> (_A --> _B)
 
 

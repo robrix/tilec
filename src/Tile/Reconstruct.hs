@@ -31,10 +31,7 @@ newtype Reconstruct t = Reconstruct { runReconstruct :: t -> t }
 
 instance Lam (Reconstruct t) where
   lam _ = Reconstruct id
-
-  _ $$ _ = Reconstruct id
-
-instance ILam (Reconstruct t) where
   ilam _ = Reconstruct id
 
+  _ $$ _ = Reconstruct id
   _ $$? _ = Reconstruct id

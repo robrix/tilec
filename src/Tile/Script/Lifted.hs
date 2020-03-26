@@ -70,7 +70,7 @@ meta ty = Script $ \ k -> ex (pure <$> ty) (k . pure)
 intro :: (Applicative m, S.Lam t) => Script t m t
 intro = Script $ \ k -> lam (k . pure)
 
-iintro :: (Applicative m, S.ILam t) => Script t m t
+iintro :: (Applicative m, S.Lam t) => Script t m t
 iintro = Script $ \ k -> ilam (k . pure)
 
 letbind :: (Applicative m, S.Let t) => m t ::: m t -> Script t m t

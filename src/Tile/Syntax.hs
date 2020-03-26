@@ -12,8 +12,6 @@ module Tile.Syntax
 , Let(..)
   -- * Lambda abstraction & application
 , Lam(..)
-  -- ** Implicits
-, ILam(..)
 , Lams(..)
 , I(..)
   -- * Types
@@ -54,18 +52,12 @@ class Let expr where
 
 class Lam expr where
   lam :: (expr -> expr) -> expr
-
-  ($$) :: expr -> expr -> expr
-  infixl 9 $$
-
-
--- Implicits
-
-class Lam expr => ILam expr where
   ilam :: (expr -> expr) -> expr
 
+  ($$) :: expr -> expr -> expr
   ($$?) :: expr -> expr -> expr
-  infixl 9 $$?
+
+  infixl 9 $$, $$?
 
 
 -- | Variadic lambda construction.
